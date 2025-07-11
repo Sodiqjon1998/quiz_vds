@@ -36,6 +36,7 @@ class QuizController extends Controller
                 'classes.name as classesName',
                 'attachment.date as date',   // <-- MUHIM: attachments.date ustunini tanlab oling
                 'attachment.number as number', // <-- MUHIM: attachments.number ustunini tanlab oling
+                'attachment.time as time',
             ])
             ->leftJoin('subjects', 'subjects.id', '=', 'quiz.subject_id')
             ->leftJoin('classes', 'classes.id', '=', 'quiz.classes_id')
@@ -117,15 +118,26 @@ class QuizController extends Controller
 
         // Agar test muvaffaqiyatli yakunlansa va holatni tozalash so'ralsa
         if ($clearState) {
-            ExamAttemptState::where('user_id', $user->id)
+            // O'chirishdan oldin mavjud holatni tekshirish
+            $attemptState = ExamAttemptState::where('user_id', $user->id)
                 ->where('quiz_id', $quizId)
-                ->delete();
+                ->first();
+
+            if ($attemptState) {
+                \Log::info("Found ExamAttemptState to delete: ID " . $attemptState->id);
+                $deletedCount = ExamAttemptState::where('user_id', $user->id)
+                    ->where('quiz_id', $quizId)
+                    ->delete();
+                \Log::info("Deleted " . $deletedCount . " ExamAttemptState records for User ID " . $user->id . " and Quiz ID " . $quizId);
+            } else {
+                \Log::info("No ExamAttemptState found to delete for User ID " . $user->id . " and Quiz ID " . $quizId);
+            }
         }
 
         return response()->json(['status' => 'success', 'message' => 'Test muvaffaqiyatli yakunlandi.', 'examId' => $exam->id]);
     }
 
-    
+
 
     /**
      * Display the specified resource.
@@ -209,31 +221,35 @@ class QuizController extends Controller
     public function destroy(string $id) {}
 
 
+    // app/Http/Controllers/Student/QuizController.php
     public function saveAttemptState(Request $request)
     {
         $user = Auth::user();
         $quizId = $request->input('quizId');
-        $currentQuestionIndex = $request->input('currentQuestionIndex');
-        $remainingTime = $request->input('remainingTime');
-        $userAnswers = $request->input('userAnswers', []);
-        $questionStatuses = $request->input('questionStatuses', []);
+        // $currentQuestionIndex = $request->input('currentQuestionIndex');
+        // $remainingTime = $request->input('remainingTime');
+        // $userAnswers = $request->input('userAnswers', []); // JavaScriptdan JSON string keladi
+        // $questionStatuses = $request->input('questionStatuses', []); // JavaScriptdan JSON string keladi
 
-        // Foydalanuvchi va test uchun mavjud holatni toping yoki yangisini yarating
-        $attemptState = ExamAttemptState::firstOrNew([
-            'user_id' => $user->id,
-            'quiz_id' => $quizId,
-        ]);
-
-        $attemptState->current_question_index = $currentQuestionIndex;
-        $attemptState->remaining_time = $remainingTime;
-        $attemptState->user_answers = json_encode($userAnswers);
-        $attemptState->question_statuses = json_encode($questionStatuses);
-        $attemptState->save();
+        $examAttemptState = ExamAttemptState::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'quiz_id' => $quizId,
+            ],
+            [
+                'current_question_index' => $request->input('currentQuestionIndex'),
+                'remaining_time' => $request->input('remainingTime'),
+                'user_answers' => json_encode($request->input('userAnswers')),
+                'question_statuses' => json_encode($request->input('questionStatuses')),
+                'updated_at' => now(),
+            ]
+        );
 
         return response()->json(['status' => 'success', 'message' => 'Holat saqlandi.']);
     }
 
 
+    // app/Http/Controllers/Student/QuizController.php
     public function getAttemptState($quizId)
     {
         $user = Auth::user();
@@ -246,8 +262,9 @@ class QuizController extends Controller
                 'status' => 'success',
                 'currentQuestionIndex' => $attemptState->current_question_index,
                 'remainingTime' => $attemptState->remaining_time,
-                'userAnswers' => json_decode($attemptState->user_answers),
-                'questionStatuses' => json_decode($attemptState->question_statuses),
+                // Agar modelda $casts bor bo'lsa, bu yerda json_decode() kerak emas!
+                'userAnswers' => $attemptState->user_answers, // To'g'ridan-to'g'ri beramiz
+                'questionStatuses' => $attemptState->question_statuses, // To'g'ridan-to'g'ri beramiz
             ]);
         }
 

@@ -12,6 +12,8 @@ class ExamAttemptState extends Model
 {
     use HasFactory;
 
+    protected $table = 'exam_attempt_states'; // Jadval nomi
+
     protected $fillable = [
         'user_id',
         'quiz_id',

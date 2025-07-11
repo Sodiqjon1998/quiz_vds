@@ -464,6 +464,7 @@
 
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script>
+        quizFinished = false; // <-- BU YERDA QO'SHING!
         $(document).ready(function() {
             const questionGrid = document.querySelector('.question-grid');
             const timeDisplay = document.getElementById('time-display');
@@ -474,6 +475,10 @@
             const nextPageBtn = document.getElementById('next-page-btn');
             const markForReviewCheckbox = document.getElementById('mark-for-review');
 
+
+
+
+            // Serverdan olingan test ma'lumotlari
             const questionsApi = @json($questions);
             const quizQuestions = questionsApi.map((q, index) => ({
                 id: q.id,
@@ -503,13 +508,20 @@
             const STATUS_NOT_ANSWERED = 'not-answered';
             const STATUS_CURRENT_QUESTION = 'current-question';
 
+            // --- YAngi qo'shiladigan qism: Debounce uchun o'zgaruvchilar va funksiya ---
+            let saveStateTimeout;
+            const SAVE_STATE_DEBOUNCE_TIME = 2000; // 2 soniya (2000 millisekund)
+
+            function debouncedSaveQuizStateToServer() {
+                clearTimeout(saveStateTimeout); // Agar oldingi taymer ishlayotgan bo'lsa, uni tozalash
+                saveStateTimeout = setTimeout(() => {
+                    saveQuizStateToServer(); // 2 soniyadan keyin asl saqlash funksiyasini chaqirish
+                }, SAVE_STATE_DEBOUNCE_TIME);
+            }
+            // --- Yangi qo'shiladigan qism tugadi ---
+
             let currentQuestionIndex = 0;
-            // let quizState = {
-            //     questionStatuses: {},
-            //     userAnswers: [],
-            //     remainingTime: null,
-            //     currentQuestionIndex: 0
-            // };
+
 
             let quizState = {
                 currentQuestionIndex: 0,
@@ -541,7 +553,8 @@
             }
 
             // --- Server bilan aloqa funksiyalari ---
-            function saveQuizStateToServer() {
+            // --- Server bilan aloqa funksiyalari ---
+            function saveQuizStateToServer(clearStateOnServer = false) { // <-- BU QATORNI O'ZGARTIRISHINGIZ KERAK
                 const dataToSave = {
                     _token: '{{ csrf_token() }}',
                     quizId: quiz.id,
@@ -549,6 +562,7 @@
                     remainingTime: quizState.remainingTime,
                     userAnswers: quizState.userAnswers,
                     questionStatuses: quizState.questionStatuses,
+                    clearState: clearStateOnServer // <-- VA BU QATORNI QO'SHISHINGIZ KERAK
                 };
 
                 $.ajax({
@@ -586,15 +600,30 @@
                 });
             }
 
+            window.addEventListener('beforeunload', function(event) {
+                // Agar test yakunlangan bo'lsa, holatni saqlashga urinmaymiz
+                if (quizFinished) {
+                    return; // Yopilishga ruxsat berish
+                }
+
+                event.returnValue = "Siz testni tark etmoqdasiz. O'zgarishlar saqlanmasligi mumkin.";
+
+                clearTimeout(saveStateTimeout); // Debounce taymerini tozalash
+                saveQuizStateToServer(false); // Holatni o'chirmasdan saqlash
+            });
+
             // --- Test holatini tiklash funksiyasi ---
             async function initializeQuizState() {
                 const savedState = await loadQuizStateFromServer();
 
                 if (savedState && savedState.currentQuestionIndex !== undefined) {
                     quizState.currentQuestionIndex = savedState.currentQuestionIndex;
-                    quizState.remainingTime = savedState.remainingTime; // Null bo'lishi mumkin
-                    quizState.userAnswers = savedState.userAnswers || [];
-                    quizState.questionStatuses = savedState.questionStatuses || {};
+                    quizState.remainingTime = savedState.remainingTime !== null ? savedState.remainingTime :
+                        0; // Null bo'lsa 0 ga o'rnatish
+                    // BU YERNI O'ZGARTIRING: userAnswers va questionStatuses ni JSON.parse qiling
+                    quizState.userAnswers = savedState.userAnswers ? JSON.parse(savedState.userAnswers) : [];
+                    quizState.questionStatuses = savedState.questionStatuses ? JSON.parse(savedState
+                        .questionStatuses) : {};
 
                     currentQuestionIndex = quizState.currentQuestionIndex;
 
@@ -609,6 +638,7 @@
                 } else {
                     // Yangi test boshlanishi yoki saqlangan holat topilmasa
                     console.log("Serverda saqlangan holat topilmadi. Yangi test holati boshlanmoqda.");
+
                     // Dastlabki vaqtni HH:MM:SS formatidan sekundlarga o'girish
                     const parts = quizApi.attachment.time.split(':');
                     let hours = 0;
@@ -718,7 +748,7 @@
 
                 generateQuestionButtons();
                 updateNavigationButtons();
-                saveQuizStateToServer(); // Har bir savol yuklanganda holatni serverga saqlash
+                // saveQuizStateToServer(); // Har bir savol yuklanganda holatni serverga saqlash
             }
 
             function updateNavigationButtons() {
@@ -804,7 +834,7 @@
 
                     totalSeconds--;
                     quizState.remainingTime = totalSeconds;
-                    saveQuizStateToServer(); // Har soniyada holatni serverga saqlash
+                    // saveQuizStateToServer(); // Har soniyada holatni serverga saqlash
 
                     timeDisplay.textContent = formatTime(totalSeconds);
 
@@ -824,12 +854,14 @@
             previousPageBtn.addEventListener('click', () => {
                 if (currentQuestionIndex > 0) {
                     loadQuestion(currentQuestionIndex - 1);
+                    debouncedSaveQuizStateToServer(); // Shu qatorni qo'shing
                 }
             });
 
             nextPageBtn.addEventListener('click', () => {
                 if (currentQuestionIndex < quizQuestions.length - 1) {
                     loadQuestion(currentQuestionIndex + 1);
+                    debouncedSaveQuizStateToServer(); // Shu qatorni qo'shing
                 }
             });
 
@@ -865,7 +897,7 @@
 
                     generateQuestionButtons();
                     updateNavigationButtons();
-                    saveQuizStateToServer(); // Holatni serverga saqlash
+                    debouncedSaveQuizStateToServer(); // Holatni serverga saqlash
                 }
             });
 
@@ -882,11 +914,13 @@
                 }
                 generateQuestionButtons();
                 updateNavigationButtons();
-                saveQuizStateToServer(); // Holatni serverga saqlash
+                debouncedSaveQuizStateToServer(); // Holatni serverga saqlash
             });
 
             document.querySelector('.finish-attempt-btn').addEventListener('click', () => {
                 if (confirm("Testni yakunlashni xohlaysizmi?")) {
+                    clearTimeout(saveStateTimeout);
+                    quizFinished = true; // <-- BU YERDA QOLSIN!
                     const submitData = collectUserAnswersForSubmission();
                     $.ajax({
                         url: "{{ route('student.quiz.store') }}",
