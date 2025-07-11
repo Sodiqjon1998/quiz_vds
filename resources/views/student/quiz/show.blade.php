@@ -796,9 +796,8 @@
                 timerInterval = setInterval(() => {
                     if (totalSeconds <= 0) {
                         clearInterval(timerInterval);
-                        timeDisplay.textContent = "Vaqt tugadi!";
-                        alert("Vaqt tugadi! Test avtomatik tarzda yakunlanadi.");
-
+                        clearTimeout(saveStateTimeout);
+                        quizFinished = true; // <-- BU YERDA QOLSIN!
                         const submitData = collectUserAnswersForSubmission();
                         $.ajax({
                             url: "{{ route('student.quiz.store') }}",
@@ -808,6 +807,7 @@
                                 quizId: quiz.id,
                                 subjectId: quiz.subjectId,
                                 question: submitData.questionIds,
+                                remainingTime: quizState.remainingTime,
                                 option: submitData.optionIds,
                                 clearState: true
                             },
