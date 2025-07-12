@@ -5,7 +5,7 @@
         <a href="{{ route('student') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 <span style="color:var(--bs-primary);">
-                    <img src="{{asset('images/staticImages/logo.png')}}" alt="" style="width:50px">
+                    <img src="{{ asset('images/staticImages/logo.png') }}" alt="" style="width:50px">
                 </span>
             </span>
             <span class="app-brand-text demo menu-text fw-semibold ms-2">Student</span>
@@ -38,7 +38,14 @@
 
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
-        <li class="menu-item {{ Route::is('student') ? 'active open' : '' }}">
+        <li class="menu-item {{ Route::is('student') ? 'active' : '' }}">
+            <a href="{{ route('student') }}" class="menu-link">
+                <i class="ri-home-2-line"></i> &nbsp;
+                <div data-i18n="Bosh sahifa">Bosh sahifa</div>
+            </a>
+        </li>
+        <!-- Dashboards -->
+        {{-- <li class="menu-item {{ Route::is('student') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ri-home-smile-line"></i>
                 <div data-i18n="Dashboards">Dashboards</div>
@@ -71,7 +78,7 @@
                     </a>
                 </li>
             </ul>
-        </li>
+        </li> --}}
 
         <!-- e-commerce-app menu start -->
 
@@ -79,53 +86,53 @@
         <!-- Academy menu start -->
 
 
-{{--        <li class="menu-item {{ Route::is('backend.user*') ? 'active open' : '' }}">--}}
-{{--            <a href="javascript:void(0);" class="menu-link menu-toggle">--}}
-{{--                <i class="ri-group-line"></i>--}}
-{{--                <div data-i18n="Foydalanuvchilar">Foydalanuvchilar</div>--}}
-{{--            </a>--}}
-{{--            <ul class="menu-sub">--}}
-{{--                <li class="menu-item {{ Route::is('backend.user.index') ? 'active' : '' }}">--}}
-{{--                    <a href="{{ route('backend.user.index') }}" class="menu-link">--}}
-{{--                        <div data-i18n="O'qituvchilar va Kordinatorlar">O'qituvchilar va Kordinatorlar</div>--}}
-{{--                    </a>--}}
-{{--                </li>--}}
-{{--                --}}{{-- <li class="menu-item {{ Route::is('backend.user.koordinator') ? 'active' : '' }}">--}}
-{{--                    <a href="{{ route('backend.user.koordinator') }}" class="menu-link">--}}
-{{--                        <div data-i18n="Kordinatorlar">Kordinatorlar</div>--}}
-{{--                    </a>--}}
-{{--                </li> --}}
-{{--            </ul>--}}
-{{--        </li>--}}
+        {{--        <li class="menu-item {{ Route::is('backend.user*') ? 'active open' : '' }}"> --}}
+        {{--            <a href="javascript:void(0);" class="menu-link menu-toggle"> --}}
+        {{--                <i class="ri-group-line"></i> --}}
+        {{--                <div data-i18n="Foydalanuvchilar">Foydalanuvchilar</div> --}}
+        {{--            </a> --}}
+        {{--            <ul class="menu-sub"> --}}
+        {{--                <li class="menu-item {{ Route::is('backend.user.index') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('backend.user.index') }}" class="menu-link"> --}}
+        {{--                        <div data-i18n="O'qituvchilar va Kordinatorlar">O'qituvchilar va Kordinatorlar</div> --}}
+        {{--                    </a> --}}
+        {{--                </li> --}}
+        {{--                --}}{{-- <li class="menu-item {{ Route::is('backend.user.koordinator') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('backend.user.koordinator') }}" class="menu-link"> --}}
+        {{--                        <div data-i18n="Kordinatorlar">Kordinatorlar</div> --}}
+        {{--                    </a> --}}
+        {{--                </li> --}}
+        {{--            </ul> --}}
+        {{--        </li> --}}
 
-        <li class="menu-item {{ Route::is('student.classes.index') ? 'active' : '' }}">
-            <a href="{{route('student.quiz.index')}}" class="menu-link">
+        <li class="menu-item {{ Route::is('student.quiz.index') ? 'active' : '' }}">
+            <a href="{{ route('student.quiz.index') }}" class="menu-link">
                 <i class="ri-graduation-cap-fill"></i> &nbsp;
                 <div data-i18n="Imtixonlar">Imtixonlar</div>
             </a>
         </li>
 
-{{--        <li class="menu-item {{ Route::is('backend.subjects.index') ? 'active' : '' }}">--}}
-{{--            <a href="{{route('backend.subjects.index')}}" class="menu-link">--}}
-{{--                <i class="ri-contacts-book-fill"></i> &nbsp;--}}
-{{--                <div data-i18n="Fanlar">Fanlar</div>--}}
-{{--            </a>--}}
-{{--        </li>--}}
+        {{--        <li class="menu-item {{ Route::is('backend.subjects.index') ? 'active' : '' }}"> --}}
+        {{--            <a href="{{route('backend.subjects.index')}}" class="menu-link"> --}}
+        {{--                <i class="ri-contacts-book-fill"></i> &nbsp; --}}
+        {{--                <div data-i18n="Fanlar">Fanlar</div> --}}
+        {{--            </a> --}}
+        {{--        </li> --}}
 
-{{--        <li class="menu-item {{ Route::is('backend.student.index') ? 'active' : '' }}">--}}
-{{--            <a href="{{route('backend.student.index')}}" class="menu-link">--}}
-{{--                <i class="ri-school-fill"></i> &nbsp;--}}
-{{--                <div data-i18n="O'quvchilar ">O'quvchilar </div>--}}
-{{--            </a>--}}
-{{--        </li>--}}
+        {{--        <li class="menu-item {{ Route::is('backend.student.index') ? 'active' : '' }}"> --}}
+        {{--            <a href="{{route('backend.student.index')}}" class="menu-link"> --}}
+        {{--                <i class="ri-school-fill"></i> &nbsp; --}}
+        {{--                <div data-i18n="O'quvchilar ">O'quvchilar </div> --}}
+        {{--            </a> --}}
+        {{--        </li> --}}
 
-        <li class="menu-item">
+        {{-- <li class="menu-item">
             <a href="https://demos.pixinvent.com/materialize-html-admin-template/documentation/" target="_blank"
-               class="menu-link">
+                class="menu-link">
                 <i class="menu-icon tf-icons ri-article-line"></i>
                 <div data-i18n="Documentation">Documentation</div>
             </a>
-        </li>
+        </li> --}}
     </ul>
 
 </aside>

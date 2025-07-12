@@ -1,4 +1,5 @@
 @php use App\Models\Student\Student; @endphp
+@php use App\Models\User; @endphp
 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
      id="layout-navbar" style="border-bottom: 1px solid #d3cece">
 
@@ -14,22 +15,17 @@
 
         <!-- Search -->
         <div class="navbar-nav align-items-center">
-            <div class="nav-item navbar-search-wrapper mb-0">
-                <a class="nav-item nav-link search-toggler fw-normal px-0" href="javascript:void(0);">
-                    <i class="ri-search-line ri-22px scaleX-n1-rtl me-3"></i>
-                    <span class="d-none d-md-inline-block text-muted">Search (Ctrl+/)</span>
-                </a>
-            </div>
+            <strong>&nbsp;&nbsp;Sinfi: &nbsp;</strong> {{Student::getClassesById(Auth::user()->classes_id)->name ?? "-----"}}
         </div>
         <!-- /Search -->
 
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <li class="nav-item">
-                {{Student::getClassesById(Auth::user()->classes_id)->name ?? "-----"}}
+                <strong>O'quvchi: </strong> &nbsp; {{User::getStudentFullNameById(Auth::user()->id)}}
             </li>
             <!-- Language -->
-            <li class="nav-item dropdown-language dropdown">
+            {{-- <li class="nav-item dropdown-language dropdown">
                 <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    href="javascript:void(0);" data-bs-toggle="dropdown">
                     <i class='ri-translate-2 ri-22px'></i>
@@ -60,11 +56,11 @@
                         </a>
                     </li>
                 </ul>
-            </li>
+            </li> --}}
             <!--/ Language -->
 
             <!-- Style Switcher -->
-            <li class="nav-item dropdown-style-switcher dropdown me-1 me-xl-0">
+            {{-- <li class="nav-item dropdown-style-switcher dropdown me-1 me-xl-0">
                 <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    href="javascript:void(0);" data-bs-toggle="dropdown">
                     <i class='ri-22px'></i>
@@ -86,11 +82,11 @@
                         </a>
                     </li>
                 </ul>
-            </li>
+            </li> --}}
             <!-- / Style Switcher-->
 
             <!-- Quick links  -->
-            <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-1 me-xl-0">
+            {{-- <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown me-1 me-xl-0">
                 <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
                    aria-expanded="false">
@@ -173,11 +169,11 @@
                         </div>
                     </div>
                 </div>
-            </li>
+            </li> --}}
             <!-- Quick links -->
 
             <!-- Notification -->
-            <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1">
+            {{-- <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-4 me-xl-1">
                 <a class="nav-link btn btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow"
                    href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
                    aria-expanded="false">
@@ -407,7 +403,7 @@
                         </div>
                     </li>
                 </ul>
-            </li>
+            </li> --}}
             <!--/ Notification -->
 
             <!-- Teacher -->
@@ -419,7 +415,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="pages-account-settings-account.html">
+                        <a class="dropdown-item" href="{{ route('student.user.index') }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">

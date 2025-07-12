@@ -2,7 +2,6 @@
     use App\Models\Option;
     use App\Models\Question;
     use App\Models\Subjects;
-    use App\Models\User; // User modelini ham ishlatish uchun
 
     // Natijalarni hisoblash
     $correctAnswersCount = 0;
@@ -19,7 +18,7 @@
     }
 @endphp
 
-@extends('teacher.layouts.main')
+@extends('student.layouts.main')
 
 @section('content')
     <style>
@@ -40,40 +39,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
         }
 
-        /* Breadcrumb stil */
-        .breadcrumb {
-            background-color: #e9ecef;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            font-size: 0.95em;
-        }
-
-        .breadcrumb-item+.breadcrumb-item::before {
-            content: ">" !important;
-            /* Bootstrapning default / ni o'zgartirish */
-            color: #6c757d;
-            padding-right: 0.5rem;
-            padding-left: 0.5rem;
-        }
-
-        .breadcrumb-item a {
-            color: #007bff;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .breadcrumb-item a:hover {
-            color: #0056b3;
-        }
-
-        .breadcrumb-item.active {
-            color: #6c757d;
-        }
-
-        /* Header qismi */
+        /* Natijalar sarlavhasi */
         .results-header {
             text-align: center;
             margin-bottom: 40px;
@@ -91,18 +57,6 @@
         .results-header p {
             font-size: 1.2em;
             color: #666;
-        }
-
-        .student-info {
-            font-size: 1.3em;
-            color: #555;
-            margin-top: 15px;
-            font-weight: 600;
-        }
-
-        .student-info i {
-            margin-right: 8px;
-            color: #007bff;
         }
 
         /* Natijalar xulosasi kartochkalari */
@@ -176,10 +130,6 @@
             gap: 10px;
         }
 
-        .question-result-block .question-number i {
-            font-size: 1.2em;
-        }
-
         .question-result-block .question-text {
             font-size: 1.15em;
             font-weight: 500;
@@ -187,10 +137,6 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
-        }
-
-        .options-container {
-            margin-top: 15px;
         }
 
         .option-display {
@@ -290,19 +236,9 @@
     </style>
 
     <div class="container-custom">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('teacher') }}">Bosh sahifa</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Test Natijalari</li>
-            </ol>
-        </nav>
-
         <div class="results-header">
             <h1>Test Natijalari</h1>
-            <p>Fan: **{{ \App\Models\Subjects::getSubjectById($exam->subject_id)->name }}**</p>
-            <div class="student-info">
-                <i class="fas fa-user-graduate"></i> Talaba: **{{ User::getStudentFullNameById($exam->user_id) }}**
-            </div>
+            <p>Sizning testdagi ishlashingiz haqida batafsil ma'lumot.</p>
         </div>
 
         <div class="summary-cards">
@@ -323,12 +259,9 @@
         <div class="detailed-results">
             @foreach ($examAnswers as $k => $answer)
                 @php
-                    // Ma'lumotlar bazasidan savol va variantlarni olish
-// N+1 muammosini oldini olish uchun, buni controllerda eager loading orqali qilish tavsiya etiladi.
-// Hozircha mavjud kod tuzilishini saqlaymiz.
-$question = Question::find($answer->question_id);
-$userSelectedOption = Option::find($answer->option_id);
-$allOptions = Option::where('question_id', $question->id)->get();
+                    $question = Question::find($answer->question_id);
+                    $userSelectedOption = Option::find($answer->option_id);
+                    $allOptions = Option::where('question_id', $question->id)->get(); // Barcha variantlarni olish
                 @endphp
 
                 <div class="question-result-block">
@@ -349,19 +282,19 @@ $allOptions = Option::where('question_id', $question->id)->get();
                                 $isCorrectOption = $option->is_correct == 1;
 
                                 $optionClass = 'not-selected';
-                                $iconClass = 'far fa-circle'; // Default icon (empty circle)
+                                $iconClass = 'fas fa-circle'; // Default icon
 
                                 if ($isUserSelected) {
                                     if ($isCorrectOption) {
                                         $optionClass = 'selected-correct';
-                                        $iconClass = 'fas fa-check-circle'; // Checkmark for user's correct answer
-    } else {
-        $optionClass = 'user-selected-incorrect';
-        $iconClass = 'fas fa-times-circle'; // Cross for user's incorrect answer
+                                        $iconClass = 'fas fa-check-circle';
+                                    } else {
+                                        $optionClass = 'user-selected-incorrect';
+                                        $iconClass = 'fas fa-times-circle';
                                     }
                                 } elseif ($isCorrectOption) {
                                     $optionClass = 'correct-answer';
-                                    $iconClass = 'fas fa-check-circle'; // Checkmark for the correct answer (if user didn't select it)
+                                    $iconClass = 'fas fa-check-circle';
                                 }
                             @endphp
                             <div class="option-display {{ $optionClass }}">

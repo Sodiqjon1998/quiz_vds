@@ -39,7 +39,7 @@
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
         <li class="menu-item {{ Route::is('teacher') ? 'active' : '' }}">
-            <a href="" class="menu-link">
+            <a href="{{route('teacher')}}" class="menu-link">
                 <i class="ri-home-2-line"></i> &nbsp;
                 <div data-i18n="Bosh sahifa">Bosh sahifa</div>
             </a>

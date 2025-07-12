@@ -3,6 +3,7 @@
 use App\Http\Controllers\Student\QuizController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Student\SiteController;
+use App\Http\Controllers\Student\UserController;
 
 Route::middleware(['auth.student', 'student'])->group(function () {
 
@@ -29,5 +30,17 @@ Route::middleware(['auth.student', 'student'])->group(function () {
 
         Route::post('/student/quiz/save-state', [QuizController::class, 'saveAttemptState'])->name('student.quiz.saveState');
         Route::get('/student/quiz/{quizId}/get-state', [QuizController::class, 'getAttemptState'])->name('student.quiz.getState');
+    });
+
+
+    Route::prefix('/student')->controller(UserController::class)->group(function () {
+        //USER ROUTE
+        Route::get('/user/index', 'index')->name('student.user.index');
+        Route::get('/user/create', 'create')->name('student.user.create');
+        Route::get('/user/{id}/show', 'show')->name('student.user.show');
+        Route::post('/user/store', 'store')->name('student.user.store');
+        Route::get('/user/{id}/edit', 'edit')->name('student.user.edit');
+        Route::post('/user/{id}/update', 'update')->name('student.user.update');
+        Route::delete('/user/{id}', 'destroy')->name('student.user.destroy');
     });
 });
