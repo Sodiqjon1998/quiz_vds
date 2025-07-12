@@ -180,7 +180,7 @@ class QuestionController extends Controller
             // marshrutingizga qarab tekshiring.
             // Avvalgi javobda `teacher.quizzes.show` edi.
             return redirect()->route('teacher.quiz.show', $question->quiz_id)
-                             ->with('success', 'Savol muvaffaqiyatli yangilandi!');
+                ->with('success', 'Savol muvaffaqiyatli yangilandi!');
         } catch (\Exception $e) {
             DB::rollBack();
             // Istisnoni batafsilroq loglashni tavsiya qilaman
@@ -192,8 +192,38 @@ class QuestionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Question $question)
+    public function destroy(string $id)
     {
-        //
+        DB::beginTransaction(); // Ma'lumotlar butunligini ta'minlash uchun tranzaksiya boshlaymiz
+
+        try {
+            // 1. O'chirilishi kerak bo'lgan savolni topamiz
+            $question = Question::findOrFail($id);
+
+            // 2. Savolning qaysi quizga tegishli ekanligini yozib olamiz
+            // Chunki savol o'chirilgandan keyin uning quiz_id siga kira olmaymiz
+            $quizIdToRedirect = $question->quiz_id;
+
+            // 3. Savolni o'chiramiz
+            // Avtomatik ravishda unga tegishli variantlar ham o'chirilishi uchun
+            // Question modelida `boot` metodida `deleting` eventiga listener yozishingiz mumkin,
+            // yoki Options modelida `onDelete('cascade')`ni o'rnatgan bo'lishingiz kerak migrationda.
+            // Aks holda, avval variantlarni o'chirish kerak bo'ladi.
+            // Agar `onDelete('cascade')` o'rnatilmagan bo'lsa:
+            // $question->options()->delete();
+            $question->delete();
+
+            DB::commit(); // Tranzaksiyani yakunlaymiz
+
+            // 4. Savol tegishli bo'lgan quizning sahifasiga qayta yo'naltiramiz
+            // Marshrut nomingiz `teacher.quizzes.show` bo'lsa, shuni ishlating
+            return redirect()->route('teacher.quizzes.show', $quizIdToRedirect)
+                             ->with('success', 'Savol muvaffaqiyatli o\'chirildi.');
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Xato yuz bersa, tranzaksiyani bekor qilish
+            \Log::error("Savolni o'chirishda xatolik: " . $e->getMessage() . " on line " . $e->getLine() . " in " . $e->getFile());
+            return back()->withErrors(['error' => 'Savolni o\'chirishda xatolik yuz berdi. ' . $e->getMessage()]);
+        }
     }
 }
