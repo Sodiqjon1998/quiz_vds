@@ -176,7 +176,7 @@
                                     style="border: 1px solid #c2c0c0; border-radius: 10px; padding: 15px; box-shadow: 3px 4px 8px #b3b2b2">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h3 class="badge bg-label-hover-primary" style="font-size: 15px;">
-                                            {{ $k + 1 }}) {{ $question->question_text }}
+                                            {{ $k + 1 }} {{ $question->name }}
                                         </h3>
                                         <div>
                                             <a href="{{ route('teacher.question.edit', $question->id) }}"
@@ -213,7 +213,7 @@
                                                     <div class="flex-grow-1">
                                                         <span
                                                             class="{{ $option->is_correct ? 'fw-bold text-success' : '' }}">
-                                                            {{ chr(65 + $key) }}) {{ $option->option_text }}
+                                                            {{ chr(65 + $key) }} {{ $option->name }}
                                                         </span>
                                                         <div class="math-content">
                                                             {{ $option->option_text }}
