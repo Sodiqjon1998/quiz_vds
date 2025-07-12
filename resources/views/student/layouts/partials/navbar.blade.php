@@ -433,7 +433,7 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="pages-profile-user.html">
+                        <a class="dropdown-item" href="{{ route('student.user.index') }}">
                             <i class="ri-user-3-line ri-22px me-3"></i><span class="align-middle">My Profile</span>
                         </a>
                     </li>

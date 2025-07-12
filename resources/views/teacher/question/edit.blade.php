@@ -1,4 +1,4 @@
-@extends('teacher.layouts.main') {{-- Asosiy layoutni saqlaymiz, chunki siz 'student.layouts.main'dan foydalangansiz --}}
+@extends('teacher.layouts.main')
 
 @section('content')
     <style>
@@ -16,7 +16,6 @@
         .form-container {
             width: 90%;
             max-width: 1000px;
-            /* Katta ekranlar uchun maksimal kenglik */
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -40,15 +39,12 @@
         .form-group input[type="text"],
         .form-group textarea,
         .form-group select {
-            /* Select elementi uchun ham qo'shildi */
             width: calc(100% - 20px);
-            /* Paddingni hisobga olgan holda */
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
             box-sizing: border-box;
-            /* Padding va border kenglikka ta'sir qilmasligi uchun */
         }
 
         .form-group textarea {
@@ -68,7 +64,6 @@
             align-items: center;
             margin-bottom: 10px;
             gap: 10px;
-            /* Input va label orasidagi bo'sh joy */
         }
 
         .option-item input[type="radio"] {
@@ -79,7 +74,6 @@
 
         .option-item input[type="text"] {
             flex-grow: 1;
-            /* Matn kiritish maydoni qolgan bo'sh joyni egallashi uchun */
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -87,7 +81,6 @@
 
         .add-option-btn {
             background-color: #28a745;
-            /* Yashil */
             color: #fff;
             padding: 8px 15px;
             border: none;
@@ -103,7 +96,6 @@
 
         .remove-option-btn {
             background-color: #dc3545;
-            /* Qizil */
             color: #fff;
             padding: 6px 10px;
             border: none;
@@ -128,9 +120,7 @@
             margin-top: 20px;
             transition: background-color 0.2s ease;
             width: auto;
-            /* Tugma o'lchamini kontentiga moslash */
             align-self: flex-end;
-            /* O'ngga joylashtirish */
         }
 
         .submit-btn:hover {
@@ -145,13 +135,11 @@
             background-color: #f9f9f9;
             margin-top: 10px;
             overflow-x: auto;
-            /* Uzun formulalar uchun scroll */
         }
 
         /* Validatsiya xatolari uchun stil */
         .error-message {
             color: #dc3545;
-            /* Qizil rang */
             font-size: 0.85em;
             margin-top: 5px;
             display: block;
@@ -163,7 +151,6 @@
         select.is-invalid {
             border-color: #dc3545;
         }
-
 
         /* --- MOBIL ADAPTIV STILILARI --- */
         @media (max-width: 768px) {
@@ -177,34 +164,27 @@
             .form-group textarea,
             .form-group select {
                 width: 100%;
-                /* Mobil ekranlarda to'liq kenglik */
             }
 
             .option-item {
                 flex-wrap: wrap;
-                /* Kichik ekranlarda o'ramiz */
             }
 
             .option-item input[type="text"] {
                 width: calc(100% - 30px);
-                /* Checkbox va tugma uchun joy qoldiramiz */
                 margin-left: 28px;
-                /* Checkbox joyini to'g'irlash */
             }
 
             .option-item input[type="radio"] {
                 order: 1;
-                /* Checkboxni birinchi ko'rsatish */
             }
 
             .option-item .remove-option-btn {
                 order: 3;
-                /* Olib tashlash tugmasini oxiriga */
             }
 
             .option-item label {
                 order: 2;
-                /* Labelni o'rtaga */
                 flex-grow: 1;
             }
 
@@ -215,7 +195,7 @@
     </style>
 
     <div class="form-container">
-        <h2>Yangi savol qo'shish</h2>
+        <h2>Savolni tahrirlash</h2>
 
         {{-- Umumiy xatolarni ko'rsatish (agar mavjud bo'lsa) --}}
         @if ($errors->any())
@@ -229,27 +209,24 @@
             </div>
         @endif
 
-
-        <form action="{{ route('teacher.question.store') }}" method="POST" id="question-form">
+        {{-- Form action update metodiga ishora qiladi --}}
+        <form action="{{ route('teacher.question.update', $question->id) }}" method="POST" id="question-form">
             @csrf
+            @method('PUT') {{-- PUT metodi tahrirlash uchun ishlatiladi --}}
 
             {{-- Quiz ID uchun yashirin input --}}
-            {{-- Bu yerda $quizId o'zgaruvchisi controllerdan kelishi kerak. --}}
-            {{-- Masalan: return view('teacher.questions.create', ['quizId' => $quizId]); --}}
-            <input type="hidden" name="quiz_id" value="{{ request('quiz_id') ?? '' }}">
-            {{-- Agar quiz_id URL da bo'lsa yoki boshqa usulda keladigan bo'lsa, uni shu yerga kiriting --}}
+            {{-- `$question->quiz_id` orqali mavjud quiz ID ni ko'rsatamiz. --}}
+            <input type="hidden" name="quiz_id" value="{{ $question->quiz_id }}">
 
             {{-- Status uchun yashirin input (yoki select) --}}
-            {{-- Hozircha default 1 qilib qo'ydim, agar o'zgartirish kerak bo'lsa, buni selectga almashtiring --}}
-            <input type="hidden" name="status" value="1">
-
+            <input type="hidden" name="status" value="{{ $question->status }}">
 
             <div class="form-group">
                 <label for="question_text">Savol matni:</label>
+                {{-- `$question->question_text` orqali savol matnini oldindan to'ldiramiz. --}}
                 <textarea id="question_text" name="question_text" rows="4" required
                     placeholder="Savol matnini bu yerga kiriting. Matematik formulalar uchun LaTeX dan foydalaning, masalan: $x^2 + y^2 = r^2$"
-                    class="@error('question_text') is-invalid @enderror">{{ old('question_text') }}</textarea>
-                    <input type="hidden" name="quiz_id" value="{{ $quizId }}" id="">
+                    class="@error('question_text') is-invalid @enderror">{{ $question->name }}</textarea>
                 <div class="math-preview" id="question-preview"></div>
                 @error('question_text')
                     <span class="error-message">{{ $message }}</span>
@@ -259,53 +236,32 @@
             <div class="options-section">
                 <h3>Variantlar:</h3>
                 <div id="options-list">
-                    {{-- Variantlar bu yerga JS orqali qo'shiladi --}}
-                    {{-- Validatsiya xatoliklarida oldingi variantlarni tiklash --}}
-                    @if (old('options'))
-                        @foreach (old('options') as $index => $option)
-                            <div class="option-item" data-option-id="{{ $index }}">
-                                <input type="radio" name="correct_option_id" id="correct-option-{{ $index }}"
-                                    value="{{ $index }}" {{ old('correct_option_id') == $index ? 'checked' : '' }}>
-                                <label for="correct-option-{{ $index }}">To'g'ri</label>
-                                <input type="text" name="options[{{ $index }}][text]"
-                                    id="option-{{ $index }}"
-                                    class="option-text-input @error('options.' . $index . '.text') is-invalid @enderror"
-                                    placeholder="Variant matnini kiriting" value="{{ $option['text'] ?? '' }}" required>
-                                <button type="button" class="remove-option-btn">O'chirish</button>
-                                <div class="math-preview option-preview"></div>
-                                @error('options.' . $index . '.text')
-                                    <span class="error-message">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        @endforeach
-                    @else
-                        {{-- Dastlabki 2 ta variant --}}
-                        <div class="option-item" data-option-id="0">
-                            <input type="radio" name="correct_option_id" id="correct-option-0" value="0">
-                            <label for="correct-option-0">To'g'ri</label>
-                            <input type="text" name="options[0][text]" id="option-0" class="option-text-input"
-                                placeholder="Variant matnini kiriting" value="" required>
+                    {{-- Mavjud variantlarni ko'rsatamiz. --}}
+                    @foreach ($question->options as $index => $option)
+                        <div class="option-item" data-option-id="{{ $index }}">
+                            {{-- `is_correct` xususiyatiga qarab radio tugmani belgilaymiz. --}}
+                            <input type="radio" name="correct_option_id" id="correct-option-{{ $index }}"
+                                value="{{ $index }}" {{ $option->is_correct ? 'checked' : '' }}>
+                            <label for="correct-option-{{ $index }}">To'g'ri</label>
+                            {{-- `option_text` orqali variant matnini to'ldiramiz. --}}
+                            <input type="text" name="options[{{ $index }}][text]"
+                                id="option-{{ $index }}"
+                                class="option-text-input @error('options.' . $index . '.text') is-invalid @enderror"
+                                placeholder="Variant matnini kiriting" value="{{ $option->name }}" required>
                             <button type="button" class="remove-option-btn">O'chirish</button>
                             <div class="math-preview option-preview"></div>
+                            @error('options.' . $index . '.text')
+                                <span class="error-message">{{ $message }}</span>
+                            @enderror
                         </div>
-                        <div class="option-item" data-option-id="1">
-                            <input type="radio" name="correct_option_id" id="correct-option-1" value="1">
-                            <label for="correct-option-1">To'g'ri</label>
-                            <input type="text" name="options[1][text]" id="option-1" class="option-text-input"
-                                placeholder="Variant matnini kiriting" value="" required>
-                            <button type="button" class="remove-option-btn">O'chirish</button>
-                            <div class="math-preview option-preview"></div>
-                        </div>
-                    @endif
+                    @endforeach
                 </div>
                 <button type="button" class="add-option-btn" id="add-option">Variant qo'shish</button>
             </div>
 
             <div class="form-group">
-                <label for="correct_option">To'g'ri javobni belgilang:</label>
-                <div id="correct-option-radio-group">
-                    {{-- Radio tugmalar JS orqali qo'shiladi, lekin ularni har bir option-item ichiga ko'chirdik --}}
-                </div>
+                {{-- `correct_option` radio tugmalarini endi har bir option-item ichida boshqaramiz,
+                     bu qism endi ortiqcha bo'ladi, lekin validatsiya xatosi uchun joy qoldiramiz. --}}
                 @error('correct_option_id')
                     <span class="error-message">{{ $message }}</span>
                 @enderror
@@ -341,15 +297,24 @@
             const addOptionBtn = $('#add-option');
             const questionTextarea = $('#question_text');
             const questionPreview = $('#question-preview');
-            // const correctOptionRadioGroup = $('#correct-option-radio-group'); // Endi bu kerak emas, radio tugmalar option-item ichida
 
-            let optionCounter =
-                {{ old('options') ? count(old('options')) : 2 }}; // Oldingi ma'lumotlar mavjud bo'lsa, hisoblagichni o'rnatish
+            // Mavjud variantlar sonidan boshlaymiz.
+            let optionCounter = optionsList.children().length > 0 ? optionsList.children().length - 1 :
+            0; // Bu yerda o'zgartirish kiritildi, eng katta indeksni topish yaxshiroq bo'lar edi.
+
+            // Eng katta mavjud data-option-id ni topish
+            optionsList.children().each(function() {
+                const id = parseInt($(this).attr('data-option-id'));
+                if (!isNaN(id) && id >= optionCounter) {
+                    optionCounter = id + 1; // Keyingi variant uchun to'g'ri indeksni belgilash
+                }
+            });
+
 
             // Savol matni o'zgarishini kuzatish va MathJax ni yangilash
             questionTextarea.on('input', function() {
                 const text = $(this).val();
-                questionPreview.text(text); // Matnni xom holatda qo'yamiz
+                questionPreview.text(text);
                 MathJax.typesetPromise([questionPreview.get(0)]).then(function() {
                     // MathJax render qilgandan keyin hech narsa qilish shart emas
                 }).catch(function(err) {
@@ -357,17 +322,9 @@
                 });
             }).trigger('input'); // Sahifa yuklanganda MathJax ni bir marta ishga tushirish
 
-
             // Yangi variant qo'shish funksiyasi
             function addOption(initialValue = '', isChecked = false) {
-                // optionCounter allaqachon global hisoblagich sifatida ishlaydi
-                // Agar biz old ma'lumotlarni tiklayotgan bo'lsak, optionCounter allaqachon to'g'ri qiymatga ega bo'ladi
-                // Yangi qo'shilayotganda increment qilamiz
-                if (!isChecked) { // Faqat yangi variant qo'shganda optionCounter ni oshiramiz
-                    optionCounter++;
-                }
-                const currentOptionId = optionCounter; // Joriy variant IDsi
-
+                const currentOptionId = optionCounter++; // Oshirilgan indeksni ishlatamiz
                 const optionHtml = `
                     <div class="option-item" data-option-id="${currentOptionId}">
                         <input type="radio" name="correct_option_id" id="correct-option-${currentOptionId}" value="${currentOptionId}" ${isChecked ? 'checked' : ''}>
@@ -417,20 +374,6 @@
                 });
             });
 
-
-            // Dastlabki variantlarni faqat `old('options')` bo'lmaganda qo'shamiz
-            if (!{{ json_encode(old('options') ? true : false) }}) {
-                // Agar oldingi ma'lumotlar bo'lmasa, dastlabki 2 ta variantni qo'shamiz.
-                // Bu qism yuqorida Blade da already yozilgan, shuning uchun JS da takrorlash shart emas.
-                // Agar siz JS orqali dastlabki variantlarni yaratishni istasangiz, Blade dagi statik HTMLni olib tashlashingiz kerak.
-                // Hozirda Blade birinchi bo'lib render qiladi, keyin JS ishlaydi.
-                // Agar xatolar bo'lmasa, `addOption()` avtomatik ravishda 2 ta variantni qo'shadi, lekin ular yuqoridagi HTMLni takrorlab qo'yadi.
-                // Shuning uchun, men quyidagi qismni o'chirishni tavsiya qilaman, yoki uning ishlash mantig'ini o'zgartiraman.
-                // Qayta ishlash uchun: agar `old('options')` bo'lmasa, bu qism ishlasin.
-                // Lekin men Blade ichida tekshirganim uchun, bu qism endi ortiqcha.
-            }
-
-
             addOptionBtn.on('click', function() {
                 if (optionsList.children().length < 5) { // Maksimal 5 tagacha variant
                     addOption();
@@ -441,10 +384,14 @@
 
             optionsList.on('click', '.remove-option-btn', function() {
                 if (optionsList.children().length > 2) { // Minimal 2 ta variant qolishi kerak
-                    $(this).closest('.option-item').remove();
-                    // O'chirilganidan keyin radio buttonlar to'g'ri ishlashi uchun ularni qayta nomlaymiz
-                    // va ularning `value`larini yangilaymiz.
-                    updateOptionIndices();
+                    const removedOption = $(this).closest('.option-item');
+                    const wasChecked = removedOption.find('input[type="radio"]').is(':checked');
+                    removedOption.remove();
+                    updateOptionIndices(); // Indekslarni yangilash
+                    if (wasChecked && optionsList.children().length > 0) {
+                        // Agar o'chirilgan variant to'g'ri javob bo'lgan bo'lsa, birinchi qolgan variantni avtomatik tanlash
+                        optionsList.find('input[type="radio"]').first().prop('checked', true);
+                    }
                 } else {
                     alert('Kamida 2 ta variant bo\'lishi kerak.');
                 }
@@ -453,41 +400,24 @@
             // Variantlar o'chirilganda indekslarni yangilash funksiyasi
             function updateOptionIndices() {
                 optionsList.children('.option-item').each(function(index) {
-                    const oldOptionId = $(this).data('option-id');
-                    const newOptionId = index; // Yangi indeks 0 dan boshlanadi
+                    const newOptionId = index;
 
                     $(this).attr('data-option-id', newOptionId);
 
-                    // Input type text name attribute ni yangilash
                     const optionTextInput = $(this).find('input[type="text"]');
                     optionTextInput.attr('name', `options[${newOptionId}][text]`);
                     optionTextInput.attr('id', `option-${newOptionId}`);
 
-                    // Input type radio name va value attribute ni yangilash
                     const optionRadioInput = $(this).find('input[type="radio"]');
                     optionRadioInput.attr('id', `correct-option-${newOptionId}`);
-                    optionRadioInput.attr('value', newOptionId); // Radio tugma qiymatini yangilaymiz
+                    optionRadioInput.attr('value', newOptionId);
 
-                    // Label for attribute ni yangilash
                     $(this).find('label[for^="correct-option-"]').attr('for',
                         `correct-option-${newOptionId}`);
                 });
-
-                // Agar o'chirilgan variant to'g'ri javob bo'lgan bo'lsa va u o'chirilgan bo'lsa,
-                // yoki to'g'ri javob qolmagan bo'lsa (faqat 2 ta qolganda va to'g'risi o'chirilgan bo'lsa)
-                // birinchisini avtomatik tanlash
-                if ($('input[name="correct_option_id"]:checked').length === 0 && optionsList.children().length >
-                    0) {
-                    optionsList.find('input[type="radio"]').first().prop('checked', true);
-                }
+                // optionCounter ni qayta hisoblash
+                optionCounter = optionsList.children().length;
             }
-
-
-            // Forma yuborilganda MathJax render bo'lgan qiymatlarni emas, balki xom matnni yuborish
-            // Bu qism endi to'g'ri ishlaydi, chunki biz input.val() dan foydalanamiz
-            // va MathJax previewlari alohida divlarda.
-            // Shuningdek, `old()` funksiyasi bilan forma to'ldirilganda, JS avtomatik ravishda
-            // MathJax previewlarini yangilashini ta'minladik.
         });
     </script>
 @endsection

@@ -40,13 +40,13 @@ Route::middleware(['auth.teacher','teacher'])->group(function () {
     Route::prefix('/teacher')->controller(QuestionController::class)->group(function () {
 
         //ATTACHMENT ROUTE
-        Route::get('/teacher/question/index', 'index')->name('teacher.question.index');
-        Route::get('/teacher/question/create', 'create')->name('teacher.question.create');
-        Route::get('/teacher/question/{id}', 'show')->name('teacher.question.show');
-        Route::post('/teacher/question/store', 'store')->name('teacher.question.store');
-        Route::get('/teacher/question/{id}/edit', 'edit')->name('teacher.question.edit');
-        Route::post('/teacher/question/{id}/update', 'update')->name('teacher.question.update');
-        Route::delete('/teacher/question/{id}', 'destroy')->name('teacher.question.destroy');
+        Route::get('/question/index', 'index')->name('teacher.question.index');
+        Route::get('/question/{id}/create', 'create')->name('teacher.question.create');
+        Route::get('/question/{id}', 'show')->name('teacher.question.show');
+        Route::post('/question/store', 'store')->name('teacher.question.store');
+        Route::get('/question/{id}/edit', 'edit')->name('teacher.question.edit');
+        Route::put('/question/{id}', 'update')->name('teacher.question.update');
+        Route::delete('/question/{id}', 'destroy')->name('teacher.question.destroy');
 
     });
 

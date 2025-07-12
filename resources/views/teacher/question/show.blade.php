@@ -1,89 +1,264 @@
 @extends('teacher.layouts.main')
-@use(App\Models\Teacher\Question;use App\Models\User)
 
 @section('content')
     <style>
-        table,
-        tr,
-        th,
-        td {
-            padding: 7px !important;
-            font-size: 12px;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 20px;
+        }
+
+        .question-container {
+            width: 90%;
+            max-width: 1000px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .question-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .question-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.8em;
+        }
+
+        .question-body {
+            margin-bottom: 20px;
+        }
+
+        .question-body p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            color: #555;
+            word-wrap: break-word;
+            /* Long words break */
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-item.correct {
+            background-color: #d4edda;
+            /* Yashil rang, to'g'ri javob uchun */
+            border-color: #28a745;
+        }
+
+        .option-item.incorrect {
+            background-color: #f8d7da;
+            /* Qizil rang, noto'g'ri javob uchun (agar ko'rsatmoqchi bo'lsangiz) */
+            border-color: #dc3545;
+        }
+
+        .option-item span.label {
+            font-weight: bold;
+            color: #007bff;
+            /* Moviy rang */
+            min-width: 25px;
+            /* Labelning minimal kengligi */
+        }
+
+        .option-item p {
+            margin: 0;
+            flex-grow: 1;
+            font-size: 1.1em;
+            color: #444;
+            word-wrap: break-word;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            /* Kulrang */
+            color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: #5a6268;
+        }
+
+        /* MathJax stillari */
+        .math-display,
+        .math-inline {
+            overflow-x: auto;
+            padding: 5px;
+            border: 1px dashed #ccc;
+            background-color: #fff;
+            display: inline-block;
+            /* Inline formulalar uchun */
+            vertical-align: middle;
+        }
+
+        .math-display {
+            display: block;
+            /* Blok formulalar uchun */
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+
+        /* --- MOBIL ADAPTIV STILILARI --- */
+        @media (max-width: 768px) {
+            .question-container {
+                padding: 15px;
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            .option-item {
+                flex-wrap: wrap;
+                text-align: center;
+                justify-content: center;
+            }
+
+            .option-item span.label {
+                flex-basis: 100%;
+                /* Mobil ekranda label to'liq kenglikni olsin */
+                margin-bottom: 5px;
+            }
         }
     </style>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('teacher') }}">Bosh sahifa</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('teacher.question.index') }}">Sinflar</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Batafsil</li>
-        </ol>
-    </nav>
-
-
-    <div class="card">
-        <div class="card-header">
-            {{$model->name}}
+    <div class="question-container">
+        <div class="question-header">
+            <h2>Savol tafsilotlari</h2>
         </div>
-        <div class="card-body">
-            <table class="table table-bordered table-striped table-hover table-sm text-center"
-                   style="border: 1px solid rgb(201, 198, 198);">
-                <tr>
-                    <th>Id</th>
-                    <th>{{$model->id}}</th>
-                </tr>
-                <tr>
-                    <th>Savol matni</th>
-                    <th>{{$model->name}}</th>
-                </tr>
-                <tr>
-                    <th>Status</th>
-                    <td>
-                        {{Question::getStatus($model->status)}}
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div>
-    <br>
-    <br>
-    <hr>
-    <div class="card">
-        <div class="card-body">
-            <div class="row"
-                 style="border: 1px solid #c2c0c0; border-radius: 10px; width: 98%; margin-left: 10px; padding: 7px; box-shadow: 3px 4px 8px #b3b2b2">
-                @foreach($options as $key => $option)
-                    <div class="col-sm-6 ">
-                        <div class="text-light small fw-medium mb-4 text-center">
-                            <h6>Varyant {{++$key}}</h6>
-                        </div>
-                        <div class="row" style="display: flex; align-items: center">
-                            <div class="col-sm-1">
-                                <div class="switches-stacked mb-6">
-                                    <label class="switch">
-                                        <input type="radio" class="switch-input"
-                                               name="switches-stacked-radio"
-                                               {{$option->is_correct == 1 ? "checked" : ""}} disabled>
-                                        <span class="switch-toggle-slider">
-                                            <span class="switch-on"></span>
-                                            <span class="switch-off"></span>
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
 
-                            <div class="col-md-11">
-                                <div class="form-floating form-floating-outline mb-6">
-                                    <input type="text" name="names[]" disabled class="form-control"
-                                           id="basic-default-fullname"
-                                           placeholder="Savol matni" required value="{{$option->name}}">
-                                    <label for="basic-default-fullname">Savol matni</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
+        @if (session('success'))
+            <div class="alert alert-success"
+                style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                {{ session('success') }}
             </div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger"
+                style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="form-group">
+            <label>Quiz nomi:</label>
+            <p>{{ $question->quiz->name }}</p> {{-- `quiz` munosabati orqali quiz nomini ko'rsatamiz --}}
+        </div>
+
+        <div class="form-group">
+            <label>Quiz nomi:</label>
+            <p>
+                @if ($question->quiz)
+                    {{ $question->quiz->name }}
+                @else
+                    Quiz topilmadi
+                @endif
+            </p>
+        </div>
+        <div class="options-section">
+            <h3>Variantlar:</h3>
+            <ul class="options-list">
+                @foreach ($question->options as $index => $option)
+                    <li class="option-item @if ($option->is_correct) correct @endif">
+                        <span class="label">{{ chr(65 + $index) }}.</span> {{-- A, B, C... variantlar uchun --}}
+                        <p id="option-{{ $index }}-text-display">{{ $option->option_text }}</p>
+                        <div class="math-preview option-rendered-math"></div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <a href="{{ route('teacher.quiz.show', $question->quiz_id) }}" class="back-link">Ortga qaytish</a>
+            {{-- Edit qilish uchun tugma --}}
+            <a href="{{ route('teacher.question.edit', $question->id) }}" class="submit-btn"
+                style="margin-left: 10px;">Savolni tahrirlash</a>
         </div>
     </div>
+
+    <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        // MathJax konfiguratsiyasi
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ],
+                displayMath: [
+                    ['$$', '$$'],
+                    ['\\[', '\\]']
+                ]
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            options: {
+                // Yangilashni avtomatik amalga oshirmaslik uchun, faqat kerak bo'lganda typesetPromise() ni chaqiramiz
+                // ignoreHtmlClass: 'tex2jax_ignore',
+                // processHtmlClass: 'tex2jax_process'
+            }
+        };
+
+        $(document).ready(function() {
+            // Savol matnini MathJax bilan render qilish
+            const questionTextDisplay = $('#question-text-display');
+            const questionRenderedMath = $('#question-rendered-math');
+
+            questionRenderedMath.text(questionTextDisplay.text()); // Xom matnni o'tkazamiz
+            MathJax.typesetPromise([questionRenderedMath.get(0)]).then(function() {
+                questionTextDisplay.hide(); // Asl matnni yashiramiz, render qilinganini ko'rsatamiz
+            }).catch(function(err) {
+                console.error('MathJax rendering error for question:', err);
+                questionRenderedMath.html('<span style="color:red;">Error rendering math.</span>');
+            });
+
+            // Har bir variant matnini MathJax bilan render qilish
+            $('.option-item').each(function(index) {
+                const optionTextDisplay = $(this).find(`#option-${index}-text-display`);
+                const optionRenderedMath = $(this).find('.option-rendered-math');
+
+                optionRenderedMath.text(optionTextDisplay.text()); // Xom matnni o'tkazamiz
+                MathJax.typesetPromise([optionRenderedMath.get(0)]).then(function() {
+                    optionTextDisplay.hide(); // Asl matnni yashiramiz
+                }).catch(function(err) {
+                    console.error('MathJax rendering error for option ' + index + ':', err);
+                    optionRenderedMath.html(
+                        '<span style="color:red;">Error rendering math.</span>');
+                });
+            });
+        });
+    </script>
 @endsection
