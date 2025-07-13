@@ -20,4 +20,10 @@ class ExamAnswer extends Model
         'updated_by',
         // Boshqa barcha mass assignment qilinadigan ustunlarni shu yerga qo'shing
     ];
+
+
+     public function question()
+    {
+        return $this->belongsTo(Question::class);
+    }
 }

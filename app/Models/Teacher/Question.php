@@ -31,8 +31,5 @@ class Question extends \App\Models\Question
         return $this->hasMany(Option::class);
     }
 
-    public function quiz()
-    {
-        return $this->belongsTo(Quiz::class);
-    }
+    
 }

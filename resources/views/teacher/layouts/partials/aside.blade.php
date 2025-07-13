@@ -5,7 +5,7 @@
         <a href="{{ route('dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 <span style="color:var(--bs-primary);">
-                    <img src="{{asset('images/staticImages/logo.png')}}" alt="" style="width:50px">
+                    <img src="{{ asset('images/staticImages/logo.png') }}" alt="" style="width:50px">
                 </span>
             </span>
             <span class="app-brand-text demo menu-text fw-semibold ms-2">O'qituvchi</span>
@@ -39,7 +39,7 @@
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
         <li class="menu-item {{ Route::is('teacher') ? 'active' : '' }}">
-            <a href="{{route('teacher')}}" class="menu-link">
+            <a href="{{ route('teacher') }}" class="menu-link">
                 <i class="ri-home-2-line"></i> &nbsp;
                 <div data-i18n="Bosh sahifa">Bosh sahifa</div>
             </a>
@@ -51,27 +51,27 @@
         <!-- Academy menu start -->
 
 
-{{--        <li class="menu-item {{ Route::is('teacher.user*') ? 'active open' : '' }}">--}}
-{{--            <a href="javascript:void(0);" class="menu-link menu-toggle">--}}
-{{--                <i class="ri-group-line"></i>--}}
-{{--                <div data-i18n="Foydalanuvchilar">Foydalanuvchilar</div>--}}
-{{--            </a>--}}
-{{--            <ul class="menu-sub">--}}
-{{--                <li class="menu-item {{ Route::is('teacher.user.index') ? 'active' : '' }}">--}}
-{{--                    <a href="{{ route('teacher.user.index') }}" class="menu-link">--}}
-{{--                        <div data-i18n="O'qituvchilar">O'qituvchilar</div>--}}
-{{--                    </a>--}}
-{{--                </li>--}}
-{{--                <li class="menu-item {{ Route::is('teacher.user.koordinator') ? 'active' : '' }}">--}}
-{{--                    <a href="{{ route('teacher.user.koordinator') }}" class="menu-link">--}}
-{{--                        <div data-i18n="Kordinatorlar">Kordinatorlar</div>--}}
-{{--                    </a>--}}
-{{--                </li>--}}
-{{--            </ul>--}}
-{{--        </li>--}}
+        {{--        <li class="menu-item {{ Route::is('teacher.user*') ? 'active open' : '' }}"> --}}
+        {{--            <a href="javascript:void(0);" class="menu-link menu-toggle"> --}}
+        {{--                <i class="ri-group-line"></i> --}}
+        {{--                <div data-i18n="Foydalanuvchilar">Foydalanuvchilar</div> --}}
+        {{--            </a> --}}
+        {{--            <ul class="menu-sub"> --}}
+        {{--                <li class="menu-item {{ Route::is('teacher.user.index') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('teacher.user.index') }}" class="menu-link"> --}}
+        {{--                        <div data-i18n="O'qituvchilar">O'qituvchilar</div> --}}
+        {{--                    </a> --}}
+        {{--                </li> --}}
+        {{--                <li class="menu-item {{ Route::is('teacher.user.koordinator') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('teacher.user.koordinator') }}" class="menu-link"> --}}
+        {{--                        <div data-i18n="Kordinatorlar">Kordinatorlar</div> --}}
+        {{--                    </a> --}}
+        {{--                </li> --}}
+        {{--            </ul> --}}
+        {{--        </li> --}}
 
         <li class="menu-item {{ Route::is('teacher.quiz.index') ? 'active' : '' }}">
-            <a href="{{route('teacher.quiz.index')}}" class="menu-link">
+            <a href="{{ route('teacher.quiz.index') }}" class="menu-link">
                 <i class="ri-list-radio"></i> &nbsp;
                 <div data-i18n="Quiz">Quiz</div>
             </a>
@@ -83,25 +83,25 @@
             </a>
         </li> --}}
         <li class="menu-item {{ Route::is('teacher.attachment.index') ? 'active' : '' }}">
-            <a href="{{route('teacher.attachment.index')}}" class="menu-link">
+            <a href="{{ route('teacher.attachment.index') }}" class="menu-link">
                 <i class="ri-attachment-fill"></i> &nbsp;
                 <div data-i18n="Urinishlar">Urinishlar</div>
             </a>
         </li>
 
-        <li class="menu-item {{ Route::is('teacher.exam.index') ? 'active' : '' }}">
-            <a href="{{route('teacher.exam.index')}}" class="menu-link">
+        <li class="menu-item {{ Route::is('teacher.exam.getResult') ? 'active' : '' }}">
+            <a href="{{ route('teacher.exam.getResult') }}" class="menu-link">
                 <i class="ri-a-b"></i> &nbsp;
                 <div data-i18n="Imtixonlar">Imtixonlar</div>
             </a>
         </li>
 
-{{--        <li class="menu-item {{ Route::is('teacher.student.index') ? 'active' : '' }}">--}}
-{{--            <a href="{{route('teacher.student.index')}}" class="menu-link">--}}
-{{--                <i class="ri-school-fill"></i> &nbsp;--}}
-{{--                <div data-i18n="O'quvchilar">O'quvchilar</div>--}}
-{{--            </a>--}}
-{{--        </li>--}}
+        {{--        <li class="menu-item {{ Route::is('teacher.student.index') ? 'active' : '' }}"> --}}
+        {{--            <a href="{{route('teacher.student.index')}}" class="menu-link"> --}}
+        {{--                <i class="ri-school-fill"></i> &nbsp; --}}
+        {{--                <div data-i18n="O'quvchilar">O'quvchilar</div> --}}
+        {{--            </a> --}}
+        {{--        </li> --}}
 
         {{-- <li class="menu-item">
             <a href="https://demos.pixinvent.com/materialize-html-admin-template/documentation/" target="_blank"

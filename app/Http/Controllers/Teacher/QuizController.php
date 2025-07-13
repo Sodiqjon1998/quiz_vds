@@ -44,7 +44,6 @@ class QuizController extends Controller
             return redirect()->route('teacher.quiz.index');
         }
         return redirect()->route('teacher.quiz.create');
-
     }
 
     /**

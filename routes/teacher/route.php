@@ -10,7 +10,7 @@ use App\Http\Controllers\Teacher\UserController;
 use App\Models\Teacher\Question;
 use App\Models\Teacher\Quiz;
 
-Route::middleware(['auth.teacher','teacher'])->group(function () {
+Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
     Route::get('/teacher', [SiteController::class, 'index'])->name('teacher');
 
@@ -24,7 +24,6 @@ Route::middleware(['auth.teacher','teacher'])->group(function () {
         Route::get('/quiz/{id}/edit', 'edit')->name('teacher.quiz.edit');
         Route::post('/quiz/{id}/update', 'update')->name('teacher.quiz.update');
         Route::delete('/quiz/{id}', 'destroy')->name('teacher.quiz.destroy');
-
     });
 
     Route::prefix('/teacher')->controller(AttachmentController::class)->group(function () {
@@ -37,7 +36,6 @@ Route::middleware(['auth.teacher','teacher'])->group(function () {
         Route::get('/attachment/{id}/edit', 'edit')->name('teacher.attachment.edit');
         Route::post('/attachment/{id}/update', 'update')->name('teacher.attachment.update');
         Route::delete('/attachment/{id}', 'destroy')->name('teacher.attachment.destroy');
-
     });
 
     Route::prefix('/teacher')->controller(QuestionController::class)->group(function () {
@@ -56,14 +54,13 @@ Route::middleware(['auth.teacher','teacher'])->group(function () {
 
         //EXAM ROUTE
         Route::get('/exam/index', 'index')->name('teacher.exam.index');
-        Route::get('/exam/create', 'create')->name('teacher.exam.create');
+        Route::get('/exam/get-result', 'getResult')->name('teacher.exam.getResult');
         Route::get('/exam/{quiz_id}/{subject_id}', 'show')->name('teacher.exam.show');
         Route::get('/exam/{id}', 'showTest')->name('teacher.exam.showTest');
         Route::post('/exam/store', 'store')->name('teacher.exam.store');
         Route::get('/exam/{id}/edit', 'edit')->name('teacher.exam.edit');
         Route::post('/exam/{id}/update', 'update')->name('teacher.exam.update');
         Route::delete('/exam/{id}', 'destroy')->name('teacher.exam.destroy');
-
     });
 
 
