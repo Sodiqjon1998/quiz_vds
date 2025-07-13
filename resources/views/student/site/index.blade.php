@@ -12,10 +12,10 @@
             @php
                 $currentDate = Carbon::now()->format('Y-m-d');
                 // Endi $item->date va $item->number to'g'ridan-to'g'ri mavjud bo'lishi kerak
-                $dateToCompare = isset($item->date) ? Carbon::parse($item->date)->format('Y-m-d') : null;
-                $quizNumber = isset($item->number) ? $item->number : null;
+$dateToCompare = isset($item->date) ? Carbon::parse($item->date)->format('Y-m-d') : null;
+$quizNumber = isset($item->number) ? $item->number : null;
 
-                // Agar 'date' yoki 'number' null bo'lsa, bu elementni o'tkazib yuborish
+// Agar 'date' yoki 'number' null bo'lsa, bu elementni o'tkazib yuborish
                 if (is_null($dateToCompare) || is_null($quizNumber)) {
                     continue;
                 }

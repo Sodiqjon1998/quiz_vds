@@ -6,6 +6,7 @@ use App\Http\Controllers\Teacher\QuizController;
 use App\Http\Controllers\Teacher\ExamController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Teacher\SiteController;
+use App\Http\Controllers\Teacher\UserController;
 use App\Models\Teacher\Question;
 use App\Models\Teacher\Quiz;
 
@@ -62,6 +63,21 @@ Route::middleware(['auth.teacher','teacher'])->group(function () {
         Route::get('/exam/{id}/edit', 'edit')->name('teacher.exam.edit');
         Route::post('/exam/{id}/update', 'update')->name('teacher.exam.update');
         Route::delete('/exam/{id}', 'destroy')->name('teacher.exam.destroy');
+
+    });
+
+
+    Route::prefix('/teacher')->controller(UserController::class)->group(function () {
+
+        //EXAM ROUTE
+        Route::get('user/index', 'index')->name('teacher.user.index');
+        Route::get('user/setting', 'setting')->name('teacher.user.setting');
+        // Route::get('user/{quiz_id}/{subject_id}', 'show')->name('teacher.user.show');
+        // Route::get('user/{id}', 'showTest')->name('teacher.user.showTest');
+        // Route::post('user/store', 'store')->name('teacher.user.store');
+        // Route::get('user/{id}/edit', 'edit')->name('teacher.user.edit');
+        Route::post('user/update', 'update')->name('teacher.user.update');
+        // Route::delete('user/{id}', 'destroy')->name('teacher.user.destroy');
 
     });
 });

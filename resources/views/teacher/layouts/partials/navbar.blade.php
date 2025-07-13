@@ -148,7 +148,7 @@
                                 <span class="dropdown-shortcuts-icon rounded-circle mb-3">
                                     <i class="ri-settings-4-line ri-26px text-heading"></i>
                                 </span>
-                                <a href="pages-account-settings-account.html" class="stretched-link">Setting</a>
+                                <a href="{{ route('teacher.user.setting') }}" class="stretched-link">Setting</a>
                                 <small class="mb-0">Account Settings</small>
                             </div>
                         </div>
