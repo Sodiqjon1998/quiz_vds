@@ -126,6 +126,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ Route::is('backend.user.newStudent') ? 'active' : '' }}">
+            <a href="{{route('backend.user.newStudent')}}" class="menu-link">
+                <i class="ri-group-2-fill"></i> &nbsp;
+                <div data-i18n="Yangi ro'yxatdan o'tgan o'quvchilar ">Yangi ro'yxatdan o'tgan o'quvchilar </div>
+            </a>
+        </li>
+
         {{-- <li class="menu-item">
             <a href="https://demos.pixinvent.com/materialize-html-admin-template/documentation/" target="_blank"
                class="menu-link">

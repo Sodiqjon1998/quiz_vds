@@ -112,7 +112,15 @@ class UsersController extends Controller
 
 
     /**
-     * KOORDINATORLAR
+     * Yangi o'quvchilar
      * //////////////
      */
+
+    public function showStudent()
+    {
+        $users = User::where(['status' => User::STATUS_IN_ACTIVE, 'user_type' => User::TYPE_STUDENT])->paginate(20);
+        return view('backend.users.newstudent', [
+            'model' => $users
+        ]);
+    }
 }

@@ -20,8 +20,9 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/user/{id}/edit', 'edit')->name('backend.user.edit');
         Route::post('/backend/user/{id}/update', 'update')->name('backend.user.update');
         Route::delete('/backend/user/{id}', 'destroy')->name('backend.user.destroy');
-
     });
+
+    Route::get('/backend/user/show-student', [UsersController::class, 'showStudent'])->name('backend.user.newStudent');
 
     Route::prefix('/dashboard')->controller(\App\Http\Controllers\Backend\StudentController::class)->group(function () {
 
@@ -33,7 +34,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/student/{id}/edit', 'edit')->name('backend.student.edit');
         Route::post('/backend/student/{id}/update', 'update')->name('backend.student.update');
         Route::delete('/backend/student/{id}', 'destroy')->name('backend.student.destroy');
-
     });
 
 
@@ -47,7 +47,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/classes/{id}/edit', 'edit')->name('backend.classes.edit');
         Route::post('/backend/classes/{id}/update', 'update')->name('backend.classes.update');
         Route::delete('/backend/classes/{id}', 'destroy')->name('backend.classes.destroy');
-
     });
 
 
@@ -61,6 +60,5 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/subjects/{id}/edit', 'edit')->name('backend.subjects.edit');
         Route::post('/backend/subjects/{id}/update', 'update')->name('backend.subjects.update');
         Route::delete('/backend/subjects/{id}', 'destroy')->name('backend.subjects.destroy');
-
     });
 });
