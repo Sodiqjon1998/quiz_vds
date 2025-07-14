@@ -74,7 +74,7 @@ class QuestionController extends Controller
                 $option->save();
             }
 
-            return redirect()->route('teacher.quiz.index')->with('success', 'Question and options have been created successfully!');
+            return redirect()->route('teacher.quiz.create')->with('success', 'Question and options have been created successfully!');
         }
 
         return redirect()->route('teacher.question.create', ['id' => $question->id])->with('error', 'Failed to create question.');
@@ -218,8 +218,7 @@ class QuestionController extends Controller
             // 4. Savol tegishli bo'lgan quizning sahifasiga qayta yo'naltiramiz
             // Marshrut nomingiz `teacher.quizzes.show` bo'lsa, shuni ishlating
             return redirect()->route('teacher.quizzes.show', $quizIdToRedirect)
-                             ->with('success', 'Savol muvaffaqiyatli o\'chirildi.');
-
+                ->with('success', 'Savol muvaffaqiyatli o\'chirildi.');
         } catch (\Exception $e) {
             DB::rollBack(); // Xato yuz bersa, tranzaksiyani bekor qilish
             \Log::error("Savolni o'chirishda xatolik: " . $e->getMessage() . " on line " . $e->getLine() . " in " . $e->getFile());
