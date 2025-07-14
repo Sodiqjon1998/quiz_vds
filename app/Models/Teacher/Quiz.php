@@ -55,4 +55,10 @@ class Quiz extends Model
         $attachment = Attachment::find()->where('quiz_id', '=', $id)->first();
         return !is_null($attachment) ? $attachment : null;
     }
+
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
 }

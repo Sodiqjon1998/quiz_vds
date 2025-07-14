@@ -2,12 +2,14 @@
     use App\Models\Option;
     use App\Models\Question;
     use App\Models\Subjects;
+    use App\Models\Teacher\Quiz;
     use App\Models\User; // User modelini ham ishlatish uchun
 
     // Natijalarni hisoblash
     $correctAnswersCount = 0;
     $incorrectAnswersCount = 0;
-    $totalQuestions = count($examAnswers);
+    $quiz = Quiz::findOrFail($exam->quiz_id)->questions;
+    $totalQuestions = count($quiz);
 
     foreach ($examAnswers as $answer) {
         $option = Option::find($answer->option_id);

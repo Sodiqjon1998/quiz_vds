@@ -41,7 +41,7 @@ class ExamController extends Controller
      */
     public function show(string $quiz_id, string $subject_id)
     {
-        $model = Exam::where('quiz_id', $quiz_id)->where('subject_id', $subject_id)->paginate(20);
+        $model = Exam::where('quiz_id', $quiz_id)->where('subject_id', $subject_id)->get();
 
         return view('teacher.exam.show', [
             'model' => $model,

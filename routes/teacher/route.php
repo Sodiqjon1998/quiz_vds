@@ -53,7 +53,7 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
         //EXAM ROUTE
         Route::get('/exam/index', 'index')->name('teacher.exam.index');
         Route::get('/exam/get-result', 'getResult')->name('teacher.exam.getResult');
-        Route::get('/exam/{id}', 'show')->name('teacher.exam.show');
+        Route::get('/exam/show/{quiz_id}/{subject_id}', 'show')->name('teacher.exam.show');
         Route::get('/exam/{id}', 'showTest')->name('teacher.exam.showTest');
         Route::post('/exam/store', 'store')->name('teacher.exam.store');
         Route::get('/exam/{id}/edit', 'edit')->name('teacher.exam.edit');

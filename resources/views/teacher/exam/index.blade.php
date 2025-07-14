@@ -75,7 +75,7 @@
                                         class="badge bg-label-info badge-lg rounded-pill">
                                         <i style="font-size: 16px" class="ri-pencil-line"></i>
                                     </a> --}}
-                                    <a href="{{ route('teacher.exam.show', $item->id) }}"
+                                    <a href="{{ route('teacher.exam.show', ['quiz_id' => $item->id, 'subject_id' => $item->subject_id]) }}"
                                         class="btn btn-success">
                                         <i style="font-size: 16px" class="ri-eye-2-line"></i>
                                     </a>
