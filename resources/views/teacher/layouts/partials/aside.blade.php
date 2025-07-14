@@ -89,8 +89,8 @@
             </a>
         </li>
 
-        <li class="menu-item {{ Route::is('teacher.exam.getResult') ? 'active' : '' }}">
-            <a href="{{ route('teacher.exam.getResult') }}" class="menu-link">
+        <li class="menu-item {{ Route::is('teacher.exam.index') ? 'active' : '' }}">
+            <a href="{{ route('teacher.exam.index') }}" class="menu-link">
                 <i class="ri-a-b"></i> &nbsp;
                 <div data-i18n="Imtixonlar">Imtixonlar</div>
             </a>

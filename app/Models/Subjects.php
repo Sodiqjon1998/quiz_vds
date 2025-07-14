@@ -36,4 +36,6 @@ class Subjects extends Model
         $model = Subjects::where('id', '=', $id)->first();
         return $model;
     }
+
+    // public function 
 }

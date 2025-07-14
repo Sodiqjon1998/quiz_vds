@@ -7,8 +7,6 @@ use App\Http\Controllers\Teacher\ExamController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Teacher\SiteController;
 use App\Http\Controllers\Teacher\UserController;
-use App\Models\Teacher\Question;
-use App\Models\Teacher\Quiz;
 
 Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
@@ -55,7 +53,7 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
         //EXAM ROUTE
         Route::get('/exam/index', 'index')->name('teacher.exam.index');
         Route::get('/exam/get-result', 'getResult')->name('teacher.exam.getResult');
-        Route::get('/exam/{quiz_id}/{subject_id}', 'show')->name('teacher.exam.show');
+        Route::get('/exam/{id}', 'show')->name('teacher.exam.show');
         Route::get('/exam/{id}', 'showTest')->name('teacher.exam.showTest');
         Route::post('/exam/store', 'store')->name('teacher.exam.store');
         Route::get('/exam/{id}/edit', 'edit')->name('teacher.exam.edit');
