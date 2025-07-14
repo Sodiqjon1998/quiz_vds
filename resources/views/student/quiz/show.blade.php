@@ -621,9 +621,11 @@
                     quizState.remainingTime = savedState.remainingTime !== null ? savedState.remainingTime :
                         0; // Null bo'lsa 0 ga o'rnatish
                     // BU YERNI O'ZGARTIRING: userAnswers va questionStatuses ni JSON.parse qiling
-                    quizState.userAnswers = savedState.userAnswers ? JSON.parse(savedState.userAnswers) : [];
-                    quizState.questionStatuses = savedState.questionStatuses ? JSON.parse(savedState
-                        .questionStatuses) : {};
+                    // initializeQuizState funksiyasi ichida
+                    quizState.userAnswers = savedState.userAnswers && savedState.userAnswers !== "" ? JSON
+                        .parse(savedState.userAnswers) : [];
+                    quizState.questionStatuses = savedState.questionStatuses && savedState.questionStatuses !==
+                        "" ? JSON.parse(savedState.questionStatuses) : {};
 
                     currentQuestionIndex = quizState.currentQuestionIndex;
 
