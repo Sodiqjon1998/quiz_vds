@@ -22,16 +22,16 @@ use App\Models\User;
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Bosh sahifa</a></li>
-            <li class="breadcrumb-item active" aria-current="page">O'qituvchilar va Kordinatorlar</li>
+            <li class="breadcrumb-item active" aria-current="page"> Yangi o'quvchilar</li>
         </ol>
     </nav>
 
     <div class="card">
         <div class="card-header">
-            O'qituvchilar va Kordinatorlar
-            <a href="{{ route('backend.user.create') }}" class="badge bg-label-success badge-lg rounded-pill">
+            Yangi o'quvchilar
+            {{-- <a href="{{ route('backend.user.create') }}" class="badge bg-label-success badge-lg rounded-pill">
                 <i style="font-size: 16px" class="ri-add-circle-line" style="font-size: 15px"></i>
-            </a>
+            </a> --}}
         </div>
         <div class="card-body table-responsive">
             <table class="table table-bordered table-striped table-hover table-sm text-center"
@@ -79,10 +79,10 @@ use App\Models\User;
                                    class="badge bg-label-info badge-lg rounded-pill">
                                     <i style="font-size: 16px" class="ri-pencil-line"></i>
                                 </a>
-                                <a href="{{ route('backend.user.show', $item->id) }}"
+                                {{-- <a href="{{ route('backend.user.show', $item->id) }}"
                                    class="badge bg-label-primary badge-lg rounded-pill">
                                     <i style="font-size: 16px" class="ri-eye-2-line"></i>
-                                </a>
+                                </a> --}}
                                 <form id="deleteForm" action="{{ route('backend.user.destroy', $item->id) }}"
                                       method="POST" style="display: inline">
                                     @csrf
