@@ -6,6 +6,6 @@ Route::get('/', function(){
     return view('frontend.site.crm');
 });
 
-Route::get('/regiter', [SiteController::class, 'register']);
-Route::post('/regiter', [SiteController::class, 'store'])->name('frontend.register.store');
+Route::get('/register', [SiteController::class, 'register']);
+Route::post('/register', [SiteController::class, 'store'])->name('frontend.register.store');
 Route::get('/success/{id}', [SiteController::class, 'success'])->name('frontend.site.success');
