@@ -41,6 +41,7 @@ use App\Models\User;
                     <th style="width: 30px">T/R</th>
                     <th>Rasm</th>
                     <th>F.I.SH</th>
+                    <th>Sinfi</th>
                     <th>Telefon</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -59,6 +60,9 @@ use App\Models\User;
                             </td>
                             <td>
                                 {{ $item->last_name . ' ' . $item->first_name ?? '----' }}
+                            </td>
+                            <td>
+                                {{ User::getClassesById($item->classes_id)->name ?? '----' }}
                             </td>
                             <td>
                                 <i class="ri-phone-fill"></i> {{ $item->phone ?? '-----' }}
