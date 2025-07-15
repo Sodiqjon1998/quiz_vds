@@ -125,15 +125,4 @@ use App\Models\User;
             {{ $model->links() }}
         </div>
     </div>
-
-
-    <script>
-        document.getElementById('deleteForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            if (confirm('Haqiqatan ham ma\'lumotni o\'chirmoqchimisiz?')) {
-                this.submit();
-            }
-        });
-    </script>
 @endsection
