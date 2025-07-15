@@ -56,7 +56,7 @@ use App\Models\User;
                     @if (count($model) > 0)
                         @foreach ($model as $key => $item)
                             <tr>
-                                <td>{{ ++$key }}</td>
+                                <td>{{ ($model->currentPage() - 1) * $model->perPage() + $loop->iteration }}</td>
                                 <td>
                                     <img src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
                                         width="40" height="30" alt="{{ asset($item->img) }}"
