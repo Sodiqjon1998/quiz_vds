@@ -96,12 +96,13 @@ use App\Models\User;
                                         class="badge bg-label-primary badge-lg rounded-pill">
                                         <i style="font-size: 16px" class="ri-eye-2-line"></i>
                                     </a>
-                                    <form id="deleteForm" action="{{ route('backend.student.destroy', $item->id) }}"
-                                        method="POST" style="display: inline">
+                                    <form action="{{ route('backend.student.destroy', $item->id) }}" method="POST"
+                                        style="display: inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" style="border: none"
-                                            class="badge bg-label-danger badge-lg rounded-pill">
+                                            class="badge bg-label-danger badge-lg rounded-pill"
+                                            onclick="return confirm('Haqiqatan ham ma\'lumotni o\'chirmoqchimisiz?')">
                                             <i style="font-size: 16px" class="ri-delete-bin-line"></i>
                                         </button>
                                     </form>
