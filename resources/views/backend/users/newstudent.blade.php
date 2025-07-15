@@ -43,6 +43,7 @@ use App\Models\User;
                     <th>F.I.SH</th>
                     <th>Sinfi</th>
                     <th>Telefon</th>
+                    <th>Kiritilgan vaqti</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -66,6 +67,9 @@ use App\Models\User;
                             </td>
                             <td>
                                 <i class="ri-phone-fill"></i> {{ $item->phone ?? '-----' }}
+                            </td>
+                            <td>
+                                {{  {{ $item->created_at }} }}
                             </td>
                             <td>
                                 @if ($item->status == User::STATUS_ACTIVE)
