@@ -59,7 +59,8 @@ use App\Models\User;
             </div>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover table-sm text-center">
+                <table class="table table-bordered table-striped table-hover table-sm text-center"
+                    style="border: 1.5px solid rgb(201, 198, 198);">
                     <thead>
                         <tr>
                             <th style="width: 30px">T/R</th>
