@@ -119,7 +119,7 @@ use App\Models\User;
             </table>
         </div>
         <div class="card-footer">
-            {{ $model->links() }}
+            {{ $model->links('vendor.pagination.default') }} {{-- 'default' o'rniga o'zingiz moslashtirgan fayl nomini yozing --}}
         </div>
     </div>
 
