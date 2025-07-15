@@ -71,7 +71,7 @@ use App\Models\User;
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="studentTableBody">
                     @if (count($model) > 0)
                         @foreach ($model as $key => $item)
                             <tr>
