@@ -121,6 +121,8 @@ use App\Models\User;
                 </tbody>
             </table>
         </div>
-        {{ $model->links() }}
+        <div class="card-footer">
+            {{ $model->links() }} {{-- 'default' o'rniga o'zingiz moslashtirgan fayl nomini yozing --}}
+        </div>
     </div>
 @endsection
