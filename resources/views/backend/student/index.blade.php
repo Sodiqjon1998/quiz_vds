@@ -121,8 +121,6 @@ use App\Models\User;
                 </tbody>
             </table>
         </div>
-        <div class="card-footer">
-            {{ $model->links() }}
-        </div>
+        {{ $model->links() }}
     </div>
 @endsection
