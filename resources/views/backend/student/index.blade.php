@@ -32,6 +32,10 @@ use App\Models\User;
             <a href="{{ route('backend.student.create') }}" class="badge bg-label-success badge-lg rounded-pill">
                 <i style="font-size: 16px" class="ri-add-circle-line" style="font-size: 15px"></i>
             </a>
+            <small class="text-muted">
+                Jami: {{ $model->total() }} ta,
+                Sahifada: {{ $model->count() }} ta
+            </small>
         </div>
         <div class="card-body table-responsive">
             <table class="table table-bordered table-striped table-hover table-sm text-center"
@@ -52,7 +56,7 @@ use App\Models\User;
                     @if (count($model) > 0)
                         @foreach ($model as $key => $item)
                             <tr>
-                                <th>{{ ++$key }}</th>
+                                <td>{{ ($model->currentPage() - 1) * $model->perPage() + $loop->iteration }}</td>
                                 <td>
                                     <img src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
                                         width="40" height="30" alt="{{ asset($item->img) }}" class="rounded-circle"
@@ -115,6 +119,9 @@ use App\Models\User;
                     @endif
                 </tbody>
             </table>
+        </div>
+        <div class="card-footer">
+            {{ $model->links() }}
         </div>
     </div>
 
