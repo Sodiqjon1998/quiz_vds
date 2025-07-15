@@ -131,7 +131,7 @@ use App\Models\User;
             </table>
         </div>
         <div class="card-footer">
-            {{ $model->simplePaginate() }}
+            {{ $model->links() }}
         </div>
     </div>
 
