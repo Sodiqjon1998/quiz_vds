@@ -17,6 +17,19 @@ use App\Models\User;
             padding: 7px !important;
             font-size: 14px;
         }
+
+        /* Qidiruv maydoni uchun qo'shimcha stillar */
+        .search-input-group {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            /* Input va button orasidagi bo'sh joy */
+        }
+
+        .search-input-group .form-control {
+            flex-grow: 1;
+            /* Input maydonini kengaytirish */
+        }
     </style>
 
     <nav aria-label="breadcrumb">
@@ -38,6 +51,12 @@ use App\Models\User;
             </small>
         </div>
         <div class="card-body table-responsive">
+            {{-- Qidiruv maydoni --}}
+            <div class="search-input-group">
+                <input type="text" id="searchInput" class="form-control"
+                    placeholder="Ism, familya, sinf yoki telefon bo'yicha qidirish...">
+                <button id="clearSearch" class="btn btn-outline-secondary">Tozalash</button>
+            </div>
             <table class="table table-bordered table-striped table-hover table-sm text-center"
                 style="border: 1px solid rgb(201, 198, 198);">
                 <thead>
@@ -130,6 +149,52 @@ use App\Models\User;
 
             if (confirm('Haqiqatan ham ma\'lumotni o\'chirmoqchimisiz?')) {
                 this.submit();
+            }
+        });
+
+        // Qidiruv funksiyasi
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const studentTableBody = document.getElementById('studentTableBody');
+            const clearSearchButton = document.getElementById('clearSearch');
+
+            if (searchInput && studentTableBody) {
+                searchInput.addEventListener('keyup', function() {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    const rows = studentTableBody.querySelectorAll('tr');
+
+                    rows.forEach(row => {
+                        // Agar "O'quvchilar mavjud emas!" qatori bo'lsa, uni filtrlamaymiz
+                        if (row.querySelector('td[colspan="8"]')) {
+                            return;
+                        }
+
+                        // Qidiriladigan ustunlar: Ism familya (index 2), Sinfi (index 3), Telefon (index 5)
+                        // Email (index 4)
+                        const name = row.cells[2].textContent.toLowerCase();
+                        const className = row.cells[3].textContent.toLowerCase();
+                        const email = row.cells[4].textContent.toLowerCase();
+                        const phone = row.cells[5].textContent.toLowerCase();
+
+                        if (name.includes(searchTerm) ||
+                            className.includes(searchTerm) ||
+                            email.includes(searchTerm) ||
+                            phone.includes(searchTerm)) {
+                            row.style.display = ''; // Qatorni ko'rsatish
+                        } else {
+                            row.style.display = 'none'; // Qatorni yashirish
+                        }
+                    });
+                });
+
+                // Qidiruv maydonini tozalash tugmasi
+                clearSearchButton.addEventListener('click', function() {
+                    searchInput.value = ''; // Maydonni tozalash
+                    const rows = studentTableBody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        row.style.display = ''; // Barcha qatorlarni ko'rsatish
+                    });
+                });
             }
         });
     </script>
