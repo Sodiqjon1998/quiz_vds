@@ -119,11 +119,7 @@ use App\Models\User;
             </table>
         </div>
         <div class="card-footer">
-            <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                    {{ $model->links() }} {{-- 'default' o'rniga o'zingiz moslashtirgan fayl nomini yozing --}}
-                </ul>
-            </nav>
+            {{ $model->links() }} {{-- 'default' o'rniga o'zingiz moslashtirgan fayl nomini yozing --}}
         </div>
     </div>
 
