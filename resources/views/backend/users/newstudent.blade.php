@@ -32,6 +32,10 @@ use App\Models\User;
             {{-- <a href="{{ route('backend.user.create') }}" class="badge bg-label-success badge-lg rounded-pill">
                 <i style="font-size: 16px" class="ri-add-circle-line" style="font-size: 15px"></i>
             </a> --}}
+            <small class="text-muted">
+                Jami: {{ $model->total() }} ta,
+                Sahifada: {{ $model->count() }} ta
+            </small>
         </div>
         <div class="card-body table-responsive">
             <table class="table table-bordered table-striped table-hover table-sm text-center"
@@ -113,6 +117,9 @@ use App\Models\User;
                     @endif
                 </tbody>
             </table>
+        </div>
+        <div class="card-footer">
+            {{ $model->links() }}
         </div>
     </div>
 
