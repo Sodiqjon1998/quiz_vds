@@ -554,15 +554,6 @@
 
             let timerInterval;
 
-
-            // Fisher-Yates shuffle algoritmi (BU YERDA BO'LISHI KERAK)
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]]; // Elementlarni almashtirish
-                }
-            }
-
             // --- Yordamchi funktsiya: vaqtni formatlash ---
             function formatTime(totalSeconds) {
                 const displayHours = Math.floor(totalSeconds / 3600);
@@ -745,11 +736,6 @@
                 questionTextElement.innerHTML = '\\(' + question.text + '\\)';
                 MathJax.typesetPromise([questionTextElement]);
                 optionsForm.innerHTML = '';
-
-                optionsForm.empty(); // Oldingi variantlarni tozalash (BU QATORDAN KEYIN)
-
-                // Variantlarni aralashtirish (shuffle) (BU YERGA JOYLASHTIRING)
-                shuffleArray(question.options)
 
                 question.options.forEach((option, i) => {
                     const div = document.createElement('div');
