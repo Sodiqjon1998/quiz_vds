@@ -235,7 +235,7 @@
                                                         </span>
                                                         {{-- Variant matni. math-display klassiga o'ralgan va {!! !!} ishlatilgan --}}
                                                         <span class="math-display">
-                                                            $$ {!! $option->name !!} $$
+                                                           \( {!! $option->name !!} \)
                                                         </span>
                                                     </div>
                                                 </div>
