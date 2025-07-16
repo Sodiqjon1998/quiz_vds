@@ -429,6 +429,12 @@
                 height: 38px;
                 font-size: 0.9em;
             }
+
+            mjx-container[jax="CHTML"][display="true"] {
+                display: block;
+                text-align: left !important;
+                margin: 1em 0;
+            }
         }
     </style>
     <div class="quiz-container">
