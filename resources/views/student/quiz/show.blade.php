@@ -83,6 +83,7 @@
             margin-top: 0;
             margin-bottom: 20px;
             color: #444;
+            text-align: left !important;
         }
 
         #options-form {
