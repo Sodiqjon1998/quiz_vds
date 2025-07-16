@@ -432,9 +432,10 @@
 
             mjx-container[jax="CHTML"][display="true"] {
                 display: block;
-                text-align: left;
+                text-align: left !important;
                 margin: 1em 0;
             }
+
 
             mjx-merror {
                 display: inline-block;
