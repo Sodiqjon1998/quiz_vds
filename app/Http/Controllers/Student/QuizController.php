@@ -174,6 +174,7 @@ class QuizController extends Controller
             $questions = Question::where('quiz_id', '=', $id)
                 ->where('status', '=', Question::STATUS_ACTIVE)
                 ->with('options')
+                  ->inRandomOrder() // <-- Mana shu qatorni qo'shing
                 ->get();
 
             return view('student.quiz.show', [
