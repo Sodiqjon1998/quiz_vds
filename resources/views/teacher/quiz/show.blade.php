@@ -184,7 +184,7 @@
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h3 class="badge bg-label-hover-secondary" style="font-size: 15px; text-align:left;">
                                             {{ $k + 1 }}. <div class="math-display">
-                                                $$ {!! $question->name !!} $$
+                                                \( {!! $question->name !!} \)
                                             </div>
 
                                         </h3>
