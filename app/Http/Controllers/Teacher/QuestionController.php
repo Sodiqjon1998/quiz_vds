@@ -74,10 +74,10 @@ class QuestionController extends Controller
                 $option->save();
             }
 
-            return redirect()->route('teacher.question.create', ['id' => $question->quiz_id])->with('success', 'Question and options have been created successfully!');
+            return redirect()->route('teacher.question.create', ['quiz_id' => $question->quiz_id])->with('success', 'Question and options have been created successfully!');
         }
 
-        return redirect()->route('teacher.question.create', ['id' => $question->id])->with('error', 'Failed to create question.');
+        return redirect()->route('teacher.question.create', ['quiz_id' => $question->id])->with('error', 'Failed to create question.');
     }
 
     /**

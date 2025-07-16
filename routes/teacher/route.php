@@ -40,7 +40,7 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
         //ATTACHMENT ROUTE
         Route::get('/question/index', 'index')->name('teacher.question.index');
-        Route::get('/question/{id}/create', 'create')->name('teacher.question.create');
+        Route::get('/question/{quiz_id}/create', 'create')->name('teacher.question.create');
         Route::get('/question/{id}', 'show')->name('teacher.question.show');
         Route::post('/question/store', 'store')->name('teacher.question.store');
         Route::get('/question/{id}/edit', 'edit')->name('teacher.question.edit');

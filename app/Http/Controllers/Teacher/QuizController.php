@@ -51,9 +51,12 @@ class QuizController extends Controller
      */
     public function show(string $id)
     {
-        $model = Quiz::find()->findOrFail($id);
-        $questions = Question::find()->where(['quiz_id' => $id])->paginate(30);
-        return view('teacher.quiz.show', compact('model', 'questions'));
+        $model = Quiz::findOrFail($id);
+        $questions = Question::where(['quiz_id' => $id])->paginate(30);
+        return view('teacher.quiz.show', [
+            'model' => $model,
+            'questions' => $questions
+        ]);
     }
 
     /**
@@ -103,5 +106,4 @@ class QuizController extends Controller
         $model->delete();
         return redirect()->route('teacher.quiz.index');
     }
-
 }
