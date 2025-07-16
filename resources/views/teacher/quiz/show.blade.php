@@ -101,6 +101,12 @@
             text-align: left;
             margin: 1em 0;
         }
+
+        mjx-merror {
+            display: inline-block;
+            color: black;
+            background-color: white;
+        }
     </style>
 
     {{-- MathLive CSS faylini joylashtiramiz --}}

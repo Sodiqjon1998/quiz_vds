@@ -289,6 +289,18 @@
                 font-size: 1em;
             }
         }
+
+        mjx-container[jax="CHTML"][display="true"] {
+            display: block;
+            text-align: left;
+            margin: 1em 0;
+        }
+
+        mjx-merror {
+            display: inline-block;
+            color: black;
+            background-color: white;
+        }
     </style>
 
     <div class="container-custom">
