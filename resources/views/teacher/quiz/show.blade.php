@@ -95,6 +95,12 @@
             border-color: #007bff;
             color: #fff;
         }
+
+        mjx-container[jax="CHTML"][display="true"] {
+            display: block;
+            text-align: left;
+            margin: 1em 0;
+        }
     </style>
 
     {{-- MathLive CSS faylini joylashtiramiz --}}
