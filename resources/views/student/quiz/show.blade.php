@@ -435,7 +435,7 @@
             }
 
             mjx-container[jax="CHTML"][display="true"] {
-                display: block;
+                display: inline-block;
                 text-align: left !important;
                 margin: 1em 0;
             }
