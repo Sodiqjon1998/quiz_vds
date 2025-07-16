@@ -434,18 +434,20 @@
                 font-size: 0.9em;
             }
 
-            mjx-container[jax="CHTML"][display="true"] {
-                display: inline-block;
-                text-align: left !important;
-                margin: 1em 0;
-            }
+
+        }
+
+        mjx-container[jax="CHTML"][display="true"] {
+            display: inline-block;
+            text-align: left !important;
+            margin: 1em 0;
+        }
 
 
-            mjx-merror {
-                display: inline-block;
-                color: black;
-                background-color: white;
-            }
+        mjx-merror {
+            display: inline-block;
+            color: black;
+            background-color: white;
         }
     </style>
     <div class="quiz-container">
@@ -731,7 +733,7 @@
                 quizState.currentQuestionIndex = currentQuestionIndex;
 
                 currentQuestionDisplay.textContent = index + 1;
-                questionTextElement.innerHTML = '$$' + question.text + '$$';
+                questionTextElement.innerHTML = '\\(' + question.text + '\\)';
                 MathJax.typesetPromise([questionTextElement]);
                 optionsForm.innerHTML = '';
 
@@ -747,7 +749,7 @@
 
                     const label = document.createElement('label');
                     label.htmlFor = `option-${question.id}-${option.id}`;
-                    label.innerHTML = '$$' + option.text + '$$';
+                    label.innerHTML = '\\(' + option.text + '\\)';
                     MathJax.typesetPromise([label]);
 
                     // const userAnswer = quizState.userAnswers.find(ua => ua.question_id === question.id);
