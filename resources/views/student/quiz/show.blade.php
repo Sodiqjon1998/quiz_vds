@@ -432,8 +432,14 @@
 
             mjx-container[jax="CHTML"][display="true"] {
                 display: block;
-                text-align: left !important;
+                text-align: left;
                 margin: 1em 0;
+            }
+
+            mjx-merror {
+                display: inline-block;
+                color: black;
+                background-color: white;
             }
         }
     </style>
