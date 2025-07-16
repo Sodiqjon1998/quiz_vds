@@ -182,7 +182,7 @@
                                 <div
                                     style="border: 1px solid #c2c0c0; border-radius: 10px; padding: 15px; box-shadow: 3px 4px 8px #b3b2b2">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h3 class="badge bg-label-hover-dark" style="font-size: 15px; text-align:left;">
+                                        <h3 class="badge bg-label-hover-success" style="font-size: 15px; text-align:left;">
                                             {{ $k + 1 }}. <div class="math-display">
                                                 $$ {!! $question->name !!} $$
                                             </div>
