@@ -74,6 +74,7 @@
             padding: 20px;
             margin-bottom: 25px;
             flex-grow: 1;
+            text-align: left !important;
             /* Kengayishiga imkon beradi */
         }
 
