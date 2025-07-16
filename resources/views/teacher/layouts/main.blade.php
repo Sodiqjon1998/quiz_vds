@@ -106,6 +106,11 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('assets/js/config.js') }}"></script>
 
+
+
+    {{-- teacher.layouts.main faylida yoki sizning asosiy layout faylingizda <head> ichida --}}
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 </head>
 
 <body>
@@ -172,7 +177,6 @@
 </div>
 </div>
 <!-- / Layout wrapper -->
-
 
 
 

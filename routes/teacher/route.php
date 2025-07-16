@@ -46,6 +46,9 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
         Route::get('/question/{id}/edit', 'edit')->name('teacher.question.edit');
         Route::put('/question/{id}', 'update')->name('teacher.question.update');
         Route::delete('/question/{id}', 'destroy')->name('teacher.question.destroy');
+
+        Route::get('/questions/import-file', 'importFile')->name('teacher.question.importFile');
+        Route::post('/questions/import', 'import')->name('teacher.question.import');
     });
 
     Route::prefix('/teacher')->controller(ExamController::class)->group(function () {

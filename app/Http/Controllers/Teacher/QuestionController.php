@@ -7,8 +7,17 @@ use App\Models\Option;
 use App\Models\Student\Quiz;
 use App\Models\Teacher\Question;
 use Auth;
-use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+// PhpWord kutubxonalari
+// PHPOffice/PhpWord kutubxonasining kerakli klasslarini import qilish
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Element\Section;
+use PhpOffice\PhpWord\Element\Paragraph; // <--- Mana shu qatorni qo'shing!
+use PhpOffice\PhpWord\Element\TextRun;   // <--- Mana shu qatorni ham qo'shing!
+use PhpOffice\PhpWord\Element\Table;     // Agar faylingizda jadvallar bo'lsa, buni ham qo'shing
+use PhpOffice\PhpWord\Style\Font;
 
 class QuestionController extends Controller
 {
@@ -223,6 +232,139 @@ class QuestionController extends Controller
             DB::rollBack(); // Xato yuz bersa, tranzaksiyani bekor qilish
             \Log::error("Savolni o'chirishda xatolik: " . $e->getMessage() . " on line " . $e->getLine() . " in " . $e->getFile());
             return back()->withErrors(['error' => 'Savolni o\'chirishda xatolik yuz berdi. ' . $e->getMessage()]);
+        }
+    }
+
+    public function importFile()
+    {
+        return view('teacher.question.import');
+    }
+
+
+    public function import(Request $request)
+    {
+        set_time_limit(300);
+
+        $request->validate([
+            'word_file' => 'required|mimes:docx|max:2048',
+        ]);
+
+        $file = $request->file('word_file');
+        $filePath = $file->getPathname();
+
+        try {
+            $phpWord = IOFactory::load($filePath);
+            $sections = $phpWord->getSections();
+
+            DB::beginTransaction();
+
+            $currentQuestion = null;
+            $questionOptions = [];
+
+            foreach ($sections as $section) {
+                // Section ichidagi elementlarni olishdan oldin Section obyekti borligiga ishonch hosil qilish
+                if (!$section || !method_exists($section, 'getElements')) {
+                    continue; // Agar section nol yoki getElements metodi yo'q bo'lsa, keyingi section ga o'tish
+                }
+
+                foreach ($section->getElements() as $element) {
+                    // Har bir elementni qayta ishlashdan oldin u null emasligini tekshirish
+                    if (!$element) {
+                        continue; // Agar element null bo'lsa, keyingisiga o'tish
+                    }
+
+                    /** @var \PhpOffice\PhpWord\Element\Paragraph $element */ // <-- Bu qatorni qo'shing
+
+                    $paragraphText = '';
+                    $isParagraphRed = false;
+
+                    // Paragraf ichidagi elementlarni olishdan oldin method_exists tekshiruvi
+                    if (!method_exists($element, 'getElements')) {
+                        // Agar paragraf elementi ichida getElements() metodi bo'lmasa (kamdan-kam uchraydi, lekin ehtiyot shart)
+                        continue;
+                    }
+
+                    foreach ($element->getElements() as $paragraphChildElement) {
+                        if (!$paragraphChildElement) {
+                            continue; // Agar ichki element null bo'lsa, o'tkazib yuborish
+                        }
+
+                        if ($paragraphChildElement instanceof TextRun) {
+                            $paragraphText .= $paragraphChildElement->getText();
+                            $font = $paragraphChildElement->getFont();
+
+                            if ($font && $font->getColor() && strtolower($font->getColor()) === 'ff0000') {
+                                $isParagraphRed = true;
+                            }
+                        }
+                    }
+
+                    $paragraphText = trim($paragraphText);
+
+                    if (preg_match('/^(\d+)(\.|\))\s*(.*)/u', $paragraphText, $matches)) {
+                        if ($currentQuestion && !empty($questionOptions)) {
+                            foreach ($questionOptions as $opt) {
+                                Option::create([
+                                    'question_id' => $currentQuestion->id,
+                                    'name' => $opt['text'],
+                                    'is_correct' => $opt['is_correct'],
+                                ]);
+                            }
+                        }
+
+                        $currentQuestion = Question::create([
+                            'name' => trim($matches[3]),
+                            'type' => 'multiple_choice',
+                        ]);
+                        $questionOptions = [];
+                    } elseif (preg_match('/^[A-DА-Я]\)\s*(.*)/u', $paragraphText, $matches)) {
+                        if ($currentQuestion) {
+                            $questionOptions[] = [
+                                'text' => trim($matches[1]),
+                                'is_correct' => $isParagraphRed,
+                            ];
+                        }
+                    }
+                    // Jadval elementlarini ham xuddi shunday tekshirib o'tish kerak
+                    // if ($element instanceof Table) {
+                    //     if (!$element || !method_exists($element, 'getRows')) { // getRows() orqali qatorlarni olish
+                    //         continue;
+                    //     }
+                    //     foreach ($element->getRows() as $row) {
+                    //         if (!$row || !method_exists($row, 'getCells')) { // getCells() orqali katakchalarni olish
+                    //             continue;
+                    //         }
+                    //         foreach ($row->getCells() as $cell) {
+                    //             if (!$cell || !method_exists($cell, 'getElements')) { // getElements() orqali katakcha ichidagi elementlarni olish
+                    //                 continue;
+                    //             }
+                    //             foreach ($cell->getElements() as $cellElement) {
+                    //                 // Cell ichidagi paragraflar va ularning TextRun larini qayta ishlash
+                    //                 if ($cellElement instanceof Paragraph) {
+                    //                     // ... xuddi yuqoridagi Paragraph logikasi
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                }
+            }
+
+            if ($currentQuestion && !empty($questionOptions)) {
+                foreach ($questionOptions as $opt) {
+                    Option::create([
+                        'question_id' => $currentQuestion->id,
+                        'option_text' => $opt['text'],
+                        'is_correct' => $opt['is_correct'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Savollar muvaffaqiyatli import qilindi!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Savollarni import qilishda xato yuz berdi: ' . $e->getMessage());
         }
     }
 }

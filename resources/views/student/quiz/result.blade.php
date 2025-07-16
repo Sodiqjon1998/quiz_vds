@@ -279,7 +279,7 @@
                             <i class="fas fa-times-circle" style="color: #dc3545;"></i>
                         @endif
                     </div>
-                    <p class="question-text">{{ $question->name }}</p>
+                    <p class="question-text"> $$ {!! $question->name !!} $$</p>
 
                     <div class="options-container">
                         @foreach ($allOptions as $option)
@@ -305,7 +305,7 @@
                             @endphp
                             <div class="option-display {{ $optionClass }}">
                                 <span class="icon"><i class="{{ $iconClass }}"></i></span>
-                                {{ $option->name }}
+                                $$ {!! $option->name !!} $$
                             </div>
                         @endforeach
                     </div>

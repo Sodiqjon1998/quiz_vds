@@ -13,6 +13,7 @@
         "laravelcollective/html": "^6.4",
         "maatwebsite/excel": "^3.1",
         "phpmailer/phpmailer": "^6.9",
+        "phpoffice/phpword": "^1.4",
         "spatie/dns": "^2.6",
         "yajra/laravel-datatables-oracle": "^10.3.1"
     },

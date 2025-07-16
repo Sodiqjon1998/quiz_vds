@@ -463,6 +463,8 @@
     </div>
 
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         quizFinished = false; // <-- BU YERDA QO'SHING!
         $(document).ready(function() {
@@ -712,7 +714,8 @@
                 quizState.currentQuestionIndex = currentQuestionIndex;
 
                 currentQuestionDisplay.textContent = index + 1;
-                questionTextElement.textContent = question.text;
+                questionTextElement.innerHTML = '$$' + question.text + '$$';
+                MathJax.typesetPromise([questionTextElement]);
                 optionsForm.innerHTML = '';
 
                 question.options.forEach((option, i) => {
@@ -727,7 +730,8 @@
 
                     const label = document.createElement('label');
                     label.htmlFor = `option-${question.id}-${option.id}`;
-                    label.textContent = option.text;
+                    label.innerHTML = '$$' + option.text + '$$';
+                    MathJax.typesetPromise([label]);
 
                     // const userAnswer = quizState.userAnswers.find(ua => ua.question_id === question.id);
                     // if (userAnswer && userAnswer.selected_option_id === option.id) {
