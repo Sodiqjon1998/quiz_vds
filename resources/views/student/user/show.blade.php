@@ -233,6 +233,19 @@
                 font-size: 1em;
             }
         }
+
+
+        mjx-container[jax="CHTML"][display="true"] {
+            display: block;
+            text-align: left;
+            margin: 1em 0;
+        }
+
+        mjx-merror {
+            display: inline-block;
+            color: black;
+            background-color: white;
+        }
     </style>
 
     <div class="container-custom">
@@ -273,7 +286,7 @@
                             <i class="fas fa-times-circle" style="color: #dc3545;"></i>
                         @endif
                     </div>
-                    <p class="question-text">{{ $question->name }}</p>
+                    <p class="question-text">\( {!! $question->name !!} \)</p>
 
                     <div class="options-container">
                         @foreach ($allOptions as $option)
@@ -307,4 +320,7 @@
             @endforeach
         </div>
     </div>
+
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 @endsection
