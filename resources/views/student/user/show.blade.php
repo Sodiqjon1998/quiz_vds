@@ -2,11 +2,12 @@
     use App\Models\Option;
     use App\Models\Question;
     use App\Models\Subjects;
+    use App\Models\Teacher\Quiz;
 
-    // Natijalarni hisoblash
     $correctAnswersCount = 0;
     $incorrectAnswersCount = 0;
-    $totalQuestions = count($examAnswers);
+    $quiz = Quiz::findOrFail($exam->quiz_id)->questions;
+    $totalQuestions = count($quiz);
 
     foreach ($examAnswers as $answer) {
         $option = Option::find($answer->option_id);
@@ -244,7 +245,7 @@
         mjx-merror {
             display: inline-block;
             color: black;
-            background-color: white;    
+            background-color: white;
         }
     </style>
 
