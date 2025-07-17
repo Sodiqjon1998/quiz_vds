@@ -31,7 +31,7 @@
         }
 
         .container-custom {
-            max-width: 960px;
+            max-width: 1000px;
             margin: 40px auto;
             padding: 30px;
             background-color: #ffffff;
@@ -244,7 +244,7 @@
         mjx-merror {
             display: inline-block;
             color: black;
-            background-color: white;
+            background-color: white;    
         }
     </style>
 

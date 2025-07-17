@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamAnswer;
+use App\Models\Question;
 use Auth;
 use Illuminate\Http\Request;
 
@@ -32,7 +33,7 @@ class UserController extends Controller
                 ->join('option', 'exam_answer.option_id', '=', 'option.id')
                 ->where('option.is_correct', 1)
                 ->count();
-            $exam->total_questions = ExamAnswer::where('exam_id', $exam->id)->count();
+            $exam->total_questions = Question::where('quiz_id', '=', $exam->quiz_id)->count();
 
             // Agar siz allaqachon Exam modelida hisoblagan bo'lsangiz, yuqoridagi kodga ehtiyoj yo'q
             // Va shunchaki $exam->correct_answers va $exam->total_questions ga ishora qilsangiz bo'ladi.
