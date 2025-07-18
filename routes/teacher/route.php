@@ -38,7 +38,7 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
     Route::prefix('/teacher')->controller(QuestionController::class)->group(function () {
 
-        //ATTACHMENT ROUTE
+        //QUESTION ROUTE
         Route::get('/question/index', 'index')->name('teacher.question.index');
         Route::get('/question/{quiz_id}/create', 'create')->name('teacher.question.create');
         Route::get('/question/{id}', 'show')->name('teacher.question.show');
