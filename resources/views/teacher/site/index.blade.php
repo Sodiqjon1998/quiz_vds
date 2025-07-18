@@ -38,7 +38,7 @@
                                     Diskda Band Joy</div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">
                                     @if (isset($diskSpace['used']))
-                                        {{ $diskSpace['used'] }} qoldi ({{ $diskSpace['usage_percent'] }} ishlatilgan)
+                                        {{ $diskSpace['used'] }} ishlatildi ({{ $diskSpace['usage_percent'] }} ishlatilgan)
                                     @else
                                         Ma'lumot mavjud emas
                                     @endif
