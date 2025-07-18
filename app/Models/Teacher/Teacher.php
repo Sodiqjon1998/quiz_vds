@@ -58,7 +58,7 @@ class Teacher extends User
     }
 
 
-    public function studentCount(string $id){
+    public static function studentCount(string $id){
         return self::where('classes_id', '=', $id)->count();
     }
 }
