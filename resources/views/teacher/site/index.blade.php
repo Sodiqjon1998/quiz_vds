@@ -1,4 +1,4 @@
-@extends('backend.layouts.main') {{-- Sizning asosiy admin layoutingiz --}}
+@extends('teacher.layouts.main') {{-- Sizning asosiy admin layoutingiz --}}
 
 @section('content')
     <div class="container-fluid">
