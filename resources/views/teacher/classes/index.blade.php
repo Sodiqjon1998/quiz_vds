@@ -1,5 +1,5 @@
 @use(App\Models\Classes)
-@use(App\Models\Teacher)
+@use(App\Models\Teacher\Teacher)
 @extends('teacher.layouts.main')
 
 @section('content')
