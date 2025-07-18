@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Teacher\AttachmentController;
+use App\Http\Controllers\Teacher\ClassesController;
 use App\Http\Controllers\Teacher\QuestionController;
 use App\Http\Controllers\Teacher\QuizController;
 use App\Http\Controllers\Teacher\ExamController;
@@ -77,5 +78,19 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
         Route::post('user/update', 'update')->name('teacher.user.update');
         // Route::delete('user/{id}', 'destroy')->name('teacher.user.destroy');
 
+    });
+
+
+    Route::prefix('/teacher')->controller(ClassesController::class)->group(function () {
+
+        //EXAM ROUTE
+        Route::get('/classes/index', 'index')->name('teacher.classes.index');
+        Route::get('/classes/get-result', 'getResult')->name('teacher.classes.getResult');
+        Route::get('/classes/show/{id}', 'show')->name('teacher.classes.show');
+        Route::get('/classes/{id}', 'showTest')->name('teacher.classes.showTest');
+        Route::post('/classes/store', 'store')->name('teacher.classes.store');
+        Route::get('/classes/{id}/edit', 'edit')->name('teacher.classes.edit');
+        Route::post('/classes/{id}/update', 'update')->name('teacher.classes.update');
+        Route::delete('/classes/{id}', 'destroy')->name('teacher.classes.destroy');
     });
 });
