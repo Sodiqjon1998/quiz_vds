@@ -96,6 +96,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ Route::is('teacher.classes.index') ? 'active' : '' }}">
+            <a href="{{route('teacher.classes.index')}}" class="menu-link">
+                <i class="ri-graduation-cap-fill"></i> &nbsp;
+                <div data-i18n="Sinflar">Sinflar</div>
+            </a>
+        </li>
+
         {{--        <li class="menu-item {{ Route::is('teacher.student.index') ? 'active' : '' }}"> --}}
         {{--            <a href="{{route('teacher.student.index')}}" class="menu-link"> --}}
         {{--                <i class="ri-school-fill"></i> &nbsp; --}}
