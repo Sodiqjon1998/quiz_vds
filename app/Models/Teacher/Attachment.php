@@ -2,6 +2,7 @@
 
 namespace App\Models\Teacher;
 
+use Auth;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Attachment extends \App\Models\Attachment
@@ -18,7 +19,7 @@ class Attachment extends \App\Models\Attachment
 
     public static function getQuizList()
     {
-        $quizList = Quiz::where('status', '=', Quiz::STATUS_ACTIVE)->get();
+        $quizList = Quiz::where('status', '=', Quiz::STATUS_ACTIVE)->where('created_by', '=', Auth::user()->id)->get();
         return $quizList;
     }
 }

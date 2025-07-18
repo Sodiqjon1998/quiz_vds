@@ -17,8 +17,9 @@ class ClassesController extends Controller
         ]);
     }
 
-
-    public function show(string $id){
+    
+    public function show(string $id)
+    {
         $model = User::where('classes_id', '=', $id)->paginate(20);
 
         return view('teacher.classes.show', [
