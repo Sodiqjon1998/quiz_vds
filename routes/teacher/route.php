@@ -83,7 +83,7 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
     Route::prefix('/teacher')->controller(ClassesController::class)->group(function () {
 
-        //EXAM ROUTE
+        //CLASSES ROUTE
         Route::get('/classes/index', 'index')->name('teacher.classes.index');
         Route::get('/classes/get-result', 'getResult')->name('teacher.classes.getResult');
         Route::get('/classes/show/{id}', 'show')->name('teacher.classes.show');
