@@ -1,4 +1,5 @@
 @use(App\Models\Classes)
+@use(App\Models\Teacher)
 @extends('teacher.layouts.main')
 
 @section('content')
@@ -43,6 +44,7 @@
                     <tr>
                         <th style="width: 30px">T/R</th>
                         <th>Sinf nomi</th>
+                        <th>O'quvchilar soni</th>
                         <th>Kordinator</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -55,6 +57,9 @@
                                 <td>{{ ++$key }}</td>
                                 <td>
                                     {{ $item->name }}
+                                </td>
+                                <td>
+                                    {{ Teacher::studentCount($item->id) }}
                                 </td>
                                 <td>
                                     {{ Classes::getKoordinator($item->koordinator_id) }}

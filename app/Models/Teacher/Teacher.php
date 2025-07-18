@@ -56,4 +56,9 @@ class Teacher extends User
         $subject = Subjects::where('id','=',$id)->first();
         return $subject;
     }
+
+
+    public function studentCount(string $id){
+        return self::where('classes_id', '=', $id)->count();
+    }
 }
