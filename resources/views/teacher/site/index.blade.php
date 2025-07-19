@@ -1,8 +1,6 @@
 @extends('teacher.layouts.main') {{-- Sizning asosiy admin layoutingiz --}}
 
 <style>
-    <style>
-
     /* Umumiy sozlamalar */
     body {
         font-family: 'Inter', sans-serif;
@@ -679,7 +677,7 @@
 
         <div class="row">
 
-            <div class="col-xl-3 col-md-6 mb-4">
+            {{-- <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card border-left-info shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -723,7 +721,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <div class="card">
                 <div class="card-body">
@@ -902,8 +900,8 @@
                     text: getSubtitle(),
                     floating: true,
                     align: 'right', // O'ng tomonga hizalash
-                    verticalAlign: 'top', // Yuqoriga hizalash
-                    y: 0, // Grafikka yaqinroq, yuqoriga
+                    verticalAlign: 'bottom', // Yuqoriga hizalash
+                    y: -20, // Grafikka yaqinroq, yuqoriga
                     x: -10, // O'ng chekkadan biroz chapga siljitish
                     useHTML: true,
                     style: { // Yangi stil qo'shish
@@ -951,15 +949,14 @@
                                 textOutline: 'none' // Matn atrofidagi chiziqni olib tashlash
                             },
                             align: 'right', // Raqamlarni o'ng tomonga hizalash (ustun ichida)
-                            x: 5 // Raqamlarni ustun ichida biroz o'ngga siljitish
+                            x: -5 // Raqamlarni ustun ichida biroz o'ngga siljitish
                         }
                     }
                 },
                 series: [{
                     type: 'bar',
                     name: 'O\'quvchilar soni',
-                    data: getDataForMonth(initialMonthKey)[
-                        1] // Dastlabki oy ma'lumotlari bilan yuklash
+                    data: getDataForMonth(initialMonthKey)[1] // Dastlabki oy ma'lumotlari bilan yuklash
                 }],
                 responsive: {
                     rules: [{

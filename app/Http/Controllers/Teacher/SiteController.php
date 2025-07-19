@@ -17,7 +17,7 @@ class SiteController extends Controller
      */
     public function index()
     {
-        $diskSpace = $this->getDiskSpace();
+        // $diskSpace = $this->getDiskSpace();
         // Barcha sinflarni olish
         $allClasses = Classes::all();
 
@@ -61,7 +61,7 @@ class SiteController extends Controller
             'studentsByClassAndMonth' => $studentsByClassAndMonth,
             'minYear' => $minYear,
             'maxYear' => $maxYear,
-            'diskSpace' => $diskSpace
+            // 'diskSpace' => $diskSpace
         ]);
     }
 
