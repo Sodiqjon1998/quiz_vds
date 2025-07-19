@@ -14,7 +14,7 @@ class SiteController extends Controller
 {
     /**
      * Display a listing of the resource.
-    */
+     */
     public function index()
     {
         $diskSpace = $this->getDiskSpace();
@@ -26,7 +26,7 @@ class SiteController extends Controller
 
         // Eng kichik va eng katta yillarni aniqlash (grafik diapazoni uchun)
         $minYear = User::min('created_at') ? Carbon::parse(User::min('created_at'))->year : Carbon::now()->year - 5;
-        $maxYear = User::max('created_at') ? Carbon::parse(User::max('created_at'))->year : Carbon::now()->year;
+        $maxYear = Carbon::now()->year; // Faqat joriy yilgacha olamiz
 
         // Agar ma'lumotlar juda kam bo'lsa, defolt oralig'i
         if ($maxYear < $minYear) {
@@ -34,38 +34,33 @@ class SiteController extends Controller
             $maxYear = Carbon::now()->year;
         }
 
-        // Joriy yilning barcha oylari va shu oylar uchun ma'lumotlarni to'plash
-        // Barcha sinflar uchun ma'lumotni saqlash strukturasini yaratamiz
-        $dataForHighcharts = [];
+        $currentMonth = Carbon::now()->month; // Joriy oy raqami
 
         // Ma'lumotlarni o'quvchilarning "created_at" sanasiga qarab yig'ish
         for ($year = $minYear; $year <= $maxYear; $year++) {
-            for ($month = 1; $month <= 12; $month++) {
+            // Agar joriy yil bo'lsa, faqat joriy oygacha hisoblaymiz
+            $endMonth = ($year == Carbon::now()->year) ? $currentMonth : 12;
+
+            for ($month = 1; $month <= $endMonth; $month++) {
                 $monthKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT); // "YYYY-MM" format
                 $studentsByClassAndMonth[$monthKey] = [];
 
                 foreach ($allClasses as $class) {
-                    // Berilgan oy va yilda ushbu sinfda faol bo'lgan o'quvchilar sonini hisoblash
-                    // Bu yerda "created_at" sanasidan foydalanamiz
                     $studentCount = User::where('classes_id', $class->id)
-                                        ->whereYear('created_at', $year)
-                                        ->whereMonth('created_at', $month)
-                                        ->count();
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month)
+                        ->count();
 
                     $studentsByClassAndMonth[$monthKey][$class->name] = $studentCount;
                 }
             }
         }
 
-        // Highcharts "Race Chart" formati uchun ma'lumotlarni qayta shakllantirish
-        // Bu format ko'pincha har bir vaqt nuqtasi (yil/oy) uchun barcha seriyalar (sinflar) qiymatlarini talab qiladi.
-        // Yuqoridagi $studentsByClassAndMonth ob'ekti aynan shu formatda.
-
         return view('teacher.site.index', [
             'allClasses' => $allClasses,
-            'studentsByClassAndMonth' => $studentsByClassAndMonth, // Yangi ma'lumotlar
-            'minYear' => $minYear, // Grafik diapazoni uchun
-            'maxYear' => $maxYear, // Grafik diapazoni uchun
+            'studentsByClassAndMonth' => $studentsByClassAndMonth,
+            'minYear' => $minYear,
+            'maxYear' => $maxYear,
             'diskSpace' => $diskSpace
         ]);
     }

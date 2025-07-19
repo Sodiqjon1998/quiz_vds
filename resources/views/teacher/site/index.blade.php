@@ -72,26 +72,26 @@
 
     <script>
         // Backenddan kelgan ma'lumotlarni JavaScriptga o'tkazish
-        const classesData = @json($allClasses); // Sinf nomlarini olish uchun
-        const studentsData = @json($studentsByClassAndMonth); // Har oy va sinf bo'yicha o'quvchilar soni
+        const classesData = @json($allClasses);
+        const studentsData = @json($studentsByClassAndMonth);
 
         const btn = document.getElementById('play-pause-button');
         const input = document.getElementById('play-range');
-        const currentMonthDisplay = document.getElementById('current-month-display'); // Yangi element
-        const nbr = classesData.length > 0 ? classesData.length : 10; // Qancha sinf ko'rsatilishini nazorat qilish
+        const currentMonthDisplay = document.getElementById('current-month-display');
+        const nbr = classesData.length > 0 ? classesData.length : 10;
 
         let dataset, chart;
         let sortedMonthKeys = Object.keys(studentsData).sort(); // "YYYY-MM" formatdagi oylarni tartiblash
 
         // Range input min/max/value ni sozlash
         if (input) {
-            input.min = 0; // Birinchi oy indeksidan boshlaymiz
-            input.max = sortedMonthKeys.length - 1; // Oxirgi oy indeksiga qadar
-            input.value = 0; // Dastlabki qiymatni birinchi oyga sozlash
+            input.min = 0;
+            input.max = sortedMonthKeys.length - 1;
+            input.value = sortedMonthKeys.length - 1; // Default holatda joriy oyga sozlash
         }
 
         /*
-         * Animate dataLabels functionality (oldingi koddan o'zgartirilmasdan qoladi)
+         * Animate dataLabels functionality (o'zgartirilmagan)
          */
         (function(H) {
             const FLOAT = /^-?\d+\.?\d*$/;
@@ -160,16 +160,15 @@
 
         // Ma'lumotlarni tanlangan oy bo'yicha filtrlash va tartiblash
         function getDataForMonth(monthKey) {
-            const monthData = studentsData[monthKey] || {}; // Tanlangan oyning ma'lumotlari
+            const monthData = studentsData[monthKey] || {};
             const output = Object.entries(monthData)
                 .map(entry => {
                     const [className, studentCount] = entry;
-                    return [className, studentCount || 0]; // Agar qiymat null bo'lsa, 0 qaytaring
+                    return [className, studentCount || 0];
                 })
-                .sort((a, b) => b[1] - a[1]); // O'quvchilar soni bo'yicha kamayish tartibida saralash
+                .sort((a, b) => b[1] - a[1]);
 
-            // Eng ko'p o'quvchiga ega bo'lgan nbr ta sinfni qaytarish
-            return [output[0], output.slice(0, nbr)]; // Top 20 yoki barcha sinflar (nbr ga qarab)
+            return [output[0], output.slice(0, nbr)];
         }
 
         // Subtitle ni yangilash funksiyasi
@@ -178,11 +177,12 @@
             const currentMonthKey = sortedMonthKeys[currentMonthIndex];
             if (!currentMonthKey) return '';
 
-            const date = new Date(currentMonthKey);
+            const date = new Date(currentMonthKey +
+            '-01'); // Kunni qo'shamiz, chunki faqat yil-oy bo'lsa ba'zi brauzerlarda xato berishi mumkin
             const monthName = date.toLocaleString('uz-UZ', {
                 month: 'long',
                 year: 'numeric'
-            }); // O'zbek tilida oy nomi va yili
+            });
 
             const currentMonthData = studentsData[currentMonthKey];
             let totalStudentsInMonth = 0;
@@ -201,8 +201,11 @@
 
 
         (async () => {
-            // Dastlabki dataset endi bevosita studentsData dan olinadi
             dataset = studentsData;
+
+            // Dastlabki yuklashda joriy oyning ma'lumotlarini olish
+            const initialMonthIndex = sortedMonthKeys.length - 1;
+            const initialMonthKey = sortedMonthKeys[initialMonthIndex];
 
             chart = Highcharts.chart('container', {
                 chart: {
@@ -260,8 +263,9 @@
                 },
                 series: [{
                     type: 'bar',
-                    name: 'O\'quvchilar soni', // Bu yerda nom ko'proq dinamik bo'lishi mumkin
-                    data: getDataForMonth(sortedMonthKeys[0])[1] // Dastlabki oy ma'lumotlari
+                    name: 'O\'quvchilar soni',
+                    data: getDataForMonth(initialMonthKey)[
+                        1] // Dastlabki oy ma'lumotlari bilan yuklash
                 }],
                 responsive: {
                     rules: [{
@@ -295,9 +299,8 @@
                 }
             });
 
-            // Slayder vaqtini boshqarish
             updateMonthDisplay(); // Joriy oyni ko'rsatish
-            update(0); // Dastlabki grafikni yuklash
+            update(0); // Dastlabki grafikni yuklash (joriy oy uchun)
         })();
 
         /*
@@ -314,7 +317,7 @@
             const currentMonthIndex = parseInt(input.value);
             const currentMonthKey = sortedMonthKeys[currentMonthIndex];
             if (currentMonthDisplay && currentMonthKey) {
-                const date = new Date(currentMonthKey);
+                const date = new Date(currentMonthKey + '-01'); // Kunni qo'shamiz
                 currentMonthDisplay.textContent = date.toLocaleString('uz-UZ', {
                     month: 'long',
                     year: 'numeric'
@@ -326,7 +329,7 @@
             if (increment) {
                 input.value = parseInt(input.value, 10) + increment;
             }
-            if (input.value >= sortedMonthKeys.length - 1) { // Oxirgi oyga yetib kelsa
+            if (parseInt(input.value) >= sortedMonthKeys.length - 1) { // Oxirgi oyga yetib kelsa
                 pause(btn);
             }
             updateMonthDisplay(); // Oy nomini yangilash
@@ -339,8 +342,7 @@
                         text: getSubtitle()
                     },
                     series: [{
-                        name: 'O\'quvchilar soni (' + currentMonthKey +
-                        ')', // Seriya nomi dinamik bo'lishi mumkin
+                        name: 'O\'quvchilar soni (' + currentMonthKey + ')',
                         data: getDataForMonth(currentMonthKey)[1]
                     }]
                 },
