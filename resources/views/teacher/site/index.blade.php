@@ -729,15 +729,16 @@
                 <div class="card-body">
                     <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
                 </div>
-            </div>
 
-            <div class="chart-controls">
-                <button id="play-pause-button" title="play">
-                    {{-- Font Awesome ikonkasini to'g'ridan-to'g'ri joylashtiramiz --}}
-                    <i class="fa fa-play"></i>
-                </button>
-                <input type="range" id="play-range" value="" step="1">
-                <span id="current-month-display"></span>
+
+                <div class="chart-controls">
+                    <button id="play-pause-button" title="play">
+                        {{-- Font Awesome ikonkasini to'g'ridan-to'g'ri joylashtiramiz --}}
+                        <i class="fa fa-play"></i>
+                    </button>
+                    <input type="range" id="play-range" value="" step="1">
+                    <span id="current-month-display"></span>
+                </div>
             </div>
 
             {{-- Boshqa statistikalar va kontent --}}
