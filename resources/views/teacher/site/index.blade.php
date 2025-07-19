@@ -725,7 +725,11 @@
                 </div>
             </div>
 
-            <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+            <div class="card">
+                <div class="card-body">
+                    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                </div>
+            </div>
 
             <div class="chart-controls">
                 <button id="play-pause-button" title="play">
