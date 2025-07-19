@@ -6,6 +6,16 @@ use App\Models\Student\Quiz;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ *
+ * @property-read Quiz|null $quiz
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|QuizAttempt newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|QuizAttempt newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|QuizAttempt query()
+ * @mixin \Eloquent
+ */
 class QuizAttempt extends Model
 {
     use HasFactory;

@@ -7,6 +7,34 @@ use App\Models\Option;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ *
+ * @property int $id
+ * @property string $name
+ * @property int $subject_id
+ * @property int $classes_id
+ * @property int $status
+ * @property int|null $created_by
+ * @property int|null $updated_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Teacher\Question> $questions
+ * @property-read int|null $questions_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereClassesId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereSubjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Quiz whereUpdatedBy($value)
+ * @mixin \Eloquent
+ */
 class Quiz extends Model
 {
     const STATUS_ACTIVE = 1;

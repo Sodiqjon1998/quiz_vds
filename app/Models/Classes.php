@@ -7,6 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * 
+ *
+ * @property int $id
+ * @property string|null $name
+ * @property int $koordinator_id
+ * @property int $status
+ * @property int $created_by
+ * @property int $updated_by
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes whereKoordinatorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Classes whereUpdatedBy($value)
+ * @mixin \Eloquent
+ */
 class Classes extends Model
 {
     const STATUS_ACTIVE = 1;

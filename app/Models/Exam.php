@@ -7,6 +7,34 @@ use App\Models\Teacher\Teacher;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ *
+ * @property int $id
+ * @property int $subject_id
+ * @property int $quiz_id
+ * @property int $user_id
+ * @property int $created_by
+ * @property int $updated_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ExamAnswer> $answers
+ * @property-read int|null $answers_count
+ * @property-read Quiz $quiz
+ * @property-read Teacher $user
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereQuizId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereSubjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereUpdatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Exam whereUserId($value)
+ * @mixin \Eloquent
+ */
 class Exam extends Model
 {
     use HasFactory;
