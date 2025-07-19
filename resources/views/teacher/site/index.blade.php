@@ -902,7 +902,7 @@
                     x: -10, // O'ng chekkadan biroz chapga siljitish
                     useHTML: true,
                     style: { // Yangi stil qo'shish
-                        fontSize: '35px', // Asosiy yil/oy matnini biroz kichraytiramiz
+                        fontSize: '20px', // Asosiy yil/oy matnini biroz kichraytiramiz
                         color: '#888', // Rangini biroz xiralashtiramiz
                         opacity: 0.7 // Shaffofligini kamaytiramiz
                     }
