@@ -929,7 +929,7 @@
                 },
                 plotOptions: {
                     series: {
-                        animation: false,
+                        animation: true,
                         groupPadding: 0,
                         pointPadding: 0.1,
                         borderWidth: 0,
