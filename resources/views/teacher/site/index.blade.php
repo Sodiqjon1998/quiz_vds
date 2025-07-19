@@ -539,7 +539,139 @@
         color: black;
         background-color: white;
     }
-</style>
+
+    /* Yangi qo'shilgan stil */
+    .chart-controls {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-top: 20px;
+        /* Grafikdan biroz pastga */
+        padding: 0 10px;
+        box-sizing: border-box;
+    }
+
+    #play-pause-button {
+        width: 50px;
+        /* Kattaroq doira */
+        height: 50px;
+        border-radius: 50%;
+        /* Doira shakli */
+        background-color: #007bff;
+        /* Ko'k rang */
+        color: white;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        /* Ikona kattaligi */
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        /* Yumshoqroq soya */
+        transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        flex-shrink: 0;
+        /* Kichraymasligi uchun */
+        margin-right: 15px;
+        /* Slayderdan uzoqroq turish uchun */
+    }
+
+    #play-pause-button:hover {
+        background-color: #0056b3;
+        box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
+        transform: translateY(-2px);
+        /* Engil animatsiya */
+    }
+
+    #play-pause-button .fa {
+        /* Ikonka uslubi */
+        line-height: 1;
+        /* Vertikal hizalanish uchun */
+    }
+
+    #play-range {
+        flex-grow: 1;
+        /* Qolgan bo'sh joyni egallaydi */
+        -webkit-appearance: none;
+        /* Standart stilni olib tashlash */
+        appearance: none;
+        height: 8px;
+        /* Kalinroq chiziq */
+        background: #ddd;
+        outline: none;
+        border-radius: 5px;
+        margin: 0 15px;
+        /* Tugma va oy nomidan bo'sh joy */
+        cursor: pointer;
+    }
+
+    /* Range input tugmachasi (thumb) stili */
+    #play-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        /* Kattaroq tugmacha */
+        height: 20px;
+        border-radius: 50%;
+        background: #007bff;
+        /* Ko'k rang */
+        cursor: pointer;
+        margin-top: -6px;
+        /* Chiziq ustida joylashishi uchun */
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.4);
+    }
+
+    #play-range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.4);
+    }
+
+    #current-month-display {
+        font-size: 1.1em;
+        /* Oy nomini kattaroq qilish */
+        font-weight: bold;
+        color: #555;
+        min-width: 120px;
+        /* Matn o'zgarganda joy siljimasligi uchun */
+        text-align: right;
+    }
+
+    /* Mobil moslashuv uchun (agar kerak bo'lsa) */
+    @media (max-width: 767px) {
+        .chart-controls {
+            flex-direction: column;
+            /* Mobil ekranda vertikal joylashtirish */
+            align-items: center;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        #play-pause-button {
+            width: 60px;
+            /* Mobil uchun kattaroq tugma */
+            height: 60px;
+            font-size: 30px;
+            margin-bottom: 15px;
+            /* Slayderdan bo'sh joy */
+            margin-right: 0;
+        }
+
+        #play-range {
+            width: 90%;
+            /* Mobil uchun kenglik */
+            margin: 0;
+            margin-bottom: 10px;
+        }
+
+        #current-month-display {
+            font-size: 1em;
+            text-align: center;
+        }
+    }
 </style>
 @section('content')
     <div class="container-fluid">
@@ -595,11 +727,14 @@
 
             <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
-            <button id="play-pause-button" title="play" class="fa fa-play">Play/Pause</button>
-
-            {{-- min va max qiymatlar JavaScript tomonidan dinamik o'rnatiladi --}}
-            <input type="range" id="play-range" value="" step="1" style="width: 80%;">
-            <span id="current-month-display" style="font-size: 1.2em; margin-left: 10px;"></span>
+            <div class="chart-controls">
+                <button id="play-pause-button" title="play">
+                    {{-- Font Awesome ikonkasini to'g'ridan-to'g'ri joylashtiramiz --}}
+                    <i class="fa fa-play"></i>
+                </button>
+                <input type="range" id="play-range" value="" step="1">
+                <span id="current-month-display"></span>
+            </div>
 
             {{-- Boshqa statistikalar va kontent --}}
         </div>
@@ -718,12 +853,11 @@
             const currentMonthKey = sortedMonthKeys[currentMonthIndex];
             if (!currentMonthKey) return '';
 
-            const date = new Date(currentMonthKey +
-                '-01'); // Kunni qo'shamiz, chunki faqat yil-oy bo'lsa ba'zi brauzerlarda xato berishi mumkin
+            const date = new Date(currentMonthKey + '-01'); // Kunni qo'shamiz
             const monthName = date.toLocaleString('uz-UZ', {
                 month: 'long',
                 year: 'numeric'
-            });
+            }); // O'zbek tilida oy nomi va yili
 
             const currentMonthData = studentsData[currentMonthKey];
             let totalStudentsInMonth = 0;
@@ -733,11 +867,11 @@
                 });
             }
 
-            return `<span style="font-size: 80px">${monthName}</span>
-                <br>
-                <span style="font-size: 22px">
-                    Jami o'quvchilar: <b>${totalStudentsInMonth}</b>
-                </span>`;
+            // Endi ikki qismni alohida uslub bilan qaytaramiz
+            return `<span style="font-size: 80px; font-weight: bold; color: #333; display: block; text-align: right;">${currentMonthKey.replace('-', ' M')}</span>
+                    <span style="font-size: 22px; color: #555; display: block; text-align: right; margin-top: 5px;">
+                        Jami o'quvchilar: <b>${totalStudentsInMonth}</b>
+                    </span>`;
         }
 
 
@@ -762,11 +896,16 @@
                 subtitle: {
                     text: getSubtitle(),
                     floating: true,
-                    align: 'right',
-                    verticalAlign: 'middle',
+                    align: 'right', // O'ng tomonga hizalash
+                    verticalAlign: 'top', // Yuqoriga hizalash
+                    y: 0, // Grafikka yaqinroq, yuqoriga
+                    x: -10, // O'ng chekkadan biroz chapga siljitish
                     useHTML: true,
-                    y: -80,
-                    x: -100
+                    style: { // Yangi stil qo'shish
+                        fontSize: '60px', // Asosiy yil/oy matnini biroz kichraytiramiz
+                        color: '#888', // Rangini biroz xiralashtiramiz
+                        opacity: 0.7 // Shaffofligini kamaytiramiz
+                    }
                 },
 
                 legend: {
@@ -798,7 +937,16 @@
                         },
                         type: 'bar',
                         dataLabels: {
-                            enabled: true
+                            enabled: true,
+                            format: '{y}', // Faqat qiymatni ko'rsatish
+                            style: {
+                                fontSize: '14px', // Raqamlar shriftini kichraytirish
+                                fontWeight: 'bold', // Qalin qilish
+                                color: '#333', // Rangini aniqroq qilish
+                                textOutline: 'none' // Matn atrofidagi chiziqni olib tashlash
+                            },
+                            align: 'right', // Raqamlarni o'ng tomonga hizalash (ustun ichida)
+                            x: 5 // Raqamlarni ustun ichida biroz o'ngga siljitish
                         }
                     }
                 },
