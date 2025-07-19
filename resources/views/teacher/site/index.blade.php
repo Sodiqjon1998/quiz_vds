@@ -949,7 +949,7 @@
                                 textOutline: 'none' // Matn atrofidagi chiziqni olib tashlash
                             },
                             align: 'right', // Raqamlarni o'ng tomonga hizalash (ustun ichida)
-                            x: 12 // Raqamlarni ustun ichida biroz o'ngga siljitish
+                            x: 20 // Raqamlarni ustun ichida biroz o'ngga siljitish
                         }
                     }
                 },
