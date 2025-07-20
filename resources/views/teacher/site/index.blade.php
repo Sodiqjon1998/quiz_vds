@@ -1,3 +1,8 @@
+`index.blade.php` faylida kiritilgan barcha o'zgarishlar bilan to'liq kod quyida keltirilgan. Bu kodda oy bo'yicha o'quvchilar soni grafigi va sinflarning test yechishdagi samaradorligi grafigi uchun barcha HTML, CSS va JavaScript qismlari birlashtirilgan.
+
+**`index.blade.php`**
+
+```blade
 @extends('teacher.layouts.main') {{-- Sizning asosiy admin layoutingiz --}}
 
 <style>
@@ -691,6 +696,17 @@
         font-weight: 700;
     }
 
+    /* Ikkinchi grafikning subtitle uslubi (qo'shimcha) */
+    .chart-container-3d .chart-month-display {
+        text-align: center;
+        margin-top: -15px; /* Sarlavhaga yaqinroq olib kelish */
+        margin-bottom: 15px;
+        font-size: 1.1em;
+        color: #666;
+        font-weight: 500;
+        display: block;
+    }
+
     /* Sliders stilini o'zgartirish (agar mavjud bo'lsa) */
     #sliders {
         display: flex;
@@ -762,53 +778,6 @@
 
         <div class="row">
 
-            {{-- Mavjud diskSpace kartalari (izohga olingan) --}}
-            {{-- <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                    Diskda Bo'sh Joy</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    @if (isset($diskSpace['available']))
-                                        {{ $diskSpace['available'] }} qoldi ({{ $diskSpace['usage_percent'] }} ishlatilgan)
-                                    @else
-                                        Ma'lumot mavjud emas
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-hdd fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-info shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                    Diskda Band Joy</div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    @if (isset($diskSpace['used']))
-                                        {{ $diskSpace['used'] }} ishlatildi ({{ $diskSpace['usage_percent'] }} ishlatilgan)
-                                    @else
-                                        Ma'lumot mavjud emas
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="fas fa-hdd fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> --}}
-
             {{-- Birinchi grafik: Oy bo'yicha o'quvchilar soni --}}
             <div class="card w-100"> {{-- Kenglikni to'liq olsin --}}
                 <div class="card-body">
@@ -826,10 +795,12 @@
                 </div>
             </div>
 
-            {{-- YANGI QO'SHILGAN KOD BOSHLANISHI: Sinflar bo'yicha test yechish foizi grafigi --}}
+            {{-- YANGI O'ZGARTIRILGAN KOD BOSHLANISHI: Sinflar bo'yicha test yechish foizi grafigi --}}
             <div class="card w-100 chart-container-3d mt-5"> {{-- Yuqoridan biroz bo'sh joy va yangi stil --}}
                 <div class="card-body">
                     <h2>Sinflarning test yechishdagi samaradorligi (%)</h2>
+                    {{-- Joriy oyni ko'rsatish uchun yangi span elementi --}}
+                    <span id="current-month-3d-display" class="chart-month-display"></span>
                     <div id="container-3d" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
                     <div id="sliders">
                         <div>
@@ -847,7 +818,7 @@
                     </div>
                 </div>
             </div>
-            {{-- YANGI QO'SHILGAN KOD TUGASHI: Sinflar bo'yicha test yechish foizi grafigi --}}
+            {{-- YANGI O'ZGARTIRILGAN KOD TUGASHI: Sinflar bo'yicha test yechish foizi grafigi --}}
 
             {{-- Boshqa statistikalar va kontent --}}
         </div>
@@ -964,7 +935,7 @@
             return [output[0], output.slice(0, nbr)];
         }
 
-        // Subtitle ni yangilash funksiyasi
+        // Subtitle ni yangilash funksiyasi (grafik ichidagi katta sana uchun)
         function getSubtitle() {
             const currentMonthIndex = parseInt(input.value);
             const currentMonthKey = sortedMonthKeys[currentMonthIndex];
@@ -985,7 +956,7 @@
             }
 
             // Endi ikki qismni alohida uslub bilan qaytaramiz
-            return `<span style="font-size: 80px; font-weight: bold; color: #333; display: block; text-align: right;">${currentMonthKey.replace('-', ' M')}</span>
+            return `<span style="font-size: 80px; font-weight: bold; color: #333; display: block; text-align: right;">${monthName.toUpperCase()}</span>
                     <span style="font-size: 22px; color: #555; display: block; text-align: right; margin-top: 5px;">
                         Jami o'quvchilar: <b>${totalStudentsInMonth}</b>
                     </span>`;
@@ -1118,6 +1089,7 @@
             chart.sequenceTimer = undefined;
         }
 
+        // Slayder yonidagi oyni yangilash funksiyasi
         function updateMonthDisplay() {
             const currentMonthIndex = parseInt(input.value);
             const currentMonthKey = sortedMonthKeys[currentMonthIndex];
@@ -1126,7 +1098,7 @@
                 currentMonthDisplay.textContent = date.toLocaleString('uz-UZ', {
                     month: 'long',
                     year: 'numeric'
-                });
+                }).toUpperCase(); // Katta harflarga o'tkazish
             }
         }
 
@@ -1186,8 +1158,25 @@
             });
         }
 
-        {{-- YANGI QO'SHILGAN KOD BOSHLANISHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
-        const classQuizPerformanceData = @json($classQuizPerformance);
+        {{-- YANGI O'ZGARTIRILGAN KOD BOSHLANISHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
+        const classQuizPerformanceData = @json($classQuizPerformance); // Bu ma'lumot 2025 yilning joriy oyi uchun filtrlangan deb faraz qilamiz
+
+        // Joriy oyni aniqlash (frontendda, agar backenddan kelmasa)
+        // Agar backendda filtrlangan bo'lsa, bu shunchaki joriy oyni olish uchun ishlatiladi.
+        const today = new Date();
+        // Uzbekistan uchun 'uz-UZ' lokalini ishlatamiz.
+        // `month: 'long'` -> oyning to'liq nomi (yanvar, fevral, ...)
+        // `year: 'numeric'` -> yil (2025)
+        const currentMonthNameFor3D = today.toLocaleString('uz-UZ', {
+            month: 'long',
+            year: 'numeric'
+        });
+
+        // HTML elementini topish va unga matnni o'rnatish
+        const currentMonth3dDisplay = document.getElementById('current-month-3d-display');
+        if (currentMonth3dDisplay) {
+            currentMonth3dDisplay.textContent = currentMonthNameFor3D;
+        }
 
         // Set up the chart for 3D column
         const chart3d = new Highcharts.Chart({
@@ -1275,7 +1264,7 @@
         }));
 
         showValues3d();
-        {{-- YANGI QO'SHILGAN KOD TUGASHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
+        {{-- YANGI O'ZGARTIRILGAN KOD TUGASHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
     </script>
 @endsection
-
+```

@@ -21,7 +21,8 @@ class SiteController extends Controller
      */
     public function index()
     {
-        // $diskSpace = $this->getDiskSpace();
+        // $diskSpace = $this->getDiskSpace(); // Agar bu metod mavjud bo'lsa, sharhni olib tashlashingiz mumkin
+
         // Barcha sinflarni olish
         $allClasses = Classes::all();
 
@@ -62,20 +63,26 @@ class SiteController extends Controller
 
 
         // =========================================================================
-        // YANGI QO'SHILGAN KOD: Sinflar bo'yicha to'g'ri javob foizi
+        // YANGI TO'G'RILANGAN KOD: Sinflar bo'yicha to'g'ri javob foizi (JORIY OY UCHUN)
         // =========================================================================
         $classQuizPerformance = [];
+
+        $currentYearForQuiz = Carbon::now()->year;
+        $currentMonthForQuiz = Carbon::now()->month;
 
         foreach ($allClasses as $class) {
             $totalCorrectAnswers = 0;
             $totalAttemptedQuestions = 0;
 
-            // Sinfdagi barcha foydalanuvchilar (o'quvchilar)
+            // Sinfdagi barcha foydalanuvchilar (o'quvchilar) uchun
             $usersInClass = User::where('classes_id', $class->id)->get();
 
             foreach ($usersInClass as $user) {
-                // Har bir foydalanuvchining ishtirok etgan imtihonlari
-                $exams = Exam::where('user_id', $user->id)->get();
+                // Har bir foydalanuvchining joriy oyda ishtirok etgan imtihonlari
+                $exams = Exam::where('user_id', $user->id)
+                    ->whereYear('created_at', $currentYearForQuiz)
+                    ->whereMonth('created_at', $currentMonthForQuiz)
+                    ->get();
 
                 foreach ($exams as $exam) {
                     // Ushbu imtihonga tegishli barcha javoblar
@@ -85,7 +92,7 @@ class SiteController extends Controller
                         $totalAttemptedQuestions++;
 
                         // Savol va to'g'ri variantni topish
-                        $question = Question::find($answer->question_id);
+                        // ExamAnswer modelida to'g'ridan-to'g'ri question_id va option_id mavjud deb faraz qilinadi
                         $correctOption = Option::where('question_id', $answer->question_id)
                             ->where('is_correct', 1)
                             ->first();
@@ -102,7 +109,7 @@ class SiteController extends Controller
 
             $classQuizPerformance[] = [
                 'name' => $class->name,
-                'y' => $percentage // Foiz qiymati
+                'y' => (float) $percentage // Highcharts uchun float turida bo'lishi kerak
             ];
         }
 
@@ -113,8 +120,8 @@ class SiteController extends Controller
         // =========================================================================
 
 
-        return view('teacher.site.index', [
-            'allClasses' => $allClasses,
+        return view('teacher.site.index', [ // 'teacher.site.index' yo'lini sizning blade faylingiz joylashuviga moslang
+            'allClasses' => $allClasses->pluck('name')->toArray(), // Frontenda faqat nomlar kerak bo'lsa
             'studentsByClassAndMonth' => $studentsByClassAndMonth,
             'minYear' => $minYear,
             'maxYear' => $maxYear,
