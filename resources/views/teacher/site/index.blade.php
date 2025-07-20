@@ -538,7 +538,7 @@
         background-color: white;
     }
 
-    /* Yangi qo'shilgan stil */
+    /* YANGI QO'SHILGAN STIL */
     .chart-controls {
         display: flex;
         align-items: center;
@@ -671,7 +671,6 @@
         }
     }
 
-
     /* YANGI QO'SHILGAN STIL */
     .chart-container-3d {
         margin-top: 40px;
@@ -763,6 +762,7 @@
 
         <div class="row">
 
+            {{-- Mavjud diskSpace kartalari (izohga olingan) --}}
             {{-- <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card border-left-info shadow h-100 py-2">
                     <div class="card-body">
@@ -809,7 +809,8 @@
                 </div>
             </div> --}}
 
-            <div class="card w-100">
+            {{-- Birinchi grafik: Oy bo'yicha o'quvchilar soni --}}
+            <div class="card w-100"> {{-- Kenglikni to'liq olsin --}}
                 <div class="card-body">
                     <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
                 </div>
@@ -825,7 +826,7 @@
                 </div>
             </div>
 
-            {{-- Yangi grafik: Sinflar bo'yicha test yechish foizi --}}
+            {{-- YANGI QO'SHILGAN KOD BOSHLANISHI: Sinflar bo'yicha test yechish foizi grafigi --}}
             <div class="card w-100 chart-container-3d mt-5"> {{-- Yuqoridan biroz bo'sh joy va yangi stil --}}
                 <div class="card-body">
                     <h2>Sinflarning test yechishdagi samaradorligi (%)</h2>
@@ -846,18 +847,22 @@
                     </div>
                 </div>
             </div>
+            {{-- YANGI QO'SHILGAN KOD TUGASHI: Sinflar bo'yicha test yechish foizi grafigi --}}
 
             {{-- Boshqa statistikalar va kontent --}}
         </div>
     </div>
 
+    {{-- YANGI QO'SHILGAN KOD BOSHLANISHI: Highcharts 3D moduli --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/data.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script> {{-- Highcharts 3D modulini qo'shish --}}
+    {{-- YANGI QO'SHILGAN KOD TUGASHI: Highcharts 3D moduli --}}
 
+    {{-- Birinchi grafik uchun JavaScript (mavjud kod) --}}
     <script>
         // Backenddan kelgan ma'lumotlarni JavaScriptga o'tkazish
         const classesData = @json($allClasses);
@@ -1055,7 +1060,7 @@
                                 fontSize: '14px', // Raqamlar shriftini kichraytirish
                                 fontWeight: 'bold', // Qalin qilish
                                 color: '#333', // Rangini aniqroq qilish
-                                textOutline: 'none' // Matn atrofidagi chiziqni olib tashlash
+                                textOutline: 'none' // Matn atrofidagi chiziqni olb tashlash
                             },
                             align: 'right', // Raqamlarni o'ng tomonga hizalash (ustun ichida)
                             x: 20 // Raqamlarni ustun ichida biroz o'ngga siljitish
@@ -1065,8 +1070,7 @@
                 series: [{
                     type: 'bar',
                     name: 'O\'quvchilar soni',
-                    data: getDataForMonth(initialMonthKey)[
-                        1] // Dastlabki oy ma'lumotlari bilan yuklash
+                    data: getDataForMonth(initialMonthKey)[1] // Dastlabki oy ma'lumotlari bilan yuklash
                 }],
                 responsive: {
                     rules: [{
@@ -1105,7 +1109,7 @@
         })();
 
         /*
-         * Play/Pause funksiyalari (yillar o'rniga oylar bo'yicha ishlaydi)
+         * Play/Pause funksiyalari (yillar o'rniga oylar bo'yida ishlaydi)
          */
         function pause(button) {
             button.title = 'play';
@@ -1182,11 +1186,7 @@
             });
         }
 
-
-
-        // =========================================================================
-        // YANGI QO'SHILGAN KOD: Sinflar bo'yicha to'g'ri javob foizi grafigi
-        // =========================================================================
+        {{-- YANGI QO'SHILGAN KOD BOSHLANISHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
         const classQuizPerformanceData = @json($classQuizPerformance);
 
         // Set up the chart for 3D column
@@ -1222,7 +1222,7 @@
                     format: '{value}%' // Y o'qida foiz belgisini ko'rsatish
                 },
                 max: 100, // Maksimal qiymat 100%
-                min: 0 // Minimal qiymat 0%
+                min: 0    // Minimal qiymat 0%
             },
             tooltip: {
                 headerFormat: '<b>{point.key}</b><br>',
@@ -1275,6 +1275,7 @@
         }));
 
         showValues3d();
-        // =========================================================================
+        {{-- YANGI QO'SHILGAN KOD TUGASHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
     </script>
 @endsection
+
