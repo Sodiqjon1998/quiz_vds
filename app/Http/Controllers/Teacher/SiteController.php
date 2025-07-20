@@ -9,6 +9,7 @@ use App\Models\ExamAnswer;
 use App\Models\Option;
 use App\Models\Question;
 use App\Models\User;
+use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Symfony\Component\Process\Process;
@@ -25,6 +26,8 @@ class SiteController extends Controller
 
         // Barcha sinflarni olish
         $allClasses = Classes::all();
+
+        $subjectId = Auth::user()->subject_id;
 
         // Har bir oy bo'yicha sinflardagi o'quvchilar sonini hisoblash
         $studentsByClassAndMonth = [];
@@ -80,6 +83,7 @@ class SiteController extends Controller
             foreach ($usersInClass as $user) {
                 // Har bir foydalanuvchining joriy oyda ishtirok etgan imtihonlari
                 $exams = Exam::where('user_id', $user->id)
+                    ->where('subject_id', '=', $subjectId)
                     ->whereYear('created_at', $currentYearForQuiz)
                     ->whereMonth('created_at', $currentMonthForQuiz)
                     ->get();
