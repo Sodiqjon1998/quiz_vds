@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classes;
+use App\Models\Exam;
+use App\Models\ExamAnswer;
+use App\Models\Option;
+use App\Models\Question;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -56,11 +60,65 @@ class SiteController extends Controller
             }
         }
 
+
+        // =========================================================================
+        // YANGI QO'SHILGAN KOD: Sinflar bo'yicha to'g'ri javob foizi
+        // =========================================================================
+        $classQuizPerformance = [];
+
+        foreach ($allClasses as $class) {
+            $totalCorrectAnswers = 0;
+            $totalAttemptedQuestions = 0;
+
+            // Sinfdagi barcha foydalanuvchilar (o'quvchilar)
+            $usersInClass = User::where('classes_id', $class->id)->get();
+
+            foreach ($usersInClass as $user) {
+                // Har bir foydalanuvchining ishtirok etgan imtihonlari
+                $exams = Exam::where('user_id', $user->id)->get();
+
+                foreach ($exams as $exam) {
+                    // Ushbu imtihonga tegishli barcha javoblar
+                    $examAnswers = ExamAnswer::where('exam_id', $exam->id)->get();
+
+                    foreach ($examAnswers as $answer) {
+                        $totalAttemptedQuestions++;
+
+                        // Savol va to'g'ri variantni topish
+                        $question = Question::find($answer->question_id);
+                        $correctOption = Option::where('question_id', $answer->question_id)
+                            ->where('is_correct', 1)
+                            ->first();
+
+                        // Agar javob to'g'ri bo'lsa
+                        if ($correctOption && $answer->option_id == $correctOption->id) {
+                            $totalCorrectAnswers++;
+                        }
+                    }
+                }
+            }
+
+            $percentage = ($totalAttemptedQuestions > 0) ? round(($totalCorrectAnswers / $totalAttemptedQuestions) * 100, 2) : 0;
+
+            $classQuizPerformance[] = [
+                'name' => $class->name,
+                'y' => $percentage // Foiz qiymati
+            ];
+        }
+
+        // Ma'lumotlarni foizi bo'yicha kamayish tartibida saralash
+        usort($classQuizPerformance, function ($a, $b) {
+            return $b['y'] <=> $a['y'];
+        });
+        // =========================================================================
+
+
         return view('teacher.site.index', [
             'allClasses' => $allClasses,
             'studentsByClassAndMonth' => $studentsByClassAndMonth,
             'minYear' => $minYear,
             'maxYear' => $maxYear,
+            'classQuizPerformance' => $classQuizPerformance, // Yangi ma'lumotni uzatish
             // 'diskSpace' => $diskSpace
         ]);
     }

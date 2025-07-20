@@ -670,6 +670,92 @@
             text-align: center;
         }
     }
+
+
+    /* YANGI QO'SHILGAN STIL */
+    .chart-container-3d {
+        margin-top: 40px;
+        /* Grafiklar orasidagi bo'shliq */
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        position: relative;
+        /* Title uchun */
+    }
+
+    .chart-container-3d h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+        font-size: 1.5em;
+        font-weight: 700;
+    }
+
+    /* Sliders stilini o'zgartirish (agar mavjud bo'lsa) */
+    #sliders {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        /* Mobil uchun moslashuv */
+    }
+
+    #sliders div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #sliders input[type="range"] {
+        width: 150px;
+        /* Kichikroq slaydchalar */
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        background: #ddd;
+        outline: none;
+        border-radius: 3px;
+    }
+
+    #sliders input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer;
+        margin-top: -5px;
+        box-shadow: 0 1px 3px rgba(0, 123, 255, 0.4);
+    }
+
+    #sliders input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0, 123, 255, 0.4);
+    }
+
+    #sliders span {
+        font-weight: bold;
+        color: #555;
+        margin-top: 5px;
+    }
+
+    @media (max-width: 767px) {
+        #sliders {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #sliders input[type="range"] {
+            width: 80%;
+        }
+    }
 </style>
 @section('content')
     <div class="container-fluid">
@@ -723,7 +809,7 @@
                 </div>
             </div> --}}
 
-            <div class="card">
+            <div class="card w-100">
                 <div class="card-body">
                     <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
                 </div>
@@ -739,6 +825,28 @@
                 </div>
             </div>
 
+            {{-- Yangi grafik: Sinflar bo'yicha test yechish foizi --}}
+            <div class="card w-100 chart-container-3d mt-5"> {{-- Yuqoridan biroz bo'sh joy va yangi stil --}}
+                <div class="card-body">
+                    <h2>Sinflarning test yechishdagi samaradorligi (%)</h2>
+                    <div id="container-3d" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                    <div id="sliders">
+                        <div>
+                            Alpha: <span id="alpha-value"></span>
+                            <input id="alpha" type="range" min="0" max="45" value="15" />
+                        </div>
+                        <div>
+                            Beta: <span id="beta-value"></span>
+                            <input id="beta" type="range" min="0" max="45" value="15" />
+                        </div>
+                        <div>
+                            Depth: <span id="depth-value"></span>
+                            <input id="depth" type="range" min="20" max="100" value="50" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Boshqa statistikalar va kontent --}}
         </div>
     </div>
@@ -748,6 +856,7 @@
     <script src="https://code.highcharts.com/modules/data.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
 
     <script>
         // Backenddan kelgan ma'lumotlarni JavaScriptga o'tkazish
@@ -956,7 +1065,8 @@
                 series: [{
                     type: 'bar',
                     name: 'O\'quvchilar soni',
-                    data: getDataForMonth(initialMonthKey)[1] // Dastlabki oy ma'lumotlari bilan yuklash
+                    data: getDataForMonth(initialMonthKey)[
+                        1] // Dastlabki oy ma'lumotlari bilan yuklash
                 }],
                 responsive: {
                     rules: [{
@@ -1071,5 +1181,100 @@
                 pause(btn); // Slayder surilganda avtomatik o'yinni to'xtatish
             });
         }
+
+
+
+        // =========================================================================
+        // YANGI QO'SHILGAN KOD: Sinflar bo'yicha to'g'ri javob foizi grafigi
+        // =========================================================================
+        const classQuizPerformanceData = @json($classQuizPerformance);
+
+        // Set up the chart for 3D column
+        const chart3d = new Highcharts.Chart({
+            chart: {
+                renderTo: 'container-3d', // Yangi konteyner IDsi
+                type: 'column',
+                options3d: {
+                    enabled: true,
+                    alpha: 15,
+                    beta: 15,
+                    depth: 50,
+                    viewDistance: 25
+                }
+            },
+            title: {
+                text: null // Yuqoridagi h2 dan foydalanamiz
+            },
+            subtitle: {
+                text: 'Manba: Test natijalari' // Ixtiyoriy manba matni
+            },
+            xAxis: {
+                type: 'category',
+                title: {
+                    text: 'Sinf nomi'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'To\'g\'ri javob foizi (%)'
+                },
+                labels: {
+                    format: '{value}%' // Y o'qida foiz belgisini ko'rsatish
+                },
+                max: 100, // Maksimal qiymat 100%
+                min: 0 // Minimal qiymat 0%
+            },
+            tooltip: {
+                headerFormat: '<b>{point.key}</b><br>',
+                pointFormat: 'To\'g\'ri javoblar: {point.y}%'
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                column: {
+                    depth: 25,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y}%', // Ustunlar ustida foizni ko'rsatish
+                        style: {
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            color: '#333',
+                            textOutline: 'none'
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'To\'g\'ri javob foizi',
+                data: classQuizPerformanceData, // Controllerdan kelgan ma'lumot
+                colorByPoint: true // Har bir ustunga alohida rang berish
+            }]
+        });
+
+        function showValues3d() {
+            document.getElementById(
+                'alpha-value'
+            ).innerHTML = chart3d.options.chart.options3d.alpha;
+            document.getElementById(
+                'beta-value'
+            ).innerHTML = chart3d.options.chart.options3d.beta;
+            document.getElementById(
+                'depth-value'
+            ).innerHTML = chart3d.options.chart.options3d.depth;
+        }
+
+        // Activate the sliders for 3D chart
+        document.querySelectorAll(
+            '#sliders input'
+        ).forEach(input => input.addEventListener('input', e => {
+            chart3d.options.chart.options3d[e.target.id] = parseFloat(e.target.value);
+            showValues3d();
+            chart3d.redraw(false);
+        }));
+
+        showValues3d();
+        // =========================================================================
     </script>
 @endsection
