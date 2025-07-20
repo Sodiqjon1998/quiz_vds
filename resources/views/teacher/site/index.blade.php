@@ -1,8 +1,4 @@
-`index.blade.php` faylida kiritilgan barcha o'zgarishlar bilan to'liq kod quyida keltirilgan. Bu kodda oy bo'yicha o'quvchilar soni grafigi va sinflarning test yechishdagi samaradorligi grafigi uchun barcha HTML, CSS va JavaScript qismlari birlashtirilgan.
 
-**`index.blade.php`**
-
-```blade
 @extends('teacher.layouts.main') {{-- Sizning asosiy admin layoutingiz --}}
 
 <style>
@@ -1267,4 +1263,4 @@
         {{-- YANGI O'ZGARTIRILGAN KOD TUGASHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
     </script>
 @endsection
-```
+
