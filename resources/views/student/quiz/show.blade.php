@@ -1109,6 +1109,291 @@
                 saveQuizStateToServer(false);
             });
 
+            // Screenshot himoyasi funksiyalari
+            function initializeScreenshotProtection() {
+
+                // 1. Keyboard shortcuts bloklash
+                document.addEventListener('keydown', function(event) {
+                    // Print Screen tugmasi (keyCode: 44)
+                    if (event.keyCode == 44) {
+                        event.preventDefault();
+                        showScreenshotWarning();
+                        return false;
+                    }
+
+                    // Windows + Print Screen (Win + PrtScr)
+                    if (event.metaKey && event.keyCode == 44) {
+                        event.preventDefault();
+                        showScreenshotWarning();
+                        return false;
+                    }
+
+                    // Windows + Shift + S (Snipping Tool)
+                    if (event.metaKey && event.shiftKey && event.keyCode == 83) {
+                        event.preventDefault();
+                        showScreenshotWarning();
+                        return false;
+                    }
+
+                    // Alt + Print Screen
+                    if (event.altKey && event.keyCode == 44) {
+                        event.preventDefault();
+                        showScreenshotWarning();
+                        return false;
+                    }
+
+                    // Ctrl + Print Screen
+                    if (event.ctrlKey && event.keyCode == 44) {
+                        event.preventDefault();
+                        showScreenshotWarning();
+                        return false;
+                    }
+
+                    // F12 (Developer Tools)
+                    if (event.keyCode == 123) {
+                        event.preventDefault();
+                        showDeveloperToolsWarning();
+                        return false;
+                    }
+
+                    // Ctrl + Shift + I (Developer Tools)
+                    if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
+                        event.preventDefault();
+                        showDeveloperToolsWarning();
+                        return false;
+                    }
+
+                    // Ctrl + U (View Source)
+                    if (event.ctrlKey && event.keyCode == 85) {
+                        event.preventDefault();
+                        showViewSourceWarning();
+                        return false;
+                    }
+
+                    // Ctrl + S (Save Page)
+                    if (event.ctrlKey && event.keyCode == 83) {
+                        event.preventDefault();
+                        showSavePageWarning();
+                        return false;
+                    }
+                });
+
+                // 2. Context menu (right-click) bloklash
+                document.addEventListener('contextmenu', function(event) {
+                    event.preventDefault();
+                    showRightClickWarning();
+                    return false;
+                });
+
+                // 3. Drag & Drop bloklash
+                document.addEventListener('dragstart', function(event) {
+                    event.preventDefault();
+                    return false;
+                });
+
+                // 4. Text selection bloklash
+                document.addEventListener('selectstart', function(event) {
+                    event.preventDefault();
+                    return false;
+                });
+
+                // 5. Console message
+                console.log('%cOGOHLANTIRISH!', 'color: red; font-size: 50px; font-weight: bold;');
+                console.log('%cBu sahifa himoyalangan. Screenshot olish, kodlarni ko\'rish yoki nusxalash taqiqlangan!', 'color: red; font-size: 16px;');
+
+                // 6. Developer Tools ochilganini aniqlash
+                let devtools = {
+                    opened: false,
+                    orientation: null
+                };
+
+                setInterval(function() {
+                    if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+                        if (!devtools.opened) {
+                            devtools.opened = true;
+                            showDeveloperToolsWarning();
+                            // Optional: redirect yoki sahifani yopish
+                            // window.location.href = '/student/dashboard';
+                        }
+                    } else {
+                        devtools.opened = false;
+                    }
+                }, 500);
+
+                // 7. Sahifa focus yo'qolganda tekshirish
+                document.addEventListener('visibilitychange', function() {
+                    if (document.hidden) {
+                        // Foydalanuvchi boshqa oynaga o'tdi (screenshot olayotgan bo'lishi mumkin)
+                        setTimeout(function() {
+                            if (!document.hidden) {
+                                showFocusWarning();
+                            }
+                        }, 1000);
+                    }
+                });
+
+                // 8. CSS orqali qo'shimcha himoya
+                addScreenshotProtectionCSS();
+            }
+
+            // Ogohlantirish funksiyalari
+            function showScreenshotWarning() {
+                alert('⚠️ OGOHLANTIRISH!\n\nScreenshot olish taqiqlangan!\n\nTest jarayonida screenshot olish, nusxalash yoki saqlash mumkin emas.');
+            }
+
+            function showDeveloperToolsWarning() {
+                alert('⚠️ OGOHLANTIRISH!\n\nDeveloper Tools ishlatish taqiqlangan!\n\nBu harakat xavfsizlik qoidalariga ziddir.');
+            }
+
+            function showViewSourceWarning() {
+                alert('⚠️ OGOHLANTIRISH!\n\nSahifa kodini ko\'rish taqiqlangan!\n\nBu harakat xavfsizlik qoidalariga ziddir.');
+            }
+
+            function showRightClickWarning() {
+                alert('⚠️ OGOHLANTIRISH!\n\nO\'ng tugma bosilishi taqiqlangan!\n\nTest jarayonida bu funksiya ishlamaydi.');
+            }
+
+            function showSavePageWarning() {
+                alert('⚠️ OGOHLANTIRISH!\n\nSahifani saqlash taqiqlangan!\n\nTest materiallarini saqlash mumkin emas.');
+            }
+
+            function showFocusWarning() {
+                alert('⚠️ DIQQAT!\n\nSiz boshqa oynaga o\'tdingiz. Test jarayonida boshqa dasturlardan foydalanish tavsiya etilmaydi.');
+            }
+
+            // CSS himoya qo'shish
+            function addScreenshotProtectionCSS() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* Text selection bloklash */
+                    * {
+                        -webkit-user-select: none !important;
+                        -moz-user-select: none !important;
+                        -ms-user-select: none !important;
+                        user-select: none !important;
+                        -webkit-touch-callout: none !important;
+                        -webkit-tap-highlight-color: transparent !important;
+                    }
+
+                    /* Drag & Drop bloklash */
+                    * {
+                        -webkit-user-drag: none !important;
+                        -khtml-user-drag: none !important;
+                        -moz-user-drag: none !important;
+                        -o-user-drag: none !important;
+                        user-drag: none !important;
+                    }
+
+                    /* Print media uchun sahifani yashirish */
+                    @media print {
+                        body * {
+                            visibility: hidden !important;
+                        }
+                        body::before {
+                            content: "Bu sahifani chop etish taqiqlangan!" !important;
+                            font-size: 24px !important;
+                            color: red !important;
+                            display: block !important;
+                            text-align: center !important;
+                            margin: 50px !important;
+                        }
+                    }
+
+                    /* Screenshot protection overlay */
+                    body::after {
+                        content: "";
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100vw;
+                        height: 100vh;
+                        background: transparent;
+                        pointer-events: none;
+                        z-index: 9999;
+                        background-image:
+                            repeating-linear-gradient(
+                                45deg,
+                                transparent,
+                                transparent 10px,
+                                rgba(255, 0, 0, 0.01) 10px,
+                                rgba(255, 0, 0, 0.01) 11px
+                            );
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Blur effect qo'shish (sahifa focus yo'qolganda)
+            function addBlurProtection() {
+                window.addEventListener('blur', function() {
+                    document.body.style.filter = 'blur(5px)';
+                    document.body.style.pointerEvents = 'none';
+
+                    const overlay = document.createElement('div');
+                    overlay.id = 'blur-overlay';
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100vw;
+                        height: 100vh;
+                        background: rgba(0, 0, 0, 0.8);
+                        color: white;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: 24px;
+                        z-index: 10000;
+                        text-align: center;
+                    `;
+                    overlay.innerHTML = '⚠️ Sahifa nofaol<br>Qaytib keling';
+                    document.body.appendChild(overlay);
+                });
+
+                window.addEventListener('focus', function() {
+                    document.body.style.filter = 'none';
+                    document.body.style.pointerEvents = 'auto';
+
+                    const overlay = document.getElementById('blur-overlay');
+                    if (overlay) {
+                        overlay.remove();
+                    }
+                });
+            }
+
+            // Watermark qo'shish
+            function addWatermark() {
+                const watermark = document.createElement('div');
+                watermark.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                    font-size: 48px;
+                    color: rgba(255, 0, 0, 0.1);
+                    pointer-events: none;
+                    z-index: 1000;
+                    font-weight: bold;
+                    white-space: nowrap;
+                `;
+                watermark.textContent = 'HIMOYALANGAN TEST';
+                document.body.appendChild(watermark);
+            }
+
+            // Barcha himoya funksiyalarini ishga tushirish
+            function enableFullProtection() {
+                initializeScreenshotProtection();
+                addBlurProtection();
+                addWatermark();
+
+                // Console'da chiroyli xabar
+                setTimeout(function() {
+                    console.clear();
+                    console.log('%c🔒 XAVFSIZLIK TIZIMI FAOL', 'color: blue; font-size: 20px; font-weight: bold;');
+                    console.log('%cBu test sahifasi to\'liq himoyalangan.', 'color: green; font-size: 14px;');
+                }, 1000);
+            }
+
             // Dastlabki sozlash
             initializeQuizState();
         });
