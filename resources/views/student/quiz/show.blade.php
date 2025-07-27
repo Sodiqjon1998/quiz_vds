@@ -487,6 +487,25 @@
     <script>
         quizFinished = false; // <-- BU YERDA QO'SHING!
         $(document).ready(function() {
+            // MathJax sozlamalari
+            window.MathJax = {
+                tex: {
+                    inlineMath: [
+                        ['\\(', '\\)']
+                    ],
+                    displayMath: [
+                        ['\\[', '\\]']
+                    ]
+                },
+                options: {
+                    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                    ignoreHtmlClass: 'tex2jax_ignore',
+                    processHtmlClass: 'tex2jax_process'
+                }
+            };
+
+            let quizFinished = false;
+
             const questionGrid = document.querySelector('.question-grid');
             const timeDisplay = document.getElementById('time-display');
             const currentQuestionDisplay = document.getElementById('current-question-display');
@@ -495,9 +514,6 @@
             const previousPageBtn = document.getElementById('previous-page-btn');
             const nextPageBtn = document.getElementById('next-page-btn');
             const markForReviewCheckbox = document.getElementById('mark-for-review');
-
-
-
 
             // Serverdan olingan test ma'lumotlari
             const questionsApi = @json($questions);
@@ -523,38 +539,26 @@
                 },
             };
 
-            // KOnstantalar
+            // Konstantalar
             const STATUS_ANSWERED = 'answered';
             const STATUS_MARKED_FOR_REVIEW = 'marked-for-review';
             const STATUS_NOT_ANSWERED = 'not-answered';
             const STATUS_CURRENT_QUESTION = 'current-question';
 
-            // --- YAngi qo'shiladigan qism: Debounce uchun o'zgaruvchilar va funksiya ---
+            // Debounce uchun o'zgaruvchilar
             let saveStateTimeout;
-            const SAVE_STATE_DEBOUNCE_TIME = 2000; // 2 soniya (2000 millisekund)
-
-            function debouncedSaveQuizStateToServer() {
-                clearTimeout(saveStateTimeout); // Agar oldingi taymer ishlayotgan bo'lsa, uni tozalash
-                saveStateTimeout = setTimeout(() => {
-                    saveQuizStateToServer(); // 2 soniyadan keyin asl saqlash funksiyasini chaqirish
-                }, SAVE_STATE_DEBOUNCE_TIME);
-            }
-            // --- Yangi qo'shiladigan qism tugadi ---
+            const SAVE_STATE_DEBOUNCE_TIME = 2000;
 
             let currentQuestionIndex = 0;
-
-
             let quizState = {
                 currentQuestionIndex: 0,
                 remainingTime: 0,
-                userAnswers: [], // Boshlang'ich qiymat har doim massiv bo'lishi kerak
-                questionStatuses: [], // Boshlang'ich qiymat har doim massiv bo'lishi kerak
+                userAnswers: [],
+                questionStatuses: [],
             };
-
-
             let timerInterval;
 
-            // --- Yordamchi funktsiya: vaqtni formatlash ---
+            // Yordamchi funksiyalar
             function formatTime(totalSeconds) {
                 const displayHours = Math.floor(totalSeconds / 3600);
                 const remainingSecondsAfterHours = totalSeconds % 3600;
@@ -564,18 +568,23 @@
                 return `${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}`;
             }
 
-            // --- Umumiy AJAX xato ishlovchisi ---
             function handleAjaxError(xhr, status, error, contextMessage =
-                "Server bilan aloqada xatolik yuz berdi") {
+            "Server bilan aloqada xatolik yuz berdi") {
                 console.error(contextMessage + ':', status, error);
                 console.error('XHR javobi:', xhr.responseText);
                 console.error('Status kodi:', xhr.status);
                 alert(`${contextMessage}. Iltimos, qayta urinib ko'ring. Xato kodi: ${xhr.status}`);
             }
 
-            // --- Server bilan aloqa funksiyalari ---
-            // --- Server bilan aloqa funksiyalari ---
-            function saveQuizStateToServer(clearStateOnServer = false) { // <-- BU QATORNI O'ZGARTIRISHINGIZ KERAK
+            function debouncedSaveQuizStateToServer() {
+                clearTimeout(saveStateTimeout);
+                saveStateTimeout = setTimeout(() => {
+                    saveQuizStateToServer();
+                }, SAVE_STATE_DEBOUNCE_TIME);
+            }
+
+            // Server bilan aloqa funksiyalari
+            function saveQuizStateToServer(clearStateOnServer = false) {
                 const dataToSave = {
                     _token: '{{ csrf_token() }}',
                     quizId: quiz.id,
@@ -583,7 +592,7 @@
                     remainingTime: quizState.remainingTime,
                     userAnswers: quizState.userAnswers,
                     questionStatuses: quizState.questionStatuses,
-                    clearState: clearStateOnServer // <-- VA BU QATORNI QO'SHISHINGIZ KERAK
+                    clearState: clearStateOnServer
                 };
 
                 $.ajax({
@@ -591,7 +600,7 @@
                     method: 'POST',
                     data: dataToSave,
                     success: function(response) {
-                        // console.log('Holat serverga saqlandi:', response.message);
+                        console.log('Holat serverga saqlandi');
                     },
                     error: function(xhr, status, error) {
                         handleAjaxError(xhr, status, error, 'Serverga holatni saqlashda xato');
@@ -608,7 +617,6 @@
                             if (response.status === 'success') {
                                 resolve(response);
                             } else {
-                                // console.log('Serverda saqlangan holat topilmadi.');
                                 resolve(null);
                             }
                         },
@@ -621,73 +629,75 @@
                 });
             }
 
-            window.addEventListener('beforeunload', function(event) {
-                // Agar test yakunlangan bo'lsa, holatni saqlashga urinmaymiz
-                if (quizFinished) {
-                    return; // Yopilishga ruxsat berish
-                }
-
-                event.returnValue = "Siz testni tark etmoqdasiz. O'zgarishlar saqlanmasligi mumkin.";
-
-                clearTimeout(saveStateTimeout); // Debounce taymerini tozalash
-                saveQuizStateToServer(false); // Holatni o'chirmasdan saqlash
-            });
-
-            // --- Test holatini tiklash funksiyasi ---
+            // Test holatini tiklash funksiyasi
             async function initializeQuizState() {
-                const savedState = await loadQuizStateFromServer();
+                try {
+                    const savedState = await loadQuizStateFromServer();
 
-                if (savedState && savedState.currentQuestionIndex !== undefined) {
-                    quizState.currentQuestionIndex = savedState.currentQuestionIndex;
-                    quizState.remainingTime = savedState.remainingTime !== null ? savedState.remainingTime :
-                        0; // Null bo'lsa 0 ga o'rnatish
-                    // BU YERNI O'ZGARTIRING: userAnswers va questionStatuses ni JSON.parse qiling
-                    // initializeQuizState funksiyasi ichida
-                    quizState.userAnswers = savedState.userAnswers && savedState.userAnswers !== "" ? JSON
-                        .parse(savedState.userAnswers) : [];
-                    quizState.questionStatuses = savedState.questionStatuses && savedState.questionStatuses !==
-                        "" ? JSON.parse(savedState.questionStatuses) : {};
+                    if (savedState && savedState.currentQuestionIndex !== undefined) {
+                        quizState.currentQuestionIndex = savedState.currentQuestionIndex;
+                        quizState.remainingTime = savedState.remainingTime !== null ? savedState.remainingTime :
+                            0;
 
-                    currentQuestionIndex = quizState.currentQuestionIndex;
+                        quizState.userAnswers = savedState.userAnswers && savedState.userAnswers !== "" ?
+                            JSON.parse(savedState.userAnswers) : [];
+                        quizState.questionStatuses = savedState.questionStatuses && savedState
+                            .questionStatuses !== "" ?
+                            JSON.parse(savedState.questionStatuses) : {};
 
-                    if (quizState.remainingTime !== null) {
-                        console.log("Serverdan saqlangan vaqt topildi va tiklandi: " + formatTime(quizState
-                            .remainingTime));
+                        currentQuestionIndex = quizState.currentQuestionIndex;
+                        console.log("Serverdan saqlangan holat yuklandi:", quizState);
                     } else {
-                        console.log("Serverdan saqlangan vaqt topilmadi, dastlabki vaqt ishlatilmoqda.");
+                        console.log("Yangi test holati boshlanmoqda.");
+
+                        // Dastlabki vaqtni HH:MM:SS formatidan sekundlarga o'girish
+                        const parts = quizApi.attachment.time.split(':');
+                        let hours = 0;
+                        let minutes = 0;
+                        let seconds = 0;
+
+                        if (parts.length === 3) {
+                            hours = parseInt(parts[0], 10) || 0;
+                            minutes = parseInt(parts[1], 10) || 0;
+                            seconds = parseInt(parts[2], 10) || 0;
+                        } else if (parts.length === 2) {
+                            minutes = parseInt(parts[0], 10) || 0;
+                            seconds = parseInt(parts[1], 10) || 0;
+                        }
+
+                        quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
+                        console.log("Dastlabki vaqt o'rnatildi:", formatTime(quizState.remainingTime));
                     }
 
-                    console.log("Serverdan saqlangan holat yuklandi:", quizState);
-                } else {
-                    // Yangi test boshlanishi yoki saqlangan holat topilmasa
-                    console.log("Serverda saqlangan holat topilmadi. Yangi test holati boshlanmoqda.");
+                    // Dastlabki sozlashlarni bajarish
+                    generateQuestionButtons();
+                    await loadQuestion(currentQuestionIndex);
+                    updateTimer();
 
-                    // Dastlabki vaqtni HH:MM:SS formatidan sekundlarga o'girish
+                } catch (error) {
+                    console.error("Quiz holatini tiklashda xato:", error);
+                    // Xato bo'lsa ham dastlabki holatni o'rnatish
                     const parts = quizApi.attachment.time.split(':');
                     let hours = 0;
                     let minutes = 0;
                     let seconds = 0;
-                    if (parts.length === 3) {
-                        hours = parseInt(parts[0], 10);
-                        minutes = parseInt(parts[1], 10);
-                        seconds = parseInt(parts[2], 10);
-                    } else if (parts.length === 2) {
-                        minutes = parseInt(parts[0], 10);
-                        seconds = parseInt(parts[1], 10);
-                    }
-                    quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
-                }
 
-                // Dastlabki sozlashlarni bajarish
-                generateQuestionButtons();
-                loadQuestion(currentQuestionIndex);
-                updateTimer(); // Endi updateTimer hech qanday parametr qabul qilmaydi
+                    if (parts.length === 3) {
+                        hours = parseInt(parts[0], 10) || 0;
+                        minutes = parseInt(parts[1], 10) || 0;
+                        seconds = parseInt(parts[2], 10) || 0;
+                    }
+
+                    quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
+                    generateQuestionButtons();
+                    await loadQuestion(0);
+                    updateTimer();
+                }
             }
 
-
-            // --- Funktsiyalar ---
-
             function generateQuestionButtons() {
+                if (!questionGrid) return;
+
                 questionGrid.innerHTML = '';
                 quizQuestions.forEach((q, index) => {
                     const button = document.createElement('a');
@@ -701,8 +711,7 @@
                     const hasAnswer = quizState.userAnswers.some(answer => answer.question_id === q.id);
 
                     button.classList.remove(STATUS_ANSWERED, STATUS_MARKED_FOR_REVIEW,
-                        STATUS_CURRENT_QUESTION,
-                        STATUS_NOT_ANSWERED);
+                        STATUS_CURRENT_QUESTION, STATUS_NOT_ANSWERED);
 
                     if (status) {
                         button.classList.add(status);
@@ -714,15 +723,14 @@
 
                     if (q.id === quizQuestions[currentQuestionIndex].id) {
                         button.classList.add(STATUS_CURRENT_QUESTION);
-                        button.classList.remove(
-                            STATUS_NOT_ANSWERED); // Joriy savol hech qachon "not-answered" bo'lmaydi
+                        button.classList.remove(STATUS_NOT_ANSWERED);
                     }
 
                     questionGrid.appendChild(button);
                 });
             }
 
-            function loadQuestion(index) {
+            async function loadQuestion(index) {
                 if (index < 0 || index >= quizQuestions.length) {
                     console.warn("Noto'g'ri savol indeksi:", index);
                     return;
@@ -732,48 +740,68 @@
                 currentQuestionIndex = index;
                 quizState.currentQuestionIndex = currentQuestionIndex;
 
-                currentQuestionDisplay.textContent = index + 1;
-                questionTextElement.innerHTML = '\\(' + question.text + '\\)';
-                MathJax.typesetPromise([questionTextElement]);
-                optionsForm.innerHTML = '';
+                if (currentQuestionDisplay) {
+                    currentQuestionDisplay.textContent = index + 1;
+                }
 
-                question.options.forEach((option, i) => {
-                    const div = document.createElement('div');
-                    div.classList.add('option-item');
-
-                    const radioInput = document.createElement('input');
-                    radioInput.type = 'radio';
-                    radioInput.name = `question-${question.id}`;
-                    radioInput.id = `option-${question.id}-${option.id}`;
-                    radioInput.value = option.id;
-
-                    const label = document.createElement('label');
-                    label.htmlFor = `option-${question.id}-${option.id}`;
-                    label.innerHTML = '\\(' + option.text + '\\)';
-                    MathJax.typesetPromise([label]);
-
-                    // const userAnswer = quizState.userAnswers.find(ua => ua.question_id === question.id);
-                    // if (userAnswer && userAnswer.selected_option_id === option.id) {
-                    //     radioInput.checked = true;
-                    // }
-
-                    const userAnswer = quizState.userAnswers.find(ua => ua.question_id.toString() ===
-                        question.id.toString());
-                    if (userAnswer && userAnswer.selected_option_id.toString() === option.id.toString()) {
-                        radioInput.checked = true;
+                if (questionTextElement) {
+                    questionTextElement.innerHTML = question.text;
+                    // MathJax mavjud bo'lsa ishlatish
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        try {
+                            await window.MathJax.typesetPromise([questionTextElement]);
+                        } catch (error) {
+                            console.warn("MathJax xatosi:", error);
+                        }
                     }
+                }
 
-                    div.appendChild(radioInput);
-                    div.appendChild(label);
-                    optionsForm.appendChild(div);
-                });
+                if (optionsForm) {
+                    optionsForm.innerHTML = '';
 
-                markForReviewCheckbox.checked = (quizState.questionStatuses[question.id] ===
-                    STATUS_MARKED_FOR_REVIEW);
+                    question.options.forEach((option, i) => {
+                        const div = document.createElement('div');
+                        div.classList.add('option-item');
+
+                        const radioInput = document.createElement('input');
+                        radioInput.type = 'radio';
+                        radioInput.name = `question-${question.id}`;
+                        radioInput.id = `option-${question.id}-${option.id}`;
+                        radioInput.value = option.id;
+
+                        const label = document.createElement('label');
+                        label.htmlFor = `option-${question.id}-${option.id}`;
+                        label.innerHTML = option.text;
+
+                        // Foydalanuvchi javobini tekshirish
+                        const userAnswer = quizState.userAnswers.find(ua =>
+                            ua.question_id.toString() === question.id.toString()
+                        );
+                        if (userAnswer && userAnswer.selected_option_id.toString() === option.id
+                            .toString()) {
+                            radioInput.checked = true;
+                        }
+
+                        div.appendChild(radioInput);
+                        div.appendChild(label);
+                        optionsForm.appendChild(div);
+
+                        // MathJax mavjud bo'lsa label uchun ham ishlatish
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise([label]).catch(error => {
+                                console.warn("MathJax label xatosi:", error);
+                            });
+                        }
+                    });
+                }
+
+                if (markForReviewCheckbox) {
+                    markForReviewCheckbox.checked = (quizState.questionStatuses[question.id] ===
+                        STATUS_MARKED_FOR_REVIEW);
+                }
 
                 generateQuestionButtons();
                 updateNavigationButtons();
-                // saveQuizStateToServer(); // Har bir savol yuklanganda holatni serverga saqlash
             }
 
             function updateNavigationButtons() {
@@ -782,47 +810,38 @@
                 });
 
                 const currentButton = document.querySelector(
-                    `.question-button[data-question-index="${currentQuestionIndex}"]`);
+                    `.question-button[data-question-index="${currentQuestionIndex}"]`
+                );
                 if (currentButton) {
                     currentButton.classList.add(STATUS_CURRENT_QUESTION);
                 }
 
-                previousPageBtn.disabled = currentQuestionIndex === 0;
-                nextPageBtn.disabled = currentQuestionIndex === quizQuestions.length - 1;
+                if (previousPageBtn) {
+                    previousPageBtn.disabled = currentQuestionIndex === 0;
+                }
+                if (nextPageBtn) {
+                    nextPageBtn.disabled = currentQuestionIndex === quizQuestions.length - 1;
+                }
             }
-
-            function collectUserAnswersForSubmission() {
-                const submittedQuestionIds = [];
-                const submittedOptionIds = [];
-
-                quizState.userAnswers.forEach(answer => {
-                    submittedQuestionIds.push(answer.question_id);
-                    submittedOptionIds.push(answer.selected_option_id);
-                });
-
-                return {
-                    questionIds: submittedQuestionIds,
-                    optionIds: submittedOptionIds
-                };
-            }
-
 
             function updateTimer() {
-                // totalSeconds endi quizState.remainingTime dan olinadi, initializeQuizState tomonidan o'rnatilgan
-                let totalSeconds = quizState.remainingTime;
-
-                if (typeof timeDisplay === 'undefined' || timeDisplay === null) {
-                    console.error("timeDisplay elementi topilmadi. Uni global yoki parametr sifatida aniqlang.");
+                if (!timeDisplay) {
+                    console.error("timeDisplay elementi topilmadi");
                     return;
                 }
 
-                clearInterval(timerInterval); // Oldingi taymerni tozalash
+                // Dastlab vaqtni ko'rsatish
+                timeDisplay.textContent = formatTime(quizState.remainingTime);
+
+                clearInterval(timerInterval);
 
                 timerInterval = setInterval(() => {
-                    if (totalSeconds <= 0) {
+                    if (quizState.remainingTime <= 0) {
                         clearInterval(timerInterval);
                         clearTimeout(saveStateTimeout);
-                        quizFinished = true; // <-- BU YERDA QOLSIN!
+                        quizFinished = true;
+
+                        // Testni avtomatik yakunlash
                         const submitData = collectUserAnswersForSubmission();
                         $.ajax({
                             url: "{{ route('student.quiz.store') }}",
@@ -845,141 +864,173 @@
                                 } else {
                                     alert(response.message ||
                                         'Natijalar sahifasiga yo\'naltirishda xatolik yuz berdi.'
-                                    );
+                                        );
                                 }
                             },
                             error: function(xhr, status, error) {
                                 handleAjaxError(xhr, status, error,
                                     "Vaqt tugadi, ammo ma'lumotlarni saqlashda xatolik yuz berdi"
-                                );
+                                    );
                             }
                         });
                         return;
                     }
 
-                    totalSeconds--;
-                    quizState.remainingTime = totalSeconds;
-                    // saveQuizStateToServer(); // Har soniyada holatni serverga saqlash
-
-                    timeDisplay.textContent = formatTime(totalSeconds);
-
+                    quizState.remainingTime--;
+                    timeDisplay.textContent = formatTime(quizState.remainingTime);
                 }, 1000);
             }
 
-            // --- Hodisa Tinglovchilar ---
+            function collectUserAnswersForSubmission() {
+                const submittedQuestionIds = [];
+                const submittedOptionIds = [];
 
-            questionGrid.addEventListener('click', (event) => {
-                if (event.target.classList.contains('question-button')) {
-                    event.preventDefault();
-                    const index = parseInt(event.target.dataset.questionIndex);
-                    loadQuestion(index);
-                }
-            });
+                quizState.userAnswers.forEach(answer => {
+                    submittedQuestionIds.push(answer.question_id);
+                    submittedOptionIds.push(answer.selected_option_id);
+                });
 
-            previousPageBtn.addEventListener('click', () => {
-                if (currentQuestionIndex > 0) {
-                    loadQuestion(currentQuestionIndex - 1);
-                    debouncedSaveQuizStateToServer(); // Shu qatorni qo'shing
-                }
-            });
+                return {
+                    questionIds: submittedQuestionIds,
+                    optionIds: submittedOptionIds
+                };
+            }
 
-            nextPageBtn.addEventListener('click', () => {
-                if (currentQuestionIndex < quizQuestions.length - 1) {
-                    loadQuestion(currentQuestionIndex + 1);
-                    debouncedSaveQuizStateToServer(); // Shu qatorni qo'shing
-                }
-            });
-
-            optionsForm.addEventListener('change', (event) => {
-                const currentQuestion = quizQuestions[currentQuestionIndex];
-                if (event.target.type === 'radio' && event.target.name ===
-                    `question-${currentQuestion.id}`) {
-                    const selectedOptionId = parseInt(event.target.value);
-
-                    const existingAnswerIndex = quizState.userAnswers.findIndex(
-                        answer => answer.question_id === currentQuestion.id
-                    );
-
-                    if (existingAnswerIndex > -1) {
-                        quizState.userAnswers[existingAnswerIndex].selected_option_id = selectedOptionId;
-                    } else {
-                        quizState.userAnswers.push({
-                            question_id: currentQuestion.id,
-                            selected_option_id: selectedOptionId
-                        });
+            // Event Listeners
+            if (questionGrid) {
+                questionGrid.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('question-button')) {
+                        event.preventDefault();
+                        const index = parseInt(event.target.dataset.questionIndex);
+                        loadQuestion(index);
                     }
+                });
+            }
 
-                    // Agar foydalanuvchi javob bersa, "Ko'rib chiqish uchun belgilash"ni bekor qilishimiz mumkin
-                    if (quizState.questionStatuses[currentQuestion.id] === STATUS_MARKED_FOR_REVIEW &&
-                        markForReviewCheckbox.checked) {
-                        markForReviewCheckbox.checked = false; // Checkboxni o'chirish
-                        // Agar savolga javob berilgan bo'lsa, statusni 'answered' ga o'rnatish
-                        quizState.questionStatuses[currentQuestion.id] = STATUS_ANSWERED;
-                    } else {
-                        quizState.questionStatuses[currentQuestion.id] =
-                            STATUS_ANSWERED; // Savol holatini 'answered' ga o'rnatish
+            if (previousPageBtn) {
+                previousPageBtn.addEventListener('click', () => {
+                    if (currentQuestionIndex > 0) {
+                        loadQuestion(currentQuestionIndex - 1);
+                        debouncedSaveQuizStateToServer();
                     }
+                });
+            }
 
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', () => {
+                    if (currentQuestionIndex < quizQuestions.length - 1) {
+                        loadQuestion(currentQuestionIndex + 1);
+                        debouncedSaveQuizStateToServer();
+                    }
+                });
+            }
+
+            if (optionsForm) {
+                optionsForm.addEventListener('change', (event) => {
+                    const currentQuestion = quizQuestions[currentQuestionIndex];
+                    if (event.target.type === 'radio' && event.target.name ===
+                        `question-${currentQuestion.id}`) {
+                        const selectedOptionId = parseInt(event.target.value);
+
+                        const existingAnswerIndex = quizState.userAnswers.findIndex(
+                            answer => answer.question_id === currentQuestion.id
+                        );
+
+                        if (existingAnswerIndex > -1) {
+                            quizState.userAnswers[existingAnswerIndex].selected_option_id =
+                            selectedOptionId;
+                        } else {
+                            quizState.userAnswers.push({
+                                question_id: currentQuestion.id,
+                                selected_option_id: selectedOptionId
+                            });
+                        }
+
+                        if (quizState.questionStatuses[currentQuestion.id] === STATUS_MARKED_FOR_REVIEW &&
+                            markForReviewCheckbox && markForReviewCheckbox.checked) {
+                            markForReviewCheckbox.checked = false;
+                            quizState.questionStatuses[currentQuestion.id] = STATUS_ANSWERED;
+                        } else {
+                            quizState.questionStatuses[currentQuestion.id] = STATUS_ANSWERED;
+                        }
+
+                        generateQuestionButtons();
+                        updateNavigationButtons();
+                        debouncedSaveQuizStateToServer();
+                    }
+                });
+            }
+
+            if (markForReviewCheckbox) {
+                markForReviewCheckbox.addEventListener('change', () => {
+                    const currentQId = quizQuestions[currentQuestionIndex].id;
+                    if (markForReviewCheckbox.checked) {
+                        quizState.questionStatuses[currentQId] = STATUS_MARKED_FOR_REVIEW;
+                    } else {
+                        if (quizState.userAnswers.some(answer => answer.question_id === currentQId)) {
+                            quizState.questionStatuses[currentQId] = STATUS_ANSWERED;
+                        } else {
+                            delete quizState.questionStatuses[currentQId];
+                        }
+                    }
                     generateQuestionButtons();
                     updateNavigationButtons();
-                    debouncedSaveQuizStateToServer(); // Holatni serverga saqlash
-                }
-            });
+                    debouncedSaveQuizStateToServer();
+                });
+            }
 
-            markForReviewCheckbox.addEventListener('change', () => {
-                const currentQId = quizQuestions[currentQuestionIndex].id;
-                if (markForReviewCheckbox.checked) {
-                    quizState.questionStatuses[currentQId] = STATUS_MARKED_FOR_REVIEW;
-                } else {
-                    if (quizState.userAnswers.some(answer => answer.question_id === currentQId)) {
-                        quizState.questionStatuses[currentQId] = STATUS_ANSWERED;
-                    } else {
-                        delete quizState.questionStatuses[currentQId]; // Javob berilmagan va belgilanmagan
-                    }
-                }
-                generateQuestionButtons();
-                updateNavigationButtons();
-                debouncedSaveQuizStateToServer(); // Holatni serverga saqlash
-            });
+            const finishBtn = document.querySelector('.finish-attempt-btn');
+            if (finishBtn) {
+                finishBtn.addEventListener('click', () => {
+                    if (confirm("Testni yakunlashni xohlaysizmi?")) {
+                        clearTimeout(saveStateTimeout);
+                        quizFinished = true;
 
-            document.querySelector('.finish-attempt-btn').addEventListener('click', () => {
-                if (confirm("Testni yakunlashni xohlaysizmi?")) {
-                    clearTimeout(saveStateTimeout);
-                    quizFinished = true; // <-- BU YERDA QOLSIN!
-                    const submitData = collectUserAnswersForSubmission();
-                    $.ajax({
-                        url: "{{ route('student.quiz.store') }}",
-                        method: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            quizId: quiz.id,
-                            subjectId: quiz.subjectId,
-                            question: submitData.questionIds,
-                            remainingTime: quizState.remainingTime,
-                            option: submitData.optionIds,
-                            clearState: true
-                        },
-                        success: function(response) {
-                            if (response.status === 'success' && response.examId) {
-                                history.replaceState(null, null, '/student/quiz/' + response
-                                    .examId + '/result');
-                                window.location.href = '/student/quiz/' + response.examId +
-                                    '/result';
-                            } else {
-                                alert(response.message ||
-                                    'Natijalar sahifasiga yo\'naltirishda xatolik yuz berdi.'
-                                );
+                        const submitData = collectUserAnswersForSubmission();
+                        $.ajax({
+                            url: "{{ route('student.quiz.store') }}",
+                            method: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                quizId: quiz.id,
+                                subjectId: quiz.subjectId,
+                                question: submitData.questionIds,
+                                remainingTime: quizState.remainingTime,
+                                option: submitData.optionIds,
+                                clearState: true
+                            },
+                            success: function(response) {
+                                if (response.status === 'success' && response.examId) {
+                                    history.replaceState(null, null, '/student/quiz/' + response
+                                        .examId + '/result');
+                                    window.location.href = '/student/quiz/' + response.examId +
+                                        '/result';
+                                } else {
+                                    alert(response.message ||
+                                        'Natijalar sahifasiga yo\'naltirishda xatolik yuz berdi.'
+                                        );
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                handleAjaxError(xhr, status, error,
+                                    "Urinishni yakunlashda xatolik yuz berdi");
                             }
-                        },
-                        error: function(xhr, status, error) {
-                            handleAjaxError(xhr, status, error,
-                                "Urinishni yakunlashda xatolik yuz berdi");
-                        }
-                    });
+                        });
+                    }
+                });
+            }
+
+            // Sahifa yopilganda holatni saqlash
+            window.addEventListener('beforeunload', function(event) {
+                if (quizFinished) {
+                    return;
                 }
+                event.returnValue = "Siz testni tark etmoqdasiz. O'zgarishlar saqlanmasligi mumkin.";
+                clearTimeout(saveStateTimeout);
+                saveQuizStateToServer(false);
             });
 
-            // --- Dastlabki Sozlash (Serverdan holatni yuklash bilan) ---
+            // Dastlabki sozlash
             initializeQuizState();
         });
     </script>
