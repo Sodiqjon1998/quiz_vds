@@ -481,28 +481,61 @@
         </div>
     </div>
 
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['\\(', '\\)'],
+                    ['$', '$']
+                ],
+                displayMath: [
+                    ['\\[', '\\]'],
+                    ['$$', '$$']
+                ],
+                processEscapes: true,
+                processEnvironments: true,
+                tags: 'ams',
+                packages: {
+                    '[+]': ['base', 'newcommand', 'configmacros', 'action', 'amsmath', 'amsfonts', 'amssymb']
+                }
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            },
+            startup: {
+                ready: function() {
+                    console.log('MathJax yuklanmoqda...');
+                    MathJax.startup.defaultReady();
+                    console.log('MathJax tayyor!');
+                }
+            }
+        };
+    </script>
+
     <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
     <script type="text/javascript" id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
         quizFinished = false; // <-- BU YERDA QO'SHING!
         $(document).ready(function() {
-            // MathJax sozlamalari
-            window.MathJax = {
-                tex: {
-                    inlineMath: [
-                        ['\\(', '\\)']
-                    ],
-                    displayMath: [
-                        ['\\[', '\\]']
-                    ]
-                },
-                options: {
-                    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-                    ignoreHtmlClass: 'tex2jax_ignore',
-                    processHtmlClass: 'tex2jax_process'
-                }
-            };
+            // // MathJax sozlamalari
+            // window.MathJax = {
+            //     tex: {
+            //         inlineMath: [
+            //             ['\\(', '\\)']
+            //         ],
+            //         displayMath: [
+            //             ['\\[', '\\]']
+            //         ]
+            //     },
+            //     options: {
+            //         skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            //         ignoreHtmlClass: 'tex2jax_ignore',
+            //         processHtmlClass: 'tex2jax_process'
+            //     }
+            // };
 
             let quizFinished = false;
 
@@ -569,7 +602,7 @@
             }
 
             function handleAjaxError(xhr, status, error, contextMessage =
-            "Server bilan aloqada xatolik yuz berdi") {
+                "Server bilan aloqada xatolik yuz berdi") {
                 console.error(contextMessage + ':', status, error);
                 console.error('XHR javobi:', xhr.responseText);
                 console.error('Status kodi:', xhr.status);
@@ -629,72 +662,6 @@
                 });
             }
 
-            // Test holatini tiklash funksiyasi
-            async function initializeQuizState() {
-                try {
-                    const savedState = await loadQuizStateFromServer();
-
-                    if (savedState && savedState.currentQuestionIndex !== undefined) {
-                        quizState.currentQuestionIndex = savedState.currentQuestionIndex;
-                        quizState.remainingTime = savedState.remainingTime !== null ? savedState.remainingTime :
-                            0;
-
-                        quizState.userAnswers = savedState.userAnswers && savedState.userAnswers !== "" ?
-                            JSON.parse(savedState.userAnswers) : [];
-                        quizState.questionStatuses = savedState.questionStatuses && savedState
-                            .questionStatuses !== "" ?
-                            JSON.parse(savedState.questionStatuses) : {};
-
-                        currentQuestionIndex = quizState.currentQuestionIndex;
-                        console.log("Serverdan saqlangan holat yuklandi:", quizState);
-                    } else {
-                        console.log("Yangi test holati boshlanmoqda.");
-
-                        // Dastlabki vaqtni HH:MM:SS formatidan sekundlarga o'girish
-                        const parts = quizApi.attachment.time.split(':');
-                        let hours = 0;
-                        let minutes = 0;
-                        let seconds = 0;
-
-                        if (parts.length === 3) {
-                            hours = parseInt(parts[0], 10) || 0;
-                            minutes = parseInt(parts[1], 10) || 0;
-                            seconds = parseInt(parts[2], 10) || 0;
-                        } else if (parts.length === 2) {
-                            minutes = parseInt(parts[0], 10) || 0;
-                            seconds = parseInt(parts[1], 10) || 0;
-                        }
-
-                        quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
-                        console.log("Dastlabki vaqt o'rnatildi:", formatTime(quizState.remainingTime));
-                    }
-
-                    // Dastlabki sozlashlarni bajarish
-                    generateQuestionButtons();
-                    await loadQuestion(currentQuestionIndex);
-                    updateTimer();
-
-                } catch (error) {
-                    console.error("Quiz holatini tiklashda xato:", error);
-                    // Xato bo'lsa ham dastlabki holatni o'rnatish
-                    const parts = quizApi.attachment.time.split(':');
-                    let hours = 0;
-                    let minutes = 0;
-                    let seconds = 0;
-
-                    if (parts.length === 3) {
-                        hours = parseInt(parts[0], 10) || 0;
-                        minutes = parseInt(parts[1], 10) || 0;
-                        seconds = parseInt(parts[2], 10) || 0;
-                    }
-
-                    quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
-                    generateQuestionButtons();
-                    await loadQuestion(0);
-                    updateTimer();
-                }
-            }
-
             function generateQuestionButtons() {
                 if (!questionGrid) return;
 
@@ -744,22 +711,39 @@
                     currentQuestionDisplay.textContent = index + 1;
                 }
 
+                // Savol matni uchun MathJax
                 if (questionTextElement) {
-                    questionTextElement.innerHTML = question.text;
-                    // MathJax mavjud bo'lsa ishlatish
+                    // LaTeX formatida matn bo'lsa, MathJax delimiterlari bilan o'rab olish
+                    let questionText = question.text;
+
+                    // Agar matn \text{} yoki boshqa LaTeX buyruqlarini o'z ichiga olsa
+                    if (questionText.includes('\\text{') || questionText.includes('\\') || questionText
+                        .includes('_')) {
+                        questionText = '\\(' + questionText + '\\)';
+                    }
+
+                    questionTextElement.innerHTML = questionText;
+
+                    // MathJax render qilish
                     if (window.MathJax && window.MathJax.typesetPromise) {
                         try {
                             await window.MathJax.typesetPromise([questionTextElement]);
+                            console.log('Savol MathJax bilan render qilindi');
                         } catch (error) {
-                            console.warn("MathJax xatosi:", error);
+                            console.warn("Savol MathJax xatosi:", error);
+                            // Xato bo'lsa oddiy matn sifatida ko'rsatish
+                            questionTextElement.textContent = question.text;
                         }
                     }
                 }
 
+                // Variantlar uchun
                 if (optionsForm) {
                     optionsForm.innerHTML = '';
 
-                    question.options.forEach((option, i) => {
+                    for (let i = 0; i < question.options.length; i++) {
+                        const option = question.options[i];
+
                         const div = document.createElement('div');
                         div.classList.add('option-item');
 
@@ -771,28 +755,40 @@
 
                         const label = document.createElement('label');
                         label.htmlFor = `option-${question.id}-${option.id}`;
-                        label.innerHTML = option.text;
+
+                        // Variant matni uchun MathJax
+                        let optionText = option.text;
+
+                        // Agar matn LaTeX buyruqlarini o'z ichiga olsa
+                        if (optionText.includes('\\text{') || optionText.includes('\\') || optionText.includes(
+                                '_')) {
+                            optionText = '\\(' + optionText + '\\)';
+                        }
+
+                        label.innerHTML = optionText;
 
                         // Foydalanuvchi javobini tekshirish
                         const userAnswer = quizState.userAnswers.find(ua =>
                             ua.question_id.toString() === question.id.toString()
                         );
-                        if (userAnswer && userAnswer.selected_option_id.toString() === option.id
-                            .toString()) {
+                        if (userAnswer && userAnswer.selected_option_id.toString() === option.id.toString()) {
                             radioInput.checked = true;
                         }
 
                         div.appendChild(radioInput);
                         div.appendChild(label);
                         optionsForm.appendChild(div);
+                    }
 
-                        // MathJax mavjud bo'lsa label uchun ham ishlatish
-                        if (window.MathJax && window.MathJax.typesetPromise) {
-                            window.MathJax.typesetPromise([label]).catch(error => {
-                                console.warn("MathJax label xatosi:", error);
-                            });
+                    // Barcha variantlar uchun MathJax render qilish
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        try {
+                            await window.MathJax.typesetPromise([optionsForm]);
+                            console.log('Variantlar MathJax bilan render qilindi');
+                        } catch (error) {
+                            console.warn("Variantlar MathJax xatosi:", error);
                         }
-                    });
+                    }
                 }
 
                 if (markForReviewCheckbox) {
@@ -802,6 +798,89 @@
 
                 generateQuestionButtons();
                 updateNavigationButtons();
+            }
+
+            // MathJax tayyor bo'lishini kutish funksiyasi
+            function waitForMathJax() {
+                return new Promise((resolve) => {
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        resolve();
+                    } else {
+                        // 100ms kutib qayta tekshirish
+                        setTimeout(() => {
+                            waitForMathJax().then(resolve);
+                        }, 100);
+                    }
+                });
+            }
+
+            // initializeQuizState funksiyasini yangilash
+            async function initializeQuizState() {
+                try {
+                    // MathJax tayyor bo'lishini kutish
+                    await waitForMathJax();
+                    console.log('MathJax tayyor, quiz holatini tiklash boshlandi');
+
+                    const savedState = await loadQuizStateFromServer();
+
+                    if (savedState && savedState.currentQuestionIndex !== undefined) {
+                        quizState.currentQuestionIndex = savedState.currentQuestionIndex;
+                        quizState.remainingTime = savedState.remainingTime !== null ? savedState.remainingTime :
+                            0;
+
+                        quizState.userAnswers = savedState.userAnswers && savedState.userAnswers !== "" ?
+                            JSON.parse(savedState.userAnswers) : [];
+                        quizState.questionStatuses = savedState.questionStatuses && savedState
+                            .questionStatuses !== "" ?
+                            JSON.parse(savedState.questionStatuses) : {};
+
+                        currentQuestionIndex = quizState.currentQuestionIndex;
+                        console.log("Serverdan saqlangan holat yuklandi:", quizState);
+                    } else {
+                        console.log("Yangi test holati boshlanmoqda.");
+
+                        const parts = quizApi.attachment.time.split(':');
+                        let hours = 0;
+                        let minutes = 0;
+                        let seconds = 0;
+
+                        if (parts.length === 3) {
+                            hours = parseInt(parts[0], 10) || 0;
+                            minutes = parseInt(parts[1], 10) || 0;
+                            seconds = parseInt(parts[2], 10) || 0;
+                        } else if (parts.length === 2) {
+                            minutes = parseInt(parts[0], 10) || 0;
+                            seconds = parseInt(parts[1], 10) || 0;
+                        }
+
+                        quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
+                        console.log("Dastlabki vaqt o'rnatildi:", formatTime(quizState.remainingTime));
+                    }
+
+                    // Dastlabki sozlashlarni bajarish
+                    generateQuestionButtons();
+                    await loadQuestion(currentQuestionIndex);
+                    updateTimer();
+
+                } catch (error) {
+                    console.error("Quiz holatini tiklashda xato:", error);
+                    // Xato bo'lsa ham dastlabki holatni o'rnatish
+                    const parts = quizApi.attachment.time.split(':');
+                    let hours = 0;
+                    let minutes = 0;
+                    let seconds = 0;
+
+                    if (parts.length === 3) {
+                        hours = parseInt(parts[0], 10) || 0;
+                        minutes = parseInt(parts[1], 10) || 0;
+                        seconds = parseInt(parts[2], 10) || 0;
+                    }
+
+                    quizState.remainingTime = (hours * 3600) + (minutes * 60) + seconds;
+                    generateQuestionButtons();
+                    await loadQuestion(0);
+                    updateTimer();
+                }
             }
 
             function updateNavigationButtons() {
@@ -864,13 +943,13 @@
                                 } else {
                                     alert(response.message ||
                                         'Natijalar sahifasiga yo\'naltirishda xatolik yuz berdi.'
-                                        );
+                                    );
                                 }
                             },
                             error: function(xhr, status, error) {
                                 handleAjaxError(xhr, status, error,
                                     "Vaqt tugadi, ammo ma'lumotlarni saqlashda xatolik yuz berdi"
-                                    );
+                                );
                             }
                         });
                         return;
@@ -938,7 +1017,7 @@
 
                         if (existingAnswerIndex > -1) {
                             quizState.userAnswers[existingAnswerIndex].selected_option_id =
-                            selectedOptionId;
+                                selectedOptionId;
                         } else {
                             quizState.userAnswers.push({
                                 question_id: currentQuestion.id,
@@ -1008,7 +1087,7 @@
                                 } else {
                                     alert(response.message ||
                                         'Natijalar sahifasiga yo\'naltirishda xatolik yuz berdi.'
-                                        );
+                                    );
                                 }
                             },
                             error: function(xhr, status, error) {
