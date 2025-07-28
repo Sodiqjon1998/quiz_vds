@@ -1082,8 +1082,9 @@
                                 if (response.status === 'success' && response.examId) {
                                     history.replaceState(null, null, '/student/quiz/' + response
                                         .examId + '/result');
-                                    window.location.href = '/student/quiz/' + response.examId +
-                                        '/result';
+                                    // window.location.href = '/student/quiz/' + response.examId +
+                                    //     '/result';
+                                    window.location.href = '/student';
                                 } else {
                                     alert(response.message ||
                                         'Natijalar sahifasiga yo\'naltirishda xatolik yuz berdi.'
