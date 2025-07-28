@@ -73,6 +73,7 @@
                                             echo $all > 0 ? round(($correct / $all) * 100, 2) : 0;
                                         @endphp
                                     </strong>
+                                    %
                                 </td>
                                 <td>
                                     {{ $item->created_at }}
