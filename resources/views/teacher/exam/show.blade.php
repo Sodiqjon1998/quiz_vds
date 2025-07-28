@@ -40,6 +40,7 @@
                         <th>To'g'ri javobi</th>
                         <th>Xato javobi</th>
                         <th>Umumiy savol</th>
+                        <th>Foiz(%)</th>
                         <th>Kiritilgan vaqti</th>
                         <th>Action</th>
                     </tr>
@@ -63,6 +64,15 @@
                                 </td>
                                 <td>
                                     <strong style="color: crimson">{{ Exam::allQuestions($item->id) }}</strong>
+                                </td>
+                                <td>
+                                    <strong style="color: darkblue">
+                                        @php
+                                            $correct = Exam::correctCount($item->id);
+                                            $all = Exam::allQuestions($item->id);
+                                            echo $all > 0 ? round(($correct / $all) * 100, 2) : 0;
+                                        @endphp
+                                    </strong>
                                 </td>
                                 <td>
                                     {{ $item->created_at }}
