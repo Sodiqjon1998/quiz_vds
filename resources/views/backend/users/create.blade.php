@@ -10,7 +10,8 @@ use App\Models\User;
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Bosh sahifa</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('backend.user.index') }}">O'qituvchilar va Kordinatorlar</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('backend.user.index') }}">O'qituvchilar va Kordinatorlar</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Yangi qo'shish</li>
         </ol>
     </nav>
@@ -42,19 +43,19 @@ use App\Models\User;
                         @csrf
                         <div class="form-floating form-floating-outline mb-6">
                             <input type="text" name="first_name" class="form-control" id="basic-default-firstname"
-                                placeholder="Ism" required>
+                                   placeholder="Ism" required>
                             <label for="basic-default-firstname">Ism</label>
                         </div>
                         <div class="form-floating form-floating-outline mb-6">
                             <input type="text" name="last_name" class="form-control" id="basic-default-lastname"
-                                placeholder="Familya" required>
+                                   placeholder="Familya" required>
                             <label for="basic-default-lastname">Familya</label>
                         </div>
                         <div class="row">
                             <div class="col-xl-6 col-md-6 col-sm-12 mb-6">
                                 <div class="form-floating form-floating-outline mb-6">
                                     <input type="text" name="name" class="form-control" id="basic-default-login"
-                                        placeholder="Login" required>
+                                           placeholder="Login" required>
                                     <label for="basic-default-login">Login</label>
                                 </div>
                             </div>
@@ -63,7 +64,7 @@ use App\Models\User;
                                     <span class="input-group-text">UZ (+998)</span>
                                     <div class="form-floating form-floating-outline">
                                         <input type="text" id="phone-number-mask" class="form-control phone-number-mask"
-                                            placeholder="90 202 555 01" name="phone">
+                                               placeholder="90 202 555 01" name="phone">
                                         <label for="phone-number-mask">Telefon raqam</label>
                                     </div>
                                 </div>
@@ -75,21 +76,23 @@ use App\Models\User;
                                     <div class="input-group input-group-merge">
                                         <div class="form-floating form-floating-outline">
                                             <input type="email" name="email" id="basic-default-email"
-                                                class="form-control" placeholder="Email" aria-label="john.doe"
-                                                aria-describedby="basic-default-email2" required>
+                                                   class="form-control" placeholder="Email" aria-label="john.doe"
+                                                   aria-describedby="basic-default-email2" required>
                                             <label for="basic-default-email">Email</label>
                                         </div>
                                         <span class="input-group-text" id="basic-default-email2">@example.com</span>
                                     </div>
-                                    <div class="form-text"> Harflar, raqamlar va nuqtalardan foydalanishingiz mumkin</div>
+                                    <div class="form-text"> Harflar, raqamlar va nuqtalardan foydalanishingiz mumkin
+                                    </div>
                                 </div>
                             </div>
                             {{-- Fan tanlash maydoni --}}
                             <div class="col-md-6 mb-6" id="subject-selection-container" style="display: none">
                                 <div class="form-floating form-floating-outline">
                                     <select id="select2Basic" class="select2 form-select form-select-lg"
-                                        data-allow-clear="true" name="subject_id">
-                                        <option value="">Fan nomini tanlang</option> {{-- Tanlanmagan holat uchun bo'sh qiymat --}}
+                                            data-allow-clear="true" name="subject_id">
+                                        <option value="">Fan nomini tanlang
+                                        </option> {{-- Tanlanmagan holat uchun bo'sh qiymat --}}
                                         @foreach (User::getSubjectsList() as $key => $item)
                                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                                         @endforeach
@@ -106,7 +109,7 @@ use App\Models\User;
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input user-type-radio"
-                                                value="{{ User::TYPE_ADMIN }}" name="user_type" checked>
+                                                   value="{{ User::TYPE_ADMIN }}" name="user_type" checked>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -116,7 +119,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input user-type-radio"
-                                                value="{{ User::TYPE_TEACHER }}" name="user_type">
+                                                   value="{{ User::TYPE_TEACHER }}" name="user_type">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -126,7 +129,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input user-type-radio"
-                                                value="{{ User::TYPE_KOORDINATOR }}" name="user_type">
+                                                   value="{{ User::TYPE_KOORDINATOR }}" name="user_type">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -141,7 +144,7 @@ use App\Models\User;
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input" value="{{ User::STATUS_ACTIVE }}"
-                                                name="status" checked>
+                                                   name="status" checked>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -151,7 +154,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input"
-                                                value="{{ User::STATUS_IN_ACTIVE }}" name="status">
+                                                   value="{{ User::STATUS_IN_ACTIVE }}" name="status">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -159,37 +162,40 @@ use App\Models\User;
                                             <span class="switch-label">Bloklangan</span>
                                         </label>
                                     </div>
-                                    <F>
                                 </div>
                                 <button type="submit" class="btn btn-primary float-end">Saqlash</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-@endsection
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const radioButtons = document.querySelectorAll('.user-type-radio');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const radioButtons = document.querySelectorAll('.user-type-radio');
 
-        radioButtons.forEach(function(radio) {
-            radio.addEventListener('change', function() {
-                console.log('Tanlangan qiymat:', this.value);
+            radioButtons.forEach(function (radio) {
+                radio.addEventListener('change', function () {
+                    console.log('Tanlangan qiymat:', this.value);
 
-                // Fan maydonini ko'rsatish/yashirish
-                const subjectContainer = document.getElementById('subject-selection-container');
-                const subjectSelect = document.getElementById('select2Basic');
+                    // Fan maydonini ko'rsatish/yashirish
+                    const subjectContainer = document.getElementById('subject-selection-container');
+                    const subjectSelect = document.getElementById('select2Basic');
 
-                if (this.value == '{{ User::TYPE_TEACHER }}') {
-                    subjectContainer.style.display = 'block';
-                    subjectSelect.required = true;
-                } else {
-                    subjectContainer.style.display = 'none';
-                    subjectSelect.required = false;
-                    subjectSelect.value = '';
-                }
+                    if (this.value == '{{ User::TYPE_TEACHER }}') {
+                        subjectContainer.style.display = 'block';
+                        subjectSelect.required = true;
+                    } else {
+                        subjectContainer.style.display = 'none';
+                        subjectSelect.required = false;
+                        subjectSelect.value = '';
+                    }
+                });
             });
         });
-    });
-</script>
+    </script>
+@endsection
+
+
