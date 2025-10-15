@@ -11,6 +11,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "laravelcollective/html": "^6.4",
+        "livewire/livewire": "2.12",
         "maatwebsite/excel": "^3.1",
         "phpmailer/phpmailer": "^6.9",
         "phpoffice/phpword": "^1.4",

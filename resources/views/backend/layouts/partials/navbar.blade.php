@@ -57,7 +57,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <span class="fw-medium d-block small"><?= Auth::user()->name ?></span>
-                                    <small class="text-muted">Admin</small>
+                                    <small class="text-muted">Super admin</small>
                                 </div>
                             </div>
                         </a>

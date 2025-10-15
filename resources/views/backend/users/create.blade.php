@@ -173,7 +173,7 @@ use App\Models\User;
     </div>
 
     <script>
-        
+
         document.addEventListener('DOMContentLoaded', function () {
             const radioButtons = document.querySelectorAll('.user-type-radio');
 

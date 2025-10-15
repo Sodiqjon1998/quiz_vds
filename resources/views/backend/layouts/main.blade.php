@@ -31,13 +31,14 @@
           content="dashboard, material, material design, bootstrap 5 dashboard, bootstrap 5 design, bootstrap 5">
     <!-- Canonical SEO -->
     <link rel="canonical" href="https://1.envato.market/materialize_admin">
-{{-- BOOTSTRAP --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    {{-- BOOTSTRAP --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
 
     <!-- ? PROD Only: Google Tag Manager (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
     <script>
-        (function(w, d, s, l, i) {
+        (function (w, d, s, l, i) {
             w[l] = w[l] || [];
             w[l].push({
                 'gtm.start': new Date().getTime(),
@@ -101,74 +102,76 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset('assets/js/config.js') }}"></script>
 
+
+    @livewireStyles
 </head>
 
 <body>
 
 
-<!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
-<noscript>
-    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5J3LMKC" height="0" width="0"
-            style="display: none; visibility: hidden"></iframe>
-</noscript>
-<!-- End Google Tag Manager (noscript) -->
+    <!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5J3LMKC" height="0" width="0"
+                style="display: none; visibility: hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
-<!-- Layout wrapper -->
-<div class="layout-wrapper layout-content-navbar  ">
-    <div class="layout-container">
-
-
-        <!-- Menu -->
-
-        @include('backend.layouts.partials.aside')
-        <!-- / Menu -->
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar  ">
+        <div class="layout-container">
 
 
-        <!-- Layout container -->
-        <div class="layout-page">
+            <!-- Menu -->
 
-            <!-- Navbar -->
-
-            @include('backend.layouts.partials.navbar')
-
-            <!-- / Navbar -->
-
-            <!-- Content wrapper -->
-            <div class="content-wrapper">
-
-                <!-- Content -->
-                <div class="container-xxl flex-grow-1 container-p-y">
+            @include('backend.layouts.partials.aside')
+            <!-- / Menu -->
 
 
-                    @yield('content')
+            <!-- Layout container -->
+            <div class="layout-page">
 
+                <!-- Navbar -->
+
+                @include('backend.layouts.partials.navbar')
+
+                <!-- / Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+
+
+                        @yield('content')
+
+                    </div>
+                    <!-- /Content -->
+
+                    <!-- Footer -->
+                    @include('backend.layouts.partials.footer')
+                    <!-- / Footer -->
+
+
+                    <div class="content-backdrop fade"></div>
                 </div>
-                <!-- /Content -->
-
-                <!-- Footer -->
-                @include('backend.layouts.partials.footer')
-                <!-- / Footer -->
-
-
-                <div class="content-backdrop fade"></div>
+                <!-- Content wrapper -->
             </div>
-            <!-- Content wrapper -->
+            <!-- / Layout page -->
         </div>
-        <!-- / Layout page -->
+
+
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+
+
+        <!-- Drag Target Area To SlideIn Menu On Small Screens -->
+        <div class="drag-target"></div>
     </div>
+    </div>
+    <!-- / Layout wrapper -->
 
-
-    <!-- Overlay -->
-    <div class="layout-overlay layout-menu-toggle"></div>
-
-
-    <!-- Drag Target Area To SlideIn Menu On Small Screens -->
-    <div class="drag-target"></div>
-</div>
-</div>
-<!-- / Layout wrapper -->
-
-
+    @livewireScripts
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/core.js -->
 <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
@@ -202,7 +205,6 @@
 <script src="{{ asset('assets/vendor/libs/bloodhound/bloodhound.js') }}"></script>
 
 
-
 <!-- Main JS -->
 <script src="{{ asset('assets/js/main.js') }}"></script>
 
@@ -224,7 +226,7 @@
     window.replainSettings = {
         id: '95f6de91-7691-4565-8411-448079268f89'
     };
-    (function(u) {
+    (function (u) {
         var s = document.createElement('script');
         s.async = true;
         s.src = u;
