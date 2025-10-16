@@ -30,7 +30,7 @@
 
             {{-- Students Table --}}
             <div class="table-responsive">
-                <table class="table table-striped table-hover table-bordered table-hover table-sm text-center">
+                <table class="table table-striped table-hover table-bordered table-sm text-center">
                     <thead>
                     <tr>
                         <th>ID</th>
@@ -100,12 +100,46 @@
                         <form wire:submit.prevent="saveStudent">
                             {{-- Name --}}
                             <div class="mb-3">
-                                <label class="form-label">Ism <span class="text-danger">*</span></label>
+                                <label class="form-label">Username <span class="text-danger">*</span></label>
                                 <input
                                     type="text"
                                     wire:model="name"
                                     class="form-control @error('name') is-invalid @enderror">
                                 @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- First Name --}}
+                            <div class="mb-3">
+                                <label class="form-label">Ism <span class="text-danger">*</span></label>
+                                <input
+                                    type="text"
+                                    wire:model="first_name"
+                                    class="form-control @error('first_name') is-invalid @enderror">
+                                @error('first_name') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Last Name --}}
+                            <div class="mb-3">
+                                <label class="form-label">Familya <span class="text-danger">*</span></label>
+                                <input
+                                    type="text"
+                                    wire:model="last_name"
+                                    class="form-control @error('last_name') is-invalid @enderror">
+                                @error('last_name') <span class="text-danger">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Classes --}}
+                            <div class="mb-3">
+                                <label class="form-label">Sinfi <span class="text-danger">*</span></label>
+                                <select id="select2Basic" class="select2 form-select form-select-lg"
+                                        data-allow-clear="true" name="classes_id" required>
+                                    <option value=""></option>
+                                    @foreach(\App\Models\User::getClassesList() as $key => $item)
+                                        <option
+                                            value="{{$item->id}}">{{$item->name}}</option>
+                                    @endforeach
+                                </select>
+                                @error('classes_id') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
                             {{-- Email --}}
@@ -127,25 +161,6 @@
                                     class="form-control @error('phone') is-invalid @enderror"
                                     placeholder="+998 90 123 45 67">
                                 @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-
-                            {{-- Password --}}
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    Parol
-                                    @if(!$isEdit)
-                                        <span class="text-danger">*</span>
-                                    @endif
-                                    @if($isEdit)
-                                        <small class="text-muted">(Bo'sh qoldiring agar o'zgartirmoqchi
-                                            bo'lmasangiz)</small>
-                                    @endif
-                                </label>
-                                <input
-                                    type="password"
-                                    wire:model="password"
-                                    class="form-control @error('password') is-invalid @enderror">
-                                @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
                             {{-- Buttons --}}

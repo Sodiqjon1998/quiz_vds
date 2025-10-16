@@ -13,7 +13,7 @@ class StudentManager extends Component
     // Properties
     public $search = '';
     public $studentId;
-    public $name, $email, $phone, $password;
+    public $name, $email, $phone, $password, $first_name, $last_name, $classes_id, $status;
     public $isEdit = false;
     public $showModal = false;
 
@@ -23,12 +23,27 @@ class StudentManager extends Component
     protected function rules()
     {
         return [
-            'name' => 'required|min:3',
+            'name' => 'required|min:3|unique:users,name,' . $this->studentId,
             'email' => 'required|email|unique:users,email,' . $this->studentId,
             'phone' => 'nullable|string',
             'password' => $this->isEdit ? 'nullable|min:6' : 'required|min:6',
         ];
     }
+
+
+    protected $messages = [
+        'name.required' => 'Username kiritish majburiy',
+        'name.unique' => 'Bu username allaqachon band',
+        'first_name.required' => 'Ism kiritish majburiy',
+        'last_name.required' => 'Familya kiritish majburiy',
+        'email.required' => 'Email kiritish majburiy',
+        'email.unique' => 'Bu email allaqachon ro\'yxatdan o\'tgan',
+        'email.email' => 'Email noto\'g\'ri formatda',
+        'password.required' => 'Parol kiritish majburiy',
+        'password.min' => 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak',
+        'classes_id.required' => 'Sinfni tanlash majburiy',
+    ];
+
 
     // Real-time validation
     public function updated($propertyName)
@@ -51,8 +66,12 @@ class StudentManager extends Component
             // Update
             $student = User::find($this->studentId);
             $student->name = $this->name;
+            $student->first_name = $this->first_name;
+            $student->last_name = $this->last_name;
+            $student->classes_id = $this->classes_id;
             $student->email = $this->email;
             $student->phone = $this->phone;
+            $student->status = User::STATUS_ACTIVE;
 
             if ($this->password) {
                 $student->password = bcrypt($this->password);
@@ -63,10 +82,15 @@ class StudentManager extends Component
         } else {
             // Create
             User::create([
+
                 'name' => $this->name,
                 'email' => $this->email,
+                'first_name' => $this->first_name,
+                'last_name' => $this->last_name,
+                'classes_id' => $this->classes_id,
+                'status' => User::STATUS_ACTIVE,
                 'phone' => $this->phone,
-                'password' => bcrypt($this->password),
+                'password' => \Hash::make('12345678'),
                 'user_type' => User::TYPE_STUDENT
             ]);
 
