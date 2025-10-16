@@ -195,8 +195,8 @@ use App\Models\User;
                     }
                 });
             });
+        })
     </script>
-        });
 @endsection
 
 

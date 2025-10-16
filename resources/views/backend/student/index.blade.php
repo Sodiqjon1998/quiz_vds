@@ -210,5 +210,5 @@ use App\Models\User;
     {{--    </script>--}}
 
 
-    @livewire('backend.student-manager')
+    @livewire('backend.student.student-manager')
 @endsection

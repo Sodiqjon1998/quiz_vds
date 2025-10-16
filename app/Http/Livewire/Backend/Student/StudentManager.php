@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire\Backend;
+namespace App\Http\Livewire\Backend\Student;
 
 use App\Models\User;
 use Livewire\Component;
@@ -27,6 +27,9 @@ class StudentManager extends Component
             'email' => 'required|email|unique:users,email,' . $this->studentId,
             'phone' => 'nullable|string',
             'password' => $this->isEdit ? 'nullable|min:6' : 'required|min:6',
+            'first_name' => 'required|min:3',
+            'last_name' => 'required|min:3',
+            'classes_id' => 'required|exists:classes,id',
         ];
     }
 
@@ -177,7 +180,7 @@ class StudentManager extends Component
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('livewire.backend.student-manager', [
+        return view('livewire.backend.student.student-manager', [
             'students' => $students
         ]);
     }
