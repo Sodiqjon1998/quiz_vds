@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Livewire\Backend\Users;
+namespace App\Livewire\Backend\Users;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -28,9 +28,16 @@ class UsersManager extends Component
     public $phone;
     public $password;
     public $confirm_password;
-    public $user_type = Users::TYPE_ADMIN;
-    public $status = Users::STATUS_ACTIVE;
+    public $user_type;
+    public $status;
     public $subject_id;
+
+    // Constructor - default qiymatlar
+    public function mount()
+    {
+        $this->user_type = $this->user_type ?? Users::TYPE_ADMIN;
+        $this->status = $this->status ?? Users::STATUS_ACTIVE;
+    }
 
     // Table
     public $search = '';
@@ -79,7 +86,7 @@ class UsersManager extends Component
         'subject_id.required' => 'O\'qituvchi uchun fanni tanlash majburiy',
     ];
 
-    // Users type o'zgarganda
+    // User type o'zgarganda
     public function updatedUserType($value)
     {
         if ($value !== Users::TYPE_TEACHER) {
@@ -114,7 +121,7 @@ class UsersManager extends Component
         $this->email = $user->email;
         $this->phone = $user->phone;
         $this->user_type = $user->user_type;
-        $this->status = $user->status;
+        $this->status = (int) $user->status; // Integer ga aylantirish
         $this->subject_id = $user->subject_id;
         $this->password = '';
         $this->confirm_password = '';
@@ -125,6 +132,7 @@ class UsersManager extends Component
     public function saveUser()
     {
         $this->validate();
+
         $data = [
             'name' => $this->name,
             'first_name' => $this->first_name,

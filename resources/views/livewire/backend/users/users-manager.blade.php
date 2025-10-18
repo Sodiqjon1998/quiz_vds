@@ -84,7 +84,6 @@
                                 <button
                                     wire:click="editUser({{ $user->id }})"
                                     class="btn btn-sm btn-warning">
-
                                     <i style="font-size: 16px" class="ri-pencil-line"></i>
                                 </button>
                                 <button
@@ -160,7 +159,6 @@
                                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
 
-
                                 {{-- Phone --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Telefon raqam</label>
@@ -192,12 +190,9 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">
                                         Parol
-                                        @if(!$isEdit)
-                                            <span class="text-danger">*</span>
-                                        @endif
+                                        @if(!$isEdit) <span class="text-danger">*</span> @endif
                                         @if($isEdit)
-                                            <small class="text-muted">(Bo'sh qoldiring agar o'zgartirmoqchi
-                                                bo'lmasangiz)</small>
+                                            <small class="text-muted">(Bo'sh qoldiring agar o'zgartirmoqchi bo'lmasangiz)</small>
                                         @endif
                                     </label>
                                     <input
@@ -211,9 +206,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">
                                         Parolni tasdiqlang
-                                        @if(!$isEdit)
-                                            <span class="text-danger">*</span>
-                                        @endif
+                                        @if(!$isEdit) <span class="text-danger">*</span> @endif
                                     </label>
                                     <input
                                         type="password"
@@ -223,9 +216,8 @@
                                 </div>
                             </div>
 
-
                             <div class="row">
-                                {{-- Users Type --}}
+                                {{-- User Type --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Lavozim <span class="text-danger">*</span></label>
                                     <div class="form-check">
@@ -273,10 +265,9 @@
                                 </div>
                             </div>
 
-
                             {{-- Subject (faqat o'qituvchi uchun) --}}
-                            @if($user_type === \App\Models\Users::TYPE_TEACHER)
-                                <div class="mb-3">
+                            <div class="mb-3">
+                                @if($user_type === \App\Models\Users::TYPE_TEACHER)
                                     <label class="form-label">Fan <span class="text-danger">*</span></label>
                                     <select wire:model="subject_id"
                                             class="form-select @error('subject_id') is-invalid @enderror">
@@ -289,8 +280,10 @@
                                         @endforeach
                                     </select>
                                     @error('subject_id') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
-                            @endif
+                                @else
+                                    <small class="text-muted">O'qituvchi lavozimini tanlasangiz, fan tanlash maydoni paydo bo'ladi</small>
+                                @endif
+                            </div>
 
                             {{-- Buttons --}}
                             <div class="d-flex justify-content-end gap-2">
@@ -345,7 +338,6 @@
                                             <small class="text-muted d-block">Email</small>
                                             <strong>{{ $viewingUser->email }}</strong>
                                         </div>
-
 
                                         <div class="mb-3">
                                             <small class="text-muted d-block">Telefon</small>
