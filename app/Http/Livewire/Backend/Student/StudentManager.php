@@ -2,7 +2,7 @@
 
 namespace App\Http\Livewire\Backend\Student;
 
-use App\Models\User;
+use App\Models\Users;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -67,14 +67,14 @@ class StudentManager extends Component
 
         if ($this->isEdit) {
             // Update
-            $student = User::find($this->studentId);
+            $student = Users::find($this->studentId);
             $student->name = $this->name;
             $student->first_name = $this->first_name;
             $student->last_name = $this->last_name;
             $student->classes_id = $this->classes_id;
             $student->email = $this->email;
             $student->phone = $this->phone;
-            $student->status = User::STATUS_ACTIVE;
+            $student->status = Users::STATUS_ACTIVE;
 
             if ($this->password) {
                 $student->password = bcrypt($this->password);
@@ -84,17 +84,17 @@ class StudentManager extends Component
             session()->flash('message', 'Student muvaffaqiyatli yangilandi!');
         } else {
             // Create
-            User::create([
+            Users::create([
 
                 'name' => $this->name,
                 'email' => $this->email,
                 'first_name' => $this->first_name,
                 'last_name' => $this->last_name,
                 'classes_id' => $this->classes_id,
-                'status' => User::STATUS_ACTIVE,
+                'status' => Users::STATUS_ACTIVE,
                 'phone' => $this->phone,
                 'password' => \Hash::make('12345678'),
-                'user_type' => User::TYPE_STUDENT
+                'user_type' => Users::TYPE_STUDENT
             ]);
 
             session()->flash('message', 'Yangi student qo\'shildi!');
@@ -107,7 +107,7 @@ class StudentManager extends Component
     // Edit Student
     public function editStudent($id)
     {
-        $student = User::findOrFail($id);
+        $student = Users::findOrFail($id);
         $this->studentId = $student->id;
         $this->name = $student->name;
         $this->email = $student->email;
@@ -119,7 +119,7 @@ class StudentManager extends Component
     // Delete Student
     public function deleteStudent($id)
     {
-        User::find($id)->delete();
+        Users::find($id)->delete();
         session()->flash('message', 'Student o\'chirildi!');
     }
 
@@ -145,9 +145,9 @@ class StudentManager extends Component
 // View Student
     public function viewStudent($id)
     {
-        $this->viewingStudent = User::findOrFail($id); // agar relation bo'lsa
+        $this->viewingStudent = Users::findOrFail($id); // agar relation bo'lsa
         // yoki
-        // $this->viewingStudent = User::findOrFail($id);
+        // $this->viewingStudent = Users::findOrFail($id);
         $this->showViewModal = true;
     }
 
@@ -172,7 +172,7 @@ class StudentManager extends Component
     // Render
     public function render()
     {
-        $students = User::where('user_type', User::TYPE_STUDENT)
+        $students = Users::where('user_type', Users::TYPE_STUDENT)
             ->where(function($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('email', 'like', '%' . $this->search . '%');

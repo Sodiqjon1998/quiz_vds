@@ -2,7 +2,7 @@
 
 @use(App\Models\Question)
 @use(App\Models\Teacher\Quiz)
-@use(App\Models\User)
+@use(App\Models\Users)
 
 @section('content')
     <style>
@@ -132,7 +132,7 @@
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered table-striped table-hover table-sm text-center"
-                        style="border: 1px solid rgb(201, 198, 198);">
+                           style="border: 1px solid rgb(201, 198, 198);">
                         <tr>
                             <th>Id</th>
                             <td>{{ $model->id }}</td>
@@ -157,16 +157,16 @@
                         </tr>
                         <tr>
                             <th>Yaratuvchi</th>
-                            <td>{{ User::find($model->created_by)->name ?? 'Noma\'lum' }}</td>
+                            <td>{{ Users::find($model->created_by)->name ?? 'Noma\'lum' }}</td>
                         </tr>
                         <tr>
                             <th>Yangilovchi</th>
-                            <td>{{ User::find($model->updated_by)->name ?? 'Noma\'lum' }}</td>
+                            <td>{{ Users::find($model->updated_by)->name ?? 'Noma\'lum' }}</td>
                         </tr>
                     </table>
 
                     <a href="{{ route('teacher.question.create', ['quiz_id' => $model->id]) }}"
-                        class="btn btn-success mt-3">Yangi
+                       class="btn btn-success mt-3">Yangi
                         savol qo'shish</a>
                 </div>
             </div>
@@ -180,26 +180,28 @@
                         @forelse ($questions as $k => $question)
                             <div class="col-md-12 mb-4" id="question-{{ $question->id }}">
                                 <div
-                                    style="border: 1px solid #c2c0c0; border-radius: 10px; padding: 15px; box-shadow: 3px 4px 8px #b3b2b2">
+                                        style="border: 1px solid #c2c0c0; border-radius: 10px; padding: 15px; box-shadow: 3px 4px 8px #b3b2b2">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h3 class="badge bg-label-hover-secondary" style="font-size: 15px; text-align:left;">
-                                            {{ $k + 1 }}. <div class="math-display">
+                                        <h3 class="badge bg-label-hover-secondary"
+                                            style="font-size: 15px; text-align:left;">
+                                            {{ $k + 1 }}.
+                                            <div class="math-display">
                                                 \( {!! $question->name !!} \)
                                             </div>
 
                                         </h3>
                                         <div>
                                             <a href="{{ route('teacher.question.edit', $question->id) }}"
-                                                class="badge bg-label-info badge-lg rounded-pill me-2">
+                                               class="badge bg-label-info badge-lg rounded-pill me-2">
                                                 <i style="font-size: 16px" class="ri-pencil-line"></i> Tahrirlash
                                             </a>
                                             <form action="{{ route('teacher.question.destroy', $question->id) }}"
-                                                method="POST" style="display:inline-block;">
+                                                  method="POST" style="display:inline-block;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    class="badge bg-label-danger badge-lg rounded-pill border-0"
-                                                    onclick="return confirm('Haqiqatan ham bu savolni o‘chirmoqchimisiz?');">
+                                                        class="badge bg-label-danger badge-lg rounded-pill border-0"
+                                                        onclick="return confirm('Haqiqatan ham bu savolni o‘chirmoqchimisiz?');">
                                                     <i style="font-size: 16px" class="ri-delete-bin-line"></i> O'chirish
                                                 </button>
                                             </form>
@@ -214,7 +216,7 @@
                                     @if ($question->image_path)
                                         <div class="mb-3 text-center">
                                             <img src="{{ Storage::url($question->image_path) }}" alt="Question Image"
-                                                style="max-width: 100%; height: auto;">
+                                                 style="max-width: 100%; height: auto;">
                                         </div>
                                     @endif
 
@@ -223,14 +225,14 @@
                                         @foreach ($question->options as $key => $option)
                                             <div class="col-sm-12 mb-2">
                                                 <div class="d-flex align-items-center p-2"
-                                                    style="border: 1px dashed #e0e0e0; border-radius: 5px; background-color: {{ $option->is_correct ? '#e6ffe6' : '#f8f8f8' }}">
+                                                     style="border: 1px dashed #e0e0e0; border-radius: 5px; background-color: {{ $option->is_correct ? '#e6ffe6' : '#f8f8f8' }}">
                                                     <div class="me-2">
                                                         <input type="radio" disabled
-                                                            {{ $option->is_correct == 1 ? 'checked' : '' }}>
+                                                                {{ $option->is_correct == 1 ? 'checked' : '' }}>
                                                     </div>
                                                     <div class="flex-grow-1">
                                                         <span
-                                                            class="{{ $option->is_correct ? 'fw-bold text-success' : '' }}">
+                                                                class="{{ $option->is_correct ? 'fw-bold text-success' : '' }}">
                                                             {{ chr(65 + $key) }}
                                                         </span>
                                                         {{-- Variant matni. math-display klassiga o'ralgan va {!! !!} ishlatilgan --}}
@@ -248,8 +250,8 @@
                             <div class="col-12">
                                 <p class="text-center text-muted">Bu quizga hali savollar qo'shilmagan.</p>
                                 <p class="text-center"><a
-                                        href="{{ route('teacher.question.create', ['quiz_id' => $model->id]) }}"
-                                        class="btn btn-info">Birinchi savolni qo'shish</a></p>
+                                            href="{{ route('teacher.question.create', ['quiz_id' => $model->id]) }}"
+                                            class="btn btn-info">Birinchi savolni qo'shish</a></p>
                             </div>
                         @endforelse
                     </div>
@@ -263,7 +265,7 @@
             <div class="test-navigation-grid">
                 @foreach ($questions as $index => $question)
                     <a href="#question-{{ $question->id }}" class="test-navigation-item"
-                        data-question-id="{{ $question->id }}" title="Savol {{ $index + 1 }}">
+                       data-question-id="{{ $question->id }}" title="Savol {{ $index + 1 }}">
                         {{ $index + 1 }}
                     </a>
                 @endforeach
@@ -272,13 +274,13 @@
     </div>
 
     <script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Sahifadagi barcha 'math-display' klassiga ega elementlarni topish
             const mathElements = document.querySelectorAll('.math-display');
 
-            mathElements.forEach(function(element) {
+            mathElements.forEach(function (element) {
                 // Har bir element ichidagi matnni MathLive yordamida render qilish
                 // `renderMathInElement` funksiyasi MathLive tomonidan avtomatik yaratiladi
                 MathLive.renderMathInElement(element);
@@ -291,7 +293,7 @@
 
             // Navigatsiya tugmalarini bosganda tegishli savolga scroll qilish
             questionItems.forEach(item => {
-                item.addEventListener('click', function(e) {
+                item.addEventListener('click', function (e) {
                     e.preventDefault();
                     const targetId = this.getAttribute('href');
                     const targetElement = document.querySelector(targetId);

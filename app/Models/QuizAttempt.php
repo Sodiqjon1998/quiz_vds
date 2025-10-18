@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property-read Quiz|null $quiz
- * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\Users|null $users
  * @method static \Illuminate\Database\Eloquent\Builder|QuizAttempt newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|QuizAttempt newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|QuizAttempt query()
@@ -36,7 +36,7 @@ class QuizAttempt extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Users::class);
     }
 
     public function quiz()

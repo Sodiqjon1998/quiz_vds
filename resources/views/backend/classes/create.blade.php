@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -40,7 +40,7 @@ use App\Models\User;
                                             data-allow-clear="true" name="koordinator_id">
                                         @foreach(\App\Models\Classes::getKordinatorList() as $key => $item)
                                             <option
-                                                value="{{$item->id}}">{{$item->firs_name . ' ' . $item->last_name. ' Login: '. $item->name}}</option>
+                                                    value="{{$item->id}}">{{$item->firs_name . ' ' . $item->last_name. ' Login: '. $item->name}}</option>
                                         @endforeach
                                     </select>
                                     <label for="select2Basic">Basic</label>

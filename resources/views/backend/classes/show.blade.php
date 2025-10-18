@@ -1,5 +1,5 @@
 @extends('backend.layouts.main')
-@use(App\Models\User)
+@use(App\Models\Users)
 
 @section('content')
     <style>
@@ -69,16 +69,16 @@
                             <th>{{ ++$key }}</th>
                             <td>
                                 <img
-                                    src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
-                                    width="40" height="30" alt="{{ asset($item->img) }}" class="rounded-circle"
-                                    style="border: 1px grey solid">
+                                        src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
+                                        width="40" height="30" alt="{{ asset($item->img) }}" class="rounded-circle"
+                                        style="border: 1px grey solid">
                             </td>
                             <td>
                                 {{ $item->first_name .  ' ' . $item->last_name }}
                             </td>
                             <td>
                                 <span class="badge bg-label-info">
-                                    {{User::getClassesById($item->classes_id)->name}}
+                                    {{Users::getClassesById($item->classes_id)->name}}
                                 </span>
                             </td>
                             <td>
@@ -88,13 +88,13 @@
                                 {{ $item->phone ?? '-----' }}
                             </td>
                             <td>
-                                @if ($item->status == User::STATUS_ACTIVE)
+                                @if ($item->status == Users::STATUS_ACTIVE)
                                     <small class="badge bg-label-success badge-sm rounded-pill">
-                                        {{ User::getStatus($item->status) }}
+                                        {{ Users::getStatus($item->status) }}
                                     </small>
                                 @else
                                     <small class="badge bg-label-danger badge-sm rounded-pill">
-                                        {{ User::getStatus($item->status) }}
+                                        {{ Users::getStatus($item->status) }}
                                     </small>
                                 @endif
                             </td>

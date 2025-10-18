@@ -8,7 +8,7 @@ use App\Models\Exam;
 use App\Models\ExamAnswer;
 use App\Models\Option;
 use App\Models\Question;
-use App\Models\User;
+use App\Models\Users;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -33,7 +33,7 @@ class SiteController extends Controller
         $studentsByClassAndMonth = [];
 
         // Eng kichik va eng katta yillarni aniqlash (grafik diapazoni uchun)
-        $minYear = User::min('created_at') ? Carbon::parse(User::min('created_at'))->year : Carbon::now()->year - 5;
+        $minYear = Users::min('created_at') ? Carbon::parse(Users::min('created_at'))->year : Carbon::now()->year - 5;
         $maxYear = Carbon::now()->year; // Faqat joriy yilgacha olamiz
 
         // Agar ma'lumotlar juda kam bo'lsa, defolt oralig'i
@@ -54,7 +54,7 @@ class SiteController extends Controller
                 $studentsByClassAndMonth[$monthKey] = [];
 
                 foreach ($allClasses as $class) {
-                    $studentCount = User::where('classes_id', $class->id)
+                    $studentCount = Users::where('classes_id', $class->id)
                         ->whereYear('created_at', $year)
                         ->whereMonth('created_at', $month)
                         ->count();
@@ -78,7 +78,7 @@ class SiteController extends Controller
             $totalAttemptedQuestions = 0;
 
             // Sinfdagi barcha foydalanuvchilar (o'quvchilar) uchun
-            $usersInClass = User::where('classes_id', $class->id)->get();
+            $usersInClass = Users::where('classes_id', $class->id)->get();
 
             foreach ($usersInClass as $user) {
                 // Har bir foydalanuvchining joriy oyda ishtirok etgan imtihonlari

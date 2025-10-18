@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -82,9 +82,9 @@ use App\Models\User;
                                     <select id="select2Basic" class="select2 form-select form-select-lg"
                                             data-allow-clear="true" name="classes_id" required>
                                         <option value=""></option>
-                                        @foreach(\App\Models\User::getClassesList() as $key => $item)
+                                        @foreach(\App\Models\Users::getClassesList() as $key => $item)
                                             <option
-                                                value="{{$item->id}}">{{$item->name}}</option>
+                                                    value="{{$item->id}}">{{$item->name}}</option>
                                         @endforeach
                                     </select>
                                     <label for="select2Basic">Basic</label>
@@ -101,7 +101,7 @@ use App\Models\User;
                                     </div>
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
-                                            <input type="radio" class="switch-input" value="{{ User::STATUS_ACTIVE }}"
+                                            <input type="radio" class="switch-input" value="{{ Users::STATUS_ACTIVE }}"
                                                    name="status" checked>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
@@ -112,7 +112,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input"
-                                                   value="{{ User::STATUS_IN_ACTIVE }}" name="status">
+                                                   value="{{ Users::STATUS_IN_ACTIVE }}" name="status">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>

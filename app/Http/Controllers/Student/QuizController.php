@@ -128,9 +128,9 @@ class QuizController extends Controller
                 $deletedCount = ExamAttemptState::where('user_id', $user->id)
                     ->where('quiz_id', $quizId)
                     ->delete();
-                \Log::info("Deleted " . $deletedCount . " ExamAttemptState records for User ID " . $user->id . " and Quiz ID " . $quizId);
+                \Log::info("Deleted " . $deletedCount . " ExamAttemptState records for Users ID " . $user->id . " and Quiz ID " . $quizId);
             } else {
-                \Log::info("No ExamAttemptState found to delete for User ID " . $user->id . " and Quiz ID " . $quizId);
+                \Log::info("No ExamAttemptState found to delete for Users ID " . $user->id . " and Quiz ID " . $quizId);
             }
         }
 

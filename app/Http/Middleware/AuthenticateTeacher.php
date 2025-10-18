@@ -10,7 +10,7 @@ use Illuminate\Auth\Middleware\Authenticate as Middleware;
 class AuthenticateTeacher extends Middleware
 {
     /**
-     * Get the path the user should be redirected to when they are not authenticated.
+     * Get the path the users should be redirected to when they are not authenticated.
      */
     protected function redirectTo(Request $request): ?string
     {

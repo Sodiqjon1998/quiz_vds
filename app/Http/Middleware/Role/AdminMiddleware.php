@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware\Role;
 
-use App\Models\User;
+use App\Models\Users;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if(!empty(Auth::check())){
-            if(Auth::user()->user_type == User::TYPE_ADMIN){
+            if(Auth::user()->user_type == Users::TYPE_ADMIN){
                 return $next($request);
             }else{
                 Auth::logout();

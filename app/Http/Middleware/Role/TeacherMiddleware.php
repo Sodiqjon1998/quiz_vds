@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware\Role;
 
-use App\Models\User;
+use App\Models\Users;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +18,7 @@ class TeacherMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!empty(Auth::check())) {
-            if (Auth::user()->user_type == User::TYPE_TEACHER) {
+            if (Auth::user()->user_type == Users::TYPE_TEACHER) {
                 return $next($request);
             } else {
                 Auth::logout();

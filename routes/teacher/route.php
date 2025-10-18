@@ -69,14 +69,14 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
     Route::prefix('/teacher')->controller(UserController::class)->group(function () {
 
         //EXAM ROUTE
-        Route::get('user/index', 'index')->name('teacher.user.index');
-        Route::get('user/setting', 'setting')->name('teacher.user.setting');
-        // Route::get('user/{quiz_id}/{subject_id}', 'show')->name('teacher.user.show');
-        // Route::get('user/{id}', 'showTest')->name('teacher.user.showTest');
-        // Route::post('user/store', 'store')->name('teacher.user.store');
-        // Route::get('user/{id}/edit', 'edit')->name('teacher.user.edit');
-        Route::post('user/update', 'update')->name('teacher.user.update');
-        // Route::delete('user/{id}', 'destroy')->name('teacher.user.destroy');
+        Route::get('users/index', 'index')->name('teacher.users.index');
+        Route::get('users/setting', 'setting')->name('teacher.users.setting');
+        // Route::get('users/{quiz_id}/{subject_id}', 'show')->name('teacher.users.show');
+        // Route::get('users/{id}', 'showTest')->name('teacher.users.showTest');
+        // Route::post('users/store', 'store')->name('teacher.users.store');
+        // Route::get('users/{id}/edit', 'edit')->name('teacher.users.edit');
+        Route::post('users/update', 'update')->name('teacher.users.update');
+        // Route::delete('users/{id}', 'destroy')->name('teacher.users.destroy');
 
     });
 

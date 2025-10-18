@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string|null $name
@@ -50,7 +50,7 @@ class Subjects extends Model
 
     public static function getTeacherById($id)
     {
-        $teacher = User::where('subject_id', '=', $id)->get();
+        $teacher = Users::where('subject_id', '=', $id)->get();
         return $teacher;
     }
 
@@ -59,5 +59,5 @@ class Subjects extends Model
         return $model;
     }
 
-    // public function 
+    // public function
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -54,91 +54,91 @@ use App\Models\User;
             {{-- Qidiruv maydoni --}}
             <div class="search-input-group">
                 <input type="text" id="searchInput" class="form-control"
-                    placeholder="Ism, familya, sinf yoki telefon bo'yicha qidirish...">
+                       placeholder="Ism, familya, sinf yoki telefon bo'yicha qidirish...">
                 <button id="clearSearch" class="btn btn-outline-secondary">Tozalash</button>
             </div>
 
             <div class="table-responsive">
                 <table class="table table-bordered table-striped table-hover table-sm text-center"
-                    style="border: 1.5px solid rgb(201, 198, 198);">
+                       style="border: 1.5px solid rgb(201, 198, 198);">
                     <thead>
-                        <tr>
-                            <th style="width: 30px">T/R</th>
-                            <th>Rasm</th>
-                            <th>Ism familya</th>
-                            {{-- <th>Sinfi</th> --}}
-                            <th>Email</th>
-                            <th>Telefon</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
+                    <tr>
+                        <th style="width: 30px">T/R</th>
+                        <th>Rasm</th>
+                        <th>Ism familya</th>
+                        {{-- <th>Sinfi</th> --}}
+                        <th>Email</th>
+                        <th>Telefon</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
                     </thead>
                     <tbody id="studentTableBody">
-                        @if (count($model) > 0)
-                            @foreach ($model as $key => $item)
-                                <tr>
-                                    <td>{{ ($model->currentPage() - 1) * $model->perPage() + $loop->iteration }}</td>
-                                    <td>
-                                        <img src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
-                                            width="40" height="30" alt="{{ asset($item->img) }}"
-                                            class="rounded-circle" style="border: 1px grey solid">
-                                    </td>
-                                    <td>
-                                        {{ $item->first_name . ' ' . $item->last_name }}
-                                    </td>
-                                    {{-- <td>
-                                        <span class="badge bg-label-info">
-                                            {{ User::getClassesById($item->classes_id)->name }}
-                                        </span>
-                                    </td> --}}
-                                    <td>
-                                        {{ $item->email }}
-                                    </td>
-                                    <td>
-                                        {{ $item->phone ?? '-----' }}
-                                    </td>
-                                    <td>
-                                        @if ($item->status == User::STATUS_ACTIVE)
-                                            <small class="badge bg-label-success badge-sm rounded-pill">
-                                                {{ User::getStatus($item->status) }}
-                                            </small>
-                                        @else
-                                            <small class="badge bg-label-danger badge-sm rounded-pill">
-                                                {{ User::getStatus($item->status) }}
-                                            </small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        {{-- <a href="{{ route('backend.student.edit', $item->id) }}"
-                                            class="badge bg-label-info badge-lg rounded-pill">
-                                            <i style="font-size: 16px" class="ri-pencil-line"></i>
-                                        </a>
-                                        <a href="{{ route('backend.student.show', $item->id) }}"
-                                            class="badge bg-label-primary badge-lg rounded-pill">
-                                            <i style="font-size: 16px" class="ri-eye-2-line"></i>
-                                        </a>
-                                        <form action="{{ route('backend.student.destroy', $item->id) }}" method="POST"
-                                            style="display: inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" style="border: none"
-                                                class="badge bg-label-danger badge-lg rounded-pill"
-                                                onclick="return confirm('Haqiqatan ham ma\'lumotni o\'chirmoqchimisiz?')">
-                                                <i style="font-size: 16px" class="ri-delete-bin-line"></i>
-                                            </button>
-                                        </form> --}}
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @else
+                    @if (count($model) > 0)
+                        @foreach ($model as $key => $item)
                             <tr>
-                                <td colspan="8" class="text-center">
-                                    <h5>
-                                        O'quvchilar mavjud emas!
-                                    </h5>
+                                <td>{{ ($model->currentPage() - 1) * $model->perPage() + $loop->iteration }}</td>
+                                <td>
+                                    <img src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
+                                         width="40" height="30" alt="{{ asset($item->img) }}"
+                                         class="rounded-circle" style="border: 1px grey solid">
+                                </td>
+                                <td>
+                                    {{ $item->first_name . ' ' . $item->last_name }}
+                                </td>
+                                {{-- <td>
+                                    <span class="badge bg-label-info">
+                                        {{ Users::getClassesById($item->classes_id)->name }}
+                                    </span>
+                                </td> --}}
+                                <td>
+                                    {{ $item->email }}
+                                </td>
+                                <td>
+                                    {{ $item->phone ?? '-----' }}
+                                </td>
+                                <td>
+                                    @if ($item->status == Users::STATUS_ACTIVE)
+                                        <small class="badge bg-label-success badge-sm rounded-pill">
+                                            {{ Users::getStatus($item->status) }}
+                                        </small>
+                                    @else
+                                        <small class="badge bg-label-danger badge-sm rounded-pill">
+                                            {{ Users::getStatus($item->status) }}
+                                        </small>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{-- <a href="{{ route('backend.student.edit', $item->id) }}"
+                                        class="badge bg-label-info badge-lg rounded-pill">
+                                        <i style="font-size: 16px" class="ri-pencil-line"></i>
+                                    </a>
+                                    <a href="{{ route('backend.student.show', $item->id) }}"
+                                        class="badge bg-label-primary badge-lg rounded-pill">
+                                        <i style="font-size: 16px" class="ri-eye-2-line"></i>
+                                    </a>
+                                    <form action="{{ route('backend.student.destroy', $item->id) }}" method="POST"
+                                        style="display: inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" style="border: none"
+                                            class="badge bg-label-danger badge-lg rounded-pill"
+                                            onclick="return confirm('Haqiqatan ham ma\'lumotni o\'chirmoqchimisiz?')">
+                                            <i style="font-size: 16px" class="ri-delete-bin-line"></i>
+                                        </button>
+                                    </form> --}}
                                 </td>
                             </tr>
-                        @endif
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <h5>
+                                    O'quvchilar mavjud emas!
+                                </h5>
+                            </td>
+                        </tr>
+                    @endif
                     </tbody>
                 </table>
             </div>
@@ -151,7 +151,7 @@ use App\Models\User;
     <script>
         // O'chirish formasini tasdiqlash funksiyasi
         document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(event) {
+            form.addEventListener('submit', function (event) {
                 if (this.querySelector('button[type="submit"]').getAttribute('onclick')) {
                     // Agar onclick atributi mavjud bo'lsa, uni ishga tushiramiz
                     // va agar false qaytarsa, submitni to'xtatamiz
@@ -163,13 +163,13 @@ use App\Models\User;
         });
 
         // Qidiruv funksiyasi
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const studentTableBody = document.getElementById('studentTableBody');
             const clearSearchButton = document.getElementById('clearSearch');
 
             if (searchInput && studentTableBody) {
-                searchInput.addEventListener('keyup', function() {
+                searchInput.addEventListener('keyup', function () {
                     const searchTerm = searchInput.value.toLowerCase();
                     const rows = studentTableBody.querySelectorAll('tr');
 
@@ -198,7 +198,7 @@ use App\Models\User;
                 });
 
                 // Qidiruv maydonini tozalash tugmasi
-                clearSearchButton.addEventListener('click', function() {
+                clearSearchButton.addEventListener('click', function () {
                     searchInput.value = ''; // Maydonni tozalash
                     const rows = studentTableBody.querySelectorAll('tr');
                     rows.forEach(row => {

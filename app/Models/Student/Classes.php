@@ -2,14 +2,14 @@
 
 namespace App\Models\Student;
 
-use App\Models\User;
+use App\Models\Users;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string|null $name
@@ -62,13 +62,13 @@ class Classes extends Model
 
     public static function getKoordinator($id)
     {
-        $koordinator = User::where('id', '=', $id)->first();
+        $koordinator = Users::where('id', '=', $id)->first();
         return $koordinator->first_name . ' ' . $koordinator->last_name ?? "-----";
     }
 
     public static function getKordinatorList()
     {
-        $koordinators = User::whereIn('user_type', [User::TYPE_KOORDINATOR])->get();
+        $koordinators = Users::whereIn('user_type', [Users::TYPE_KOORDINATOR])->get();
         return $koordinators;
     }
 

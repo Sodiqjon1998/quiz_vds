@@ -87,7 +87,7 @@
             <i class="fas fa-check-circle"></i> {{-- Muvaffaqiyat belgisi --}}
         </div>
         <div class="success-message">
-            {{-- $user o'zgaruvchisining mavjudligini tekshirish muhim --}}
+            {{-- $users o'zgaruvchisining mavjudligini tekshirish muhim --}}
             @if (isset($user) && $user->name)
                 <h2>Tabriklaymiz, {{ $user->name }}!</h2>
             @else

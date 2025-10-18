@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -88,7 +88,7 @@ use App\Models\User;
     {{--                                    </td>--}}
     {{--                                    <td>--}}
     {{--                                        <span class="badge bg-label-info">--}}
-    {{--                                            {{ User::getClassesById($item->classes_id)->name }}--}}
+    {{--                                            {{ Users::getClassesById($item->classes_id)->name }}--}}
     {{--                                        </span>--}}
     {{--                                    </td>--}}
     {{--                                    <td>--}}
@@ -98,13 +98,13 @@ use App\Models\User;
     {{--                                        {{ $item->phone ?? '-----' }}--}}
     {{--                                    </td>--}}
     {{--                                    <td>--}}
-    {{--                                        @if ($item->status == User::STATUS_ACTIVE)--}}
+    {{--                                        @if ($item->status == Users::STATUS_ACTIVE)--}}
     {{--                                            <small class="badge bg-label-success badge-sm rounded-pill">--}}
-    {{--                                                {{ User::getStatus($item->status) }}--}}
+    {{--                                                {{ Users::getStatus($item->status) }}--}}
     {{--                                            </small>--}}
     {{--                                        @else--}}
     {{--                                            <small class="badge bg-label-danger badge-sm rounded-pill">--}}
-    {{--                                                {{ User::getStatus($item->status) }}--}}
+    {{--                                                {{ Users::getStatus($item->status) }}--}}
     {{--                                            </small>--}}
     {{--                                        @endif--}}
     {{--                                    </td>--}}

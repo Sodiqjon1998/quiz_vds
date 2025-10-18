@@ -86,19 +86,19 @@
         <!-- Academy menu start -->
 
 
-        {{--        <li class="menu-item {{ Route::is('backend.user*') ? 'active open' : '' }}"> --}}
+        {{--        <li class="menu-item {{ Route::is('backend.users*') ? 'active open' : '' }}"> --}}
         {{--            <a href="javascript:void(0);" class="menu-link menu-toggle"> --}}
         {{--                <i class="ri-group-line"></i> --}}
         {{--                <div data-i18n="Foydalanuvchilar">Foydalanuvchilar</div> --}}
         {{--            </a> --}}
         {{--            <ul class="menu-sub"> --}}
-        {{--                <li class="menu-item {{ Route::is('backend.user.index') ? 'active' : '' }}"> --}}
-        {{--                    <a href="{{ route('backend.user.index') }}" class="menu-link"> --}}
+        {{--                <li class="menu-item {{ Route::is('backend.users.index') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('backend.users.index') }}" class="menu-link"> --}}
         {{--                        <div data-i18n="O'qituvchilar va Kordinatorlar">O'qituvchilar va Kordinatorlar</div> --}}
         {{--                    </a> --}}
         {{--                </li> --}}
-        {{--                --}}{{-- <li class="menu-item {{ Route::is('backend.user.koordinator') ? 'active' : '' }}"> --}}
-        {{--                    <a href="{{ route('backend.user.koordinator') }}" class="menu-link"> --}}
+        {{--                --}}{{-- <li class="menu-item {{ Route::is('backend.users.koordinator') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('backend.users.koordinator') }}" class="menu-link"> --}}
         {{--                        <div data-i18n="Kordinatorlar">Kordinatorlar</div> --}}
         {{--                    </a> --}}
         {{--                </li> --}}

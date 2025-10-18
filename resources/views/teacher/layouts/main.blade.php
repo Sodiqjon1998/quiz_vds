@@ -223,10 +223,10 @@
 
 <!-- Page JS -->
 <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
-<script src="{{ asset('assets/js/modal-edit-user.js') }}"></script>
+<script src="{{ asset('assets/js/modal-edit-users.js') }}"></script>
 <script src="{{ asset('assets/js/modal-enable-otp.js') }}"></script>
-<script src="{{ asset('assets/js/app-user-view.js') }}"></script>
-<script src="{{ asset('assets/js/app-user-view-security.js') }}"></script>
+<script src="{{ asset('assets/js/app-users-view.js') }}"></script>
+<script src="{{ asset('assets/js/app-users-view-security.js') }}"></script>
 <script src="{{ asset('assets/js/forms-selects.js') }}"></script>
 <script src="{{ asset('assets/js/forms-tagify.js') }}"></script>
 <script src="{{ asset('assets/js/forms-typeahead.js') }}"></script>

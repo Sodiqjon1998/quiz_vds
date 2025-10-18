@@ -285,7 +285,7 @@ use App\Models\Student\Student;
                         $scorePercentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
                         $scoreClass = $scorePercentage >= 50 ? 'pass' : 'fail'; // Misol uchun, 50% dan yuqori bo'lsa o'tgan
                     @endphp
-                    <a href="{{ route('student.user.show', ['id' => $exam->id]) }}" style="text-decoration: none; color: inherit;">
+                    <a href="{{ route('student.users.show', ['id' => $exam->id]) }}" style="text-decoration: none; color: inherit;">
                         <div class="test-item">
                             <div>
                                 <div class="test-title">{{ $subjectName }} Testi</div>

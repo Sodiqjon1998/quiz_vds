@@ -3,10 +3,10 @@
 namespace App\Models\Student;
 
 use App\Models\Subjects;
-use App\Models\User;
+use App\Models\Users;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -49,11 +49,11 @@ use App\Models\User;
  * @method static \Illuminate\Database\Eloquent\Builder|Student whereUserType($value)
  * @mixin \Eloquent
  */
-class Student extends User
+class Student extends Users
 {
     public static function findStudent()
     {
-        return static::query()->where('user_type', '=', User::TYPE_STUDENT);
+        return static::query()->where('user_type', '=', Users::TYPE_STUDENT);
     }
 
     public static function getClassesById($id){

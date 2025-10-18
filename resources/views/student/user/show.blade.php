@@ -303,7 +303,7 @@
                                         $optionClass = 'selected-correct';
                                         $iconClass = 'fas fa-check-circle';
                                     } else {
-                                        $optionClass = 'user-selected-incorrect';
+                                        $optionClass = 'users-selected-incorrect';
                                         $iconClass = 'fas fa-times-circle';
                                     }
                                 } elseif ($isCorrectOption) {

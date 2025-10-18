@@ -1,7 +1,7 @@
 @extends('backend.layouts.main')
 
 @use(App\Models\Classes)
-@use(App\Models\User)
+@use(App\Models\Users)
 
 @section('content')
 
@@ -38,7 +38,7 @@
                                             data-allow-clear="true" name="koordinator_id">
                                         @foreach(Classes::getKordinatorList() as $key => $item)
                                             <option
-                                                value="{{$item->id}}" {{$model->koordinator_id == $item->id ? "selected" : ''}}>{{$item->firs_name . ' ' . $item->last_name. ' Login: '. $item->name}}</option>
+                                                    value="{{$item->id}}" {{$model->koordinator_id == $item->id ? "selected" : ''}}>{{$item->firs_name . ' ' . $item->last_name. ' Login: '. $item->name}}</option>
                                         @endforeach
                                     </select>
                                     <label for="select2Basic">Basic</label>
@@ -56,8 +56,8 @@
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input"
-                                                   value="{{ User::STATUS_ACTIVE }}"
-                                                   name="status" {{$model->status == User::STATUS_ACTIVE ? 'checked' : ''}}>
+                                                   value="{{ Users::STATUS_ACTIVE }}"
+                                                   name="status" {{$model->status == Users::STATUS_ACTIVE ? 'checked' : ''}}>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -67,8 +67,8 @@
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input"
-                                                   value="{{ User::STATUS_IN_ACTIVE }}"
-                                                   name="status" {{$model->status == User::STATUS_IN_ACTIVE ? 'checked' : ''}}>
+                                                   value="{{ Users::STATUS_IN_ACTIVE }}"
+                                                   name="status" {{$model->status == Users::STATUS_IN_ACTIVE ? 'checked' : ''}}>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>

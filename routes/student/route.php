@@ -35,12 +35,12 @@ Route::middleware(['auth.student', 'student'])->group(function () {
 
     Route::prefix('/student')->controller(UserController::class)->group(function () {
         //USER ROUTE
-        Route::get('/user/index', 'index')->name('student.user.index');
-        Route::get('/user/create', 'create')->name('student.user.create');
-        Route::get('/user/{id}/show', 'show')->name('student.user.show');
-        Route::post('/user/store', 'store')->name('student.user.store');
-        Route::get('/user/{id}/edit', 'edit')->name('student.user.edit');
-        Route::post('/user/{id}/update', 'update')->name('student.user.update');
-        Route::delete('/user/{id}', 'destroy')->name('student.user.destroy');
+        Route::get('/users/index', 'index')->name('student.users.index');
+        Route::get('/users/create', 'create')->name('student.users.create');
+        Route::get('/users/{id}/show', 'show')->name('student.users.show');
+        Route::post('/users/store', 'store')->name('student.users.store');
+        Route::get('/users/{id}/edit', 'edit')->name('student.users.edit');
+        Route::post('/users/{id}/update', 'update')->name('student.users.update');
+        Route::delete('/users/{id}', 'destroy')->name('student.users.destroy');
     });
 });

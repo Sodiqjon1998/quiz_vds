@@ -13,16 +13,16 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::prefix('/dashboard')->controller(UsersController::class)->group(function () {
 
         //USERS ROUTE
-        Route::get('/backend/user/index', 'index')->name('backend.user.index');
-        Route::get('/backend/user/create', 'create')->name('backend.user.create');
-        Route::get('/backend/user/{id}', 'show')->name('backend.user.show');
-        Route::post('/backend/user/store', 'store')->name('backend.user.store');
-        Route::get('/backend/user/{id}/edit', 'edit')->name('backend.user.edit');
-        Route::post('/backend/user/{id}/update', 'update')->name('backend.user.update');
-        Route::delete('/backend/user/{id}', 'destroy')->name('backend.user.destroy');
+        Route::get('/backend/users/index', 'index')->name('backend.users.index');
+        Route::get('/backend/users/create', 'create')->name('backend.users.create');
+        Route::get('/backend/users/{id}', 'show')->name('backend.users.show');
+        Route::post('/backend/users/store', 'store')->name('backend.users.store');
+        Route::get('/backend/users/{id}/edit', 'edit')->name('backend.users.edit');
+        Route::post('/backend/users/{id}/update', 'update')->name('backend.users.update');
+        Route::delete('/backend/users/{id}', 'destroy')->name('backend.users.destroy');
     });
 
-    Route::get('/backend/user/show-student', [UsersController::class, 'showStudent'])->name('backend.user.newStudent');
+    Route::get('/backend/users/show-student', [UsersController::class, 'showStudent'])->name('backend.users.newStudent');
 
     Route::prefix('/dashboard')->controller(\App\Http\Controllers\Backend\StudentController::class)->group(function () {
 

@@ -4,7 +4,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Users;
 use Auth;
 use Hash;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ class UserController extends Controller
 
     public function setting()
     {
-        return view('teacher.user.setting');
+        return view('teacher.users.setting');
     }
 
 
@@ -29,7 +29,7 @@ class UserController extends Controller
     public function update(Request $request)
     {
         $userId = Auth::user()->id; // Avtorizatsiyadan o'tgan foydalanuvchi IDsi
-        $user = User::findOrFail($userId); // Foydalanuvchini bazadan topish
+        $user = Users::findOrFail($userId); // Foydalanuvchini bazadan topish
 
         // Validatsiya qoidalarini aniqlash
         $rules = [

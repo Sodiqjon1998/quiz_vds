@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Users;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -13,7 +13,7 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $model = User::whereIn('user_type', [User::TYPE_STUDENT])->paginate(20);
+        $model = Users::whereIn('user_type', [Users::TYPE_STUDENT])->paginate(20);
 
         return view('backend.student.index', compact('model'));
     }
@@ -31,13 +31,13 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        $model = new User();
+        $model = new Users();
         $model->first_name = $request->input('first_name');
         $model->last_name = $request->input('last_name');
         $model->name = $request->input('name');
         $model->email = $request->input('email');
         $model->phone = $request->input('phone');
-        $model->user_type = User::TYPE_STUDENT;
+        $model->user_type = Users::TYPE_STUDENT;
         $model->password = \Hash::make('12345678');
         $model->classes_id = $request->input('classes_id');
 
@@ -53,7 +53,7 @@ class StudentController extends Controller
     public function show(string $id)
     {
         return view('backend.student.show', [
-            'model' => User::findOrFail($id)
+            'model' => Users::findOrFail($id)
         ]);
     }
 
@@ -62,7 +62,7 @@ class StudentController extends Controller
      */
     public function edit(string $id)
     {
-        $model = User::findOrFail($id);
+        $model = Users::findOrFail($id);
 
         return view('backend.student.edit', compact('model'));
     }
@@ -81,7 +81,7 @@ class StudentController extends Controller
             'classes_id' => 'required|exists:classes,id',
         ]);
 
-        $model = User::findOrFail($id);
+        $model = Users::findOrFail($id);
         $model->first_name = $request->input('first_name');
         $model->last_name = $request->input('last_name');
         $model->name = $request->input('name');
@@ -100,7 +100,7 @@ class StudentController extends Controller
      */
     public function destroy(string $id)
     {
-        $model = User::findOrFail($id);
+        $model = Users::findOrFail($id);
         $model->delete();
         return redirect()->route('backend.student.index');
     }

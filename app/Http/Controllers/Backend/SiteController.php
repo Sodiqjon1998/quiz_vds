@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Bu qatorni qo'shing
-use App\Models\User;
+use App\Models\Users;
 
 class SiteController extends Controller
 {
@@ -16,22 +16,22 @@ class SiteController extends Controller
     {
         $teachers2025 = DB::table('users')
             ->whereYear('created_at', date('Y'))
-            ->where('user_type', '=', User::TYPE_TEACHER) // Array emas!
+            ->where('user_type', '=', Users::TYPE_TEACHER) // Array emas!
             ->count();
 
         $teachers2024 = DB::table('users')
             ->whereYear('created_at', date('Y')-1)
-            ->where('user_type', '=', User::TYPE_TEACHER) // Array emas!
+            ->where('user_type', '=', Users::TYPE_TEACHER) // Array emas!
             ->count();
 
         $koordinators2025 = DB::table('users')
             ->whereYear('created_at', date('Y'))
-            ->where('user_type', '=', User::TYPE_KOORDINATOR) // 2024 yil uchun
+            ->where('user_type', '=', Users::TYPE_KOORDINATOR) // 2024 yil uchun
             ->count();
 
         $koordinators2024 = DB::table('users')
             ->whereYear('created_at', date('Y') - 1)
-            ->where('user_type', '=', User::TYPE_KOORDINATOR) // 2024 yil uchun
+            ->where('user_type', '=', Users::TYPE_KOORDINATOR) // 2024 yil uchun
             ->count();
 
         return view('backend.site.index', [

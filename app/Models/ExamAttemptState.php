@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $user_id
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read Quiz $quiz
- * @property-read \App\Models\User $user
+ * @property-read \App\Models\Users $users
  * @method static \Illuminate\Database\Eloquent\Builder|ExamAttemptState newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExamAttemptState newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ExamAttemptState query()
@@ -58,7 +58,7 @@ class ExamAttemptState extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Users::class);
     }
 
     public function quiz()

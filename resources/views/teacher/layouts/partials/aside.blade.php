@@ -51,19 +51,19 @@
         <!-- Academy menu start -->
 
 
-        {{--        <li class="menu-item {{ Route::is('teacher.user*') ? 'active open' : '' }}"> --}}
+        {{--        <li class="menu-item {{ Route::is('teacher.users*') ? 'active open' : '' }}"> --}}
         {{--            <a href="javascript:void(0);" class="menu-link menu-toggle"> --}}
         {{--                <i class="ri-group-line"></i> --}}
         {{--                <div data-i18n="Foydalanuvchilar">Foydalanuvchilar</div> --}}
         {{--            </a> --}}
         {{--            <ul class="menu-sub"> --}}
-        {{--                <li class="menu-item {{ Route::is('teacher.user.index') ? 'active' : '' }}"> --}}
-        {{--                    <a href="{{ route('teacher.user.index') }}" class="menu-link"> --}}
+        {{--                <li class="menu-item {{ Route::is('teacher.users.index') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('teacher.users.index') }}" class="menu-link"> --}}
         {{--                        <div data-i18n="O'qituvchilar">O'qituvchilar</div> --}}
         {{--                    </a> --}}
         {{--                </li> --}}
-        {{--                <li class="menu-item {{ Route::is('teacher.user.koordinator') ? 'active' : '' }}"> --}}
-        {{--                    <a href="{{ route('teacher.user.koordinator') }}" class="menu-link"> --}}
+        {{--                <li class="menu-item {{ Route::is('teacher.users.koordinator') ? 'active' : '' }}"> --}}
+        {{--                    <a href="{{ route('teacher.users.koordinator') }}" class="menu-link"> --}}
         {{--                        <div data-i18n="Kordinatorlar">Kordinatorlar</div> --}}
         {{--                    </a> --}}
         {{--                </li> --}}

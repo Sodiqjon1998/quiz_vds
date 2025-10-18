@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -81,9 +81,9 @@ use App\Models\User;
                                 <div class="form-floating form-floating-outline">
                                     <select id="select2Basic" class="select2 form-select form-select-lg"
                                             data-allow-clear="true" name="classes_id" required>
-                                        @foreach(\App\Models\User::getClassesList() as $key => $item)
+                                        @foreach(\App\Models\Users::getClassesList() as $key => $item)
                                             <option
-                                                value="{{$item->id}}" {{$model->classes_id == $item->id ? 'selected' : ''}}>{{$item->name}}</option>
+                                                    value="{{$item->id}}" {{$model->classes_id == $item->id ? 'selected' : ''}}>{{$item->name}}</option>
                                         @endforeach
                                     </select>
                                     <label for="select2Basic">Basic</label>
@@ -100,8 +100,8 @@ use App\Models\User;
                                     </div>
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
-                                            <input type="radio" class="switch-input" value="{{ User::STATUS_ACTIVE }}"
-                                                   name="status" {{$model->status == User::STATUS_ACTIVE ? 'checked' : ''}}>
+                                            <input type="radio" class="switch-input" value="{{ Users::STATUS_ACTIVE }}"
+                                                   name="status" {{$model->status == Users::STATUS_ACTIVE ? 'checked' : ''}}>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -111,7 +111,8 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input"
-                                                   value="{{ User::STATUS_IN_ACTIVE }}" name="status" {{$model->status == User::STATUS_IN_ACTIVE ? 'checked' : ''}}>
+                                                   value="{{ Users::STATUS_IN_ACTIVE }}"
+                                                   name="status" {{$model->status == Users::STATUS_IN_ACTIVE ? 'checked' : ''}}>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>

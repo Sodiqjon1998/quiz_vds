@@ -93,7 +93,7 @@
                 const formData = $(this).serialize(); // Formadagi barcha ma'lumotlarni yig'ish
 
                 $.ajax({
-                    url: "{{ route('teacher.user.update') }}", // Yangilash uchun yo'nalish
+                    url: "{{ route('teacher.users.update') }}", // Yangilash uchun yo'nalish
                     method: 'POST',
                     data: formData,
                     success: function(response) {

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -10,7 +10,7 @@ use App\Models\User;
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Bosh sahifa</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('backend.user.index') }}">O'qituvchilar va Kordinatorlar</a>
+            <li class="breadcrumb-item"><a href="{{ route('backend.users.index') }}">O'qituvchilar va Kordinatorlar</a>
             </li>
             <li class="breadcrumb-item active" aria-current="page">Yangi qo'shish</li>
         </ol>
@@ -39,7 +39,7 @@ use App\Models\User;
                     </div>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('backend.user.store') }}">
+                    <form method="POST" action="{{ route('backend.users.store') }}">
                         @csrf
                         <div class="form-floating form-floating-outline mb-6">
                             <input type="text" name="first_name" class="form-control" id="basic-default-firstname"
@@ -93,7 +93,7 @@ use App\Models\User;
                                             data-allow-clear="true" name="subject_id">
                                         <option value="">Fan nomini tanlang
                                         </option> {{-- Tanlanmagan holat uchun bo'sh qiymat --}}
-                                        @foreach (User::getSubjectsList() as $key => $item)
+                                        @foreach (Users::getSubjectsList() as $key => $item)
                                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                                         @endforeach
                                     </select>
@@ -109,7 +109,7 @@ use App\Models\User;
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input user-type-radio"
-                                                   value="{{ User::TYPE_ADMIN }}" name="user_type" checked>
+                                                   value="{{ Users::TYPE_ADMIN }}" name="user_type" checked>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -119,7 +119,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input user-type-radio"
-                                                   value="{{ User::TYPE_TEACHER }}" name="user_type">
+                                                   value="{{ Users::TYPE_TEACHER }}" name="user_type">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -129,7 +129,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input user-type-radio"
-                                                   value="{{ User::TYPE_KOORDINATOR }}" name="user_type">
+                                                   value="{{ Users::TYPE_KOORDINATOR }}" name="user_type">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -143,7 +143,7 @@ use App\Models\User;
                                     </div>
                                     <div class="switches-stacked">
                                         <label class="switch switch-square">
-                                            <input type="radio" class="switch-input" value="{{ User::STATUS_ACTIVE }}"
+                                            <input type="radio" class="switch-input" value="{{ Users::STATUS_ACTIVE }}"
                                                    name="status" checked>
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
@@ -154,7 +154,7 @@ use App\Models\User;
 
                                         <label class="switch switch-square">
                                             <input type="radio" class="switch-input"
-                                                   value="{{ User::STATUS_IN_ACTIVE }}" name="status">
+                                                   value="{{ Users::STATUS_IN_ACTIVE }}" name="status">
                                             <span class="switch-toggle-slider">
                                                 <span class="switch-on"></span>
                                                 <span class="switch-off"></span>
@@ -175,7 +175,7 @@ use App\Models\User;
     <script>
 
         document.addEventListener('DOMContentLoaded', function () {
-            const radioButtons = document.querySelectorAll('.user-type-radio');
+            const radioButtons = document.querySelectorAll('.users-type-radio');
 
             radioButtons.forEach(function (radio) {
                 radio.addEventListener('change', function () {
@@ -185,7 +185,7 @@ use App\Models\User;
                     const subjectContainer = document.getElementById('subject-selection-container');
                     const subjectSelect = document.getElementById('select2Basic');
 
-                    if (this.value == '{{ User::TYPE_TEACHER }}') {
+                    if (this.value == '{{ Users::TYPE_TEACHER }}') {
                         subjectContainer.style.display = 'block';
                         subjectSelect.required = true;
                     } else {

@@ -1,5 +1,7 @@
 <?php
-use App\Models\User;
+
+use App\Models\Users;
+
 ?>
 
 @extends('backend.layouts.main')
@@ -8,7 +10,8 @@ use App\Models\User;
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Bosh sahifa</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('backend.user.index') }}">O'qituvchilar va Kordinatorlar</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('backend.users.index') }}">O'qituvchilar va Kordinatorlar</a>
+            </li>
             <li class="breadcrumb-item active" aria-current="page">Batafsil</li>
         </ol>
     </nav>
@@ -21,12 +24,13 @@ use App\Models\User;
                     <div class="user-avatar-section">
                         <div class=" d-flex align-items-center flex-column">
                             <img src="{{ !is_null($model->img) ? asset($model->img) : asset('images/staticImages/defaultAvatar.png') }}"
-                                width="120" height="120" alt="{{ asset($model->img) }}" class="rounded-circle img-thumbnail"
-                                style="border: 1px grey solid">
+                                 width="120" height="120" alt="{{ asset($model->img) }}"
+                                 class="rounded-circle img-thumbnail"
+                                 style="border: 1px grey solid">
                             <div class="user-info text-center">
                                 <h5>{{ $model->name }}</h5>
                                 <span
-                                    class="badge bg-label-danger rounded-pill">{{ User::getTypes($model->user_type) }}</span>
+                                        class="badge bg-label-danger rounded-pill">{{ Users::getTypes($model->user_type) }}</span>
                             </div>
                         </div>
                     </div>
@@ -44,17 +48,17 @@ use App\Models\User;
                             </li>
                             <li class="mb-2">
                                 <span class="fw-medium text-heading me-2">Status:</span>
-                                @if ($model->status == User::STATUS_ACTIVE)
+                                @if ($model->status == Users::STATUS_ACTIVE)
                                     <span
-                                        class="badge bg-label-success badge-sm rounded-pill">{{ User::getStatus($model->status) }}</span>
+                                            class="badge bg-label-success badge-sm rounded-pill">{{ Users::getStatus($model->status) }}</span>
                                 @else
                                     <span
-                                        class="badge bg-label-danger badge-sm rounded-pill">{{ User::getStatus($model->status) }}</span>
+                                            class="badge bg-label-danger badge-sm rounded-pill">{{ Users::getStatus($model->status) }}</span>
                                 @endif
                             </li>
                             <li class="mb-2">
                                 <span class="fw-medium text-heading me-2">Role:</span>
-                                <span>{{ User::getTypes($model->user_type) }}</span>
+                                <span>{{ Users::getTypes($model->user_type) }}</span>
                             </li>
                         </ul>
                         <div class="d-flex justify-content-center">
@@ -97,12 +101,12 @@ use App\Models\User;
                                 <div class="input-group input-group-merge">
                                     <div class="form-floating form-floating-outline">
                                         <input class="form-control" type="password" id="newPassword" name="newPassword"
-                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                            disabled>
+                                               placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                               disabled>
                                         <label for="newPassword">Yangi parol</label>
                                     </div>
                                     <span class="input-group-text cursor-pointer text-heading"><i
-                                            class="ri-eye-off-line"></i></span>
+                                                class="ri-eye-off-line"></i></span>
                                 </div>
                             </div>
 
@@ -110,13 +114,13 @@ use App\Models\User;
                                 <div class="input-group input-group-merge">
                                     <div class="form-floating form-floating-outline">
                                         <input class="form-control" type="password" name="confirmPassword"
-                                            id="confirmPassword"
-                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                            disabled>
+                                               id="confirmPassword"
+                                               placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                               disabled>
                                         <label for="confirmPassword">Parolni takrorlang</label>
                                     </div>
                                     <span class="input-group-text cursor-pointer text-heading"><i
-                                            class="ri-eye-off-line"></i></span>
+                                                class="ri-eye-off-line"></i></span>
                                 </div>
                             </div>
                             <div>

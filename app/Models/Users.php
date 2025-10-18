@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -32,28 +32,28 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|User query()
- * @method static \Illuminate\Database\Eloquent\Builder|User whereClassesId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerifiedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereFirstName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereImg($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereLastName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User wherePhone($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereSubjectId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|User whereUserType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Users newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Users query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereClassesId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereEmailVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereFirstName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereImg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereLastName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereSubjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Users whereUserType($value)
  * @mixin \Eloquent
  */
-class User extends Authenticatable
+class Users extends Authenticatable
 {
     const TYPE_ADMIN = 1;
     const TYPE_TEACHER = 2;

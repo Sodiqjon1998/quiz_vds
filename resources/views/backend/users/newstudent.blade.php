@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -42,7 +42,7 @@ use App\Models\User;
     <div class="card">
         <div class="card-header">
             Yangi o'quvchilar
-            {{-- <a href="{{ route('backend.user.create') }}" class="badge bg-label-success badge-lg rounded-pill">
+            {{-- <a href="{{ route('backend.users.create') }}" class="badge bg-label-success badge-lg rounded-pill">
                 <i style="font-size: 16px" class="ri-add-circle-line" style="font-size: 15px"></i>
             </a> --}}
             <small class="text-muted">
@@ -54,86 +54,86 @@ use App\Models\User;
             {{-- Qidiruv maydoni --}}
             <div class="search-input-group">
                 <input type="text" id="searchInput" class="form-control"
-                    placeholder="Ism, familya, sinf yoki telefon bo'yicha qidirish...">
+                       placeholder="Ism, familya, sinf yoki telefon bo'yicha qidirish...">
                 <button id="clearSearch" class="btn btn-outline-secondary">Tozalash</button>
             </div>
             <table class="table table-bordered table-striped table-hover table-sm text-center"
-                style="border: 1px solid rgb(201, 198, 198);">
+                   style="border: 1px solid rgb(201, 198, 198);">
                 <thead>
-                    <tr>
-                        <th style="width: 30px">T/R</th>
-                        <th>Rasm</th>
-                        <th>F.I.SH</th>
-                        <th>Sinfi</th>
-                        <th>Telefon</th>
-                        <th>Kiritilgan vaqti</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
+                <tr>
+                    <th style="width: 30px">T/R</th>
+                    <th>Rasm</th>
+                    <th>F.I.SH</th>
+                    <th>Sinfi</th>
+                    <th>Telefon</th>
+                    <th>Kiritilgan vaqti</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
                 </thead>
                 <tbody id="studentTableBody">
-                    @if (count($model) > 0)
-                        @foreach ($model as $key => $item)
-                            <tr>
-                                <td>{{ ($model->currentPage() - 1) * $model->perPage() + $loop->iteration }}</td>
-                                <td>
-                                    <img src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
-                                        width="40" height="30" alt="{{ asset($item->img) }}"
-                                        class="rounded-circle img-thumbnail" style="border: 1px grey solid">
-                                </td>
-                                <td>
-                                    {{ $item->last_name . ' ' . $item->first_name ?? '----' }}
-                                </td>
-                                <td>
-                                    {{ User::getClassesById($item->classes_id)->name ?? '----' }}
-                                </td>
-                                <td>
-                                    <i class="ri-phone-fill"></i> {{ $item->phone ?? '-----' }}
-                                </td>
-                                <td>
-                                    {{ $item->created_at }}
-                                </td>
-                                <td>
-                                    @if ($item->status == User::STATUS_ACTIVE)
-                                        <small class="badge bg-label-success badge-sm rounded-pill">
-                                            {{ User::getStatus($item->status) }}
-                                        </small>
-                                    @else
-                                        <small class="badge bg-label-danger badge-sm rounded-pill">
-                                            {{ User::getStatus($item->status) }}
-                                        </small>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a href="{{ route('backend.user.edit', $item->id) }}"
-                                        class="badge bg-label-info badge-lg rounded-pill">
-                                        <i style="font-size: 16px" class="ri-pencil-line"></i>
-                                    </a>
-                                    {{-- <a href="{{ route('backend.user.show', $item->id) }}"
-                                   class="badge bg-label-primary badge-lg rounded-pill">
-                                    <i style="font-size: 16px" class="ri-eye-2-line"></i>
-                                </a> --}}
-                                    <form id="deleteForm" action="{{ route('backend.user.destroy', $item->id) }}"
-                                        method="POST" style="display: inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" style="border: none"
-                                            class="badge bg-label-danger badge-lg rounded-pill">
-                                            <i style="font-size: 16px" class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
+                @if (count($model) > 0)
+                    @foreach ($model as $key => $item)
                         <tr>
-                            <td colspan="6" class="text-center">
-                                <h5>
-                                    Yangi o'quvchilar mavjud emas!
-                                </h5>
+                            <td>{{ ($model->currentPage() - 1) * $model->perPage() + $loop->iteration }}</td>
+                            <td>
+                                <img src="{{ !is_null($item->img) ? asset($item->img) : asset('images/staticImages/defaultAvatar.png') }}"
+                                     width="40" height="30" alt="{{ asset($item->img) }}"
+                                     class="rounded-circle img-thumbnail" style="border: 1px grey solid">
+                            </td>
+                            <td>
+                                {{ $item->last_name . ' ' . $item->first_name ?? '----' }}
+                            </td>
+                            <td>
+                                {{ Users::getClassesById($item->classes_id)->name ?? '----' }}
+                            </td>
+                            <td>
+                                <i class="ri-phone-fill"></i> {{ $item->phone ?? '-----' }}
+                            </td>
+                            <td>
+                                {{ $item->created_at }}
+                            </td>
+                            <td>
+                                @if ($item->status == Users::STATUS_ACTIVE)
+                                    <small class="badge bg-label-success badge-sm rounded-pill">
+                                        {{ Users::getStatus($item->status) }}
+                                    </small>
+                                @else
+                                    <small class="badge bg-label-danger badge-sm rounded-pill">
+                                        {{ Users::getStatus($item->status) }}
+                                    </small>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('backend.users.edit', $item->id) }}"
+                                   class="badge bg-label-info badge-lg rounded-pill">
+                                    <i style="font-size: 16px" class="ri-pencil-line"></i>
+                                </a>
+                                {{-- <a href="{{ route('backend.users.show', $item->id) }}"
+                               class="badge bg-label-primary badge-lg rounded-pill">
+                                <i style="font-size: 16px" class="ri-eye-2-line"></i>
+                            </a> --}}
+                                <form id="deleteForm" action="{{ route('backend.users.destroy', $item->id) }}"
+                                      method="POST" style="display: inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" style="border: none"
+                                            class="badge bg-label-danger badge-lg rounded-pill">
+                                        <i style="font-size: 16px" class="ri-delete-bin-line"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
-                    @endif
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <h5>
+                                Yangi o'quvchilar mavjud emas!
+                            </h5>
+                        </td>
+                    </tr>
+                @endif
                 </tbody>
             </table>
         </div>
@@ -144,7 +144,7 @@ use App\Models\User;
 
 
     <script>
-        document.getElementById('deleteForm').addEventListener('submit', function(event) {
+        document.getElementById('deleteForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
             if (confirm('Haqiqatan ham ma\'lumotni o\'chirmoqchimisiz?')) {
@@ -153,13 +153,13 @@ use App\Models\User;
         });
 
         // Qidiruv funksiyasi
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const searchInput = document.getElementById('searchInput');
             const studentTableBody = document.getElementById('studentTableBody');
             const clearSearchButton = document.getElementById('clearSearch');
 
             if (searchInput && studentTableBody) {
-                searchInput.addEventListener('keyup', function() {
+                searchInput.addEventListener('keyup', function () {
                     const searchTerm = searchInput.value.toLowerCase();
                     const rows = studentTableBody.querySelectorAll('tr');
 
@@ -188,7 +188,7 @@ use App\Models\User;
                 });
 
                 // Qidiruv maydonini tozalash tugmasi
-                clearSearchButton.addEventListener('click', function() {
+                clearSearchButton.addEventListener('click', function () {
                     searchInput.value = ''; // Maydonni tozalash
                     const rows = studentTableBody.querySelectorAll('tr');
                     rows.forEach(row => {

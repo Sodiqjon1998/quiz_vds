@@ -3,7 +3,7 @@
     use App\Models\Question;
     use App\Models\Subjects;
     use App\Models\Teacher\Quiz;
-    use App\Models\User; // User modelini ham ishlatish uchun
+    use App\Models\Users; // Users modelini ham ishlatish uchun
 
     // Natijalarni hisoblash
     $correctAnswersCount = 0;
@@ -53,7 +53,7 @@
             font-size: 0.95em;
         }
 
-        .breadcrumb-item+.breadcrumb-item::before {
+        .breadcrumb-item + .breadcrumb-item::before {
             content: ">" !important;
             /* Bootstrapning default / ni o'zgartirish */
             color: #6c757d;
@@ -315,7 +315,7 @@
             <h1>Test Natijalari</h1>
             <p>Fan: **{{ \App\Models\Subjects::getSubjectById($exam->subject_id)->name }}**</p>
             <div class="student-info">
-                <i class="fas fa-user-graduate"></i> Talaba: **{{ User::getStudentFullNameById($exam->user_id) }}**
+                <i class="fas fa-user-graduate"></i> Talaba: **{{ Users::getStudentFullNameById($exam->user_id) }}**
             </div>
         </div>
 
@@ -368,14 +368,14 @@ $allOptions = Option::where('question_id', $question->id)->get();
                                 if ($isUserSelected) {
                                     if ($isCorrectOption) {
                                         $optionClass = 'selected-correct';
-                                        $iconClass = 'fas fa-check-circle'; // Checkmark for user's correct answer
+                                        $iconClass = 'fas fa-check-circle'; // Checkmark for users's correct answer
     } else {
-        $optionClass = 'user-selected-incorrect';
-        $iconClass = 'fas fa-times-circle'; // Cross for user's incorrect answer
+        $optionClass = 'users-selected-incorrect';
+        $iconClass = 'fas fa-times-circle'; // Cross for users's incorrect answer
                                     }
                                 } elseif ($isCorrectOption) {
                                     $optionClass = 'correct-answer';
-                                    $iconClass = 'fas fa-check-circle'; // Checkmark for the correct answer (if user didn't select it)
+                                    $iconClass = 'fas fa-check-circle'; // Checkmark for the correct answer (if users didn't select it)
                                 }
                             @endphp
                             <div class="option-display {{ $optionClass }}">
@@ -390,5 +390,5 @@ $allOptions = Option::where('question_id', $question->id)->get();
     </div>
 
     <script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 @endsection

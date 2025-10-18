@@ -134,7 +134,7 @@
                                 <select id="select2Basic" class="select2 form-select form-select-lg"
                                         data-allow-clear="true" name="classes_id" required>
                                     <option value=""></option>
-                                    @foreach(\App\Models\User::getClassesList() as $key => $item)
+                                    @foreach(\App\Models\Users::getClassesList() as $key => $item)
                                         <option
                                             value="{{$item->id}}">{{$item->name}}</option>
                                     @endforeach

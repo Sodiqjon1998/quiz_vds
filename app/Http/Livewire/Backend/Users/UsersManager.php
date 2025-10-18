@@ -4,7 +4,7 @@ namespace App\Http\Livewire\Backend\Users;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\User;
+use App\Models\Users;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -28,8 +28,8 @@ class UsersManager extends Component
     public $phone;
     public $password;
     public $confirm_password;
-    public $user_type = User::TYPE_ADMIN;
-    public $status = User::STATUS_ACTIVE;
+    public $user_type = Users::TYPE_ADMIN;
+    public $status = Users::STATUS_ACTIVE;
     public $subject_id;
 
     // Table
@@ -47,16 +47,16 @@ class UsersManager extends Component
             'password' => $this->isEdit ? ['nullable', 'min:6', 'max:50'] : ['required', 'min:6', 'max:50'],
             'confirm_password' => $this->isEdit ? ['nullable', 'same:password'] : ['required', 'same:password'],
             'user_type' => ['required', Rule::in([
-                User::TYPE_ADMIN,
-                User::TYPE_TEACHER,
-                User::TYPE_KOORDINATOR,
+                Users::TYPE_ADMIN,
+                Users::TYPE_TEACHER,
+                Users::TYPE_KOORDINATOR,
             ])],
             'status' => ['required', Rule::in([
-                User::STATUS_ACTIVE,
-                User::STATUS_IN_ACTIVE,
+                Users::STATUS_ACTIVE,
+                Users::STATUS_IN_ACTIVE,
             ])],
             'subject_id' => [
-                Rule::requiredIf(fn() => $this->user_type === User::TYPE_TEACHER),
+                Rule::requiredIf(fn() => $this->user_type === Users::TYPE_TEACHER),
                 'nullable',
                 'exists:subjects,id'
             ],
@@ -79,10 +79,10 @@ class UsersManager extends Component
         'subject_id.required' => 'O\'qituvchi uchun fanni tanlash majburiy',
     ];
 
-    // User type o'zgarganda
+    // Users type o'zgarganda
     public function updatedUserType($value)
     {
-        if ($value !== User::TYPE_TEACHER) {
+        if ($value !== Users::TYPE_TEACHER) {
             $this->subject_id = null;
         }
     }
@@ -94,8 +94,8 @@ class UsersManager extends Component
             'userId', 'name', 'first_name', 'last_name', 'email',
             'phone', 'password', 'confirm_password', 'subject_id'
         ]);
-        $this->user_type = User::TYPE_ADMIN;
-        $this->status = User::STATUS_ACTIVE;
+        $this->user_type = Users::TYPE_ADMIN;
+        $this->status = Users::STATUS_ACTIVE;
         $this->isEdit = false;
         $this->showModal = true;
     }
@@ -106,7 +106,7 @@ class UsersManager extends Component
         $this->isEdit = true;
         $this->userId = $id;
 
-        $user = User::findOrFail($id);
+        $user = Users::findOrFail($id);
 
         $this->name = $user->name;
         $this->first_name = $user->first_name;
@@ -125,7 +125,6 @@ class UsersManager extends Component
     public function saveUser()
     {
         $this->validate();
-
         $data = [
             'name' => $this->name,
             'first_name' => $this->first_name,
@@ -134,19 +133,19 @@ class UsersManager extends Component
             'phone' => $this->phone,
             'user_type' => $this->user_type,
             'status' => $this->status,
-            'subject_id' => $this->user_type === User::TYPE_TEACHER ? $this->subject_id : null,
+            'subject_id' => $this->user_type === Users::TYPE_TEACHER ? $this->subject_id : null,
         ];
 
         if ($this->password) {
-            $data['password'] = Hash::make('12345678');
+            $data['password'] = Hash::make($this->password);
         }
 
         if ($this->isEdit) {
-            User::findOrFail($this->userId)->update($data);
+            Users::findOrFail($this->userId)->update($data);
             session()->flash('message', 'Foydalanuvchi muvaffaqiyatli yangilandi!');
         } else {
             $data['password'] = Hash::make($this->password);
-            User::create($data);
+            Users::create($data);
             session()->flash('message', 'Yangi foydalanuvchi qo\'shildi!');
         }
 
@@ -155,13 +154,13 @@ class UsersManager extends Component
 
     public function viewUser($id)
     {
-        $this->viewingUser = User::findOrFail($id);
+        $this->viewingUser = Users::with('subject')->findOrFail($id);
         $this->showViewModal = true;
     }
 
     public function deleteUser($id)
     {
-        User::findOrFail($id)->delete();
+        Users::findOrFail($id)->delete();
         session()->flash('message', 'Foydalanuvchi o\'chirildi!');
     }
 
@@ -183,10 +182,10 @@ class UsersManager extends Component
 
     public function render()
     {
-        $users = User::whereIn('user_type', [
-            User::TYPE_ADMIN,
-            User::TYPE_TEACHER,
-            User::TYPE_KOORDINATOR,
+        $users = Users::whereIn('user_type', [
+//            Users::TYPE_ADMIN,
+            Users::TYPE_TEACHER,
+            Users::TYPE_KOORDINATOR,
         ])
             ->when($this->search, fn($query) =>
             $query->where('first_name', 'like', '%' . $this->search . '%')

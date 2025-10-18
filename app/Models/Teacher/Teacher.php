@@ -5,14 +5,14 @@ namespace App\Models\Teacher;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Classes;
 use App\Models\Subjects;
-use App\Models\User;
+use App\Models\Users;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -55,10 +55,10 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|Teacher whereUserType($value)
  * @mixin \Eloquent
  */
-class Teacher extends User
+class Teacher extends Users
 {
     public static function findTeacher(){
-        return static::query()->where('user_type', '=', User::TYPE_TEACHER);
+        return static::query()->where('user_type', '=', Users::TYPE_TEACHER);
     }
 
     public static function subject($id){

@@ -56,7 +56,7 @@ return [
             'throw' => false,
         ],
 
-        'user' => [
+        'users' => [
             'driver' => 'local',
             'root'   => public_path() . '/'
         ],

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Users;
 
 ?>
 
@@ -48,7 +48,7 @@ use App\Models\User;
                                             data-allow-clear="true" name="quiz_id">
                                         @foreach(\App\Models\Teacher\Attachment::getQuizList() as $key => $item)
                                             <option
-                                                value="{{$item->id}}" {{$model->quiz_id == $item->id ? "selected" : ""}}>{{$item->name}}</option>
+                                                    value="{{$item->id}}" {{$model->quiz_id == $item->id ? "selected" : ""}}>{{$item->name}}</option>
                                         @endforeach
                                     </select>
                                     <label for="select2Basic">Quiz nomi</label>

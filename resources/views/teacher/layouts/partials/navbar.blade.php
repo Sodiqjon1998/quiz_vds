@@ -1,5 +1,5 @@
 @php use App\Models\Teacher\Teacher; @endphp
-@php use App\Models\User; @endphp
+@php use App\Models\Users; @endphp
 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
      id="layout-navbar" style="border-bottom: 1px solid #d3cece">
 
@@ -15,7 +15,7 @@
 
         <!-- Search -->
         <div class="navbar-nav align-items-center">
-            <strong>O'qituvchi: </strong> &nbsp; {{User::getStudentFullNameById(Auth::user()->id)}}
+            <strong>O'qituvchi: </strong> &nbsp; {{Users::getStudentFullNameById(Auth::user()->id)}}
         </div>
         <!-- /Search -->
 
@@ -50,7 +50,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="{{ route('teacher.user.setting') }}">
+                        <a class="dropdown-item" href="{{ route('teacher.users.setting') }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">
@@ -68,8 +68,8 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="pages-profile-user.html">
-                            <i class="ri-user-3-line ri-22px me-3"></i><span class="align-middle">My Profile</span>
+                        <a class="dropdown-item" href="pages-profile-users.html">
+                            <i class="ri-users-3-line ri-22px me-3"></i><span class="align-middle">My Profile</span>
                         </a>
                     </li>
                     <li>

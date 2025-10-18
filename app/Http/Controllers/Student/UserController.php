@@ -39,7 +39,7 @@ class UserController extends Controller
             // Va shunchaki $exam->correct_answers va $exam->total_questions ga ishora qilsangiz bo'ladi.
             // Bu qism sizning ma'lumotlar bazasi strukturangizga bog'liq.
         }
-        return view('student.user.index', [
+        return view('student.users.index', [
             'student' => $student,
             'recentExams' => $recentExams,
         ]);
@@ -52,7 +52,7 @@ class UserController extends Controller
         $exam = Exam::findOrFail($id);
         $examAnswers = ExamAnswer::where('exam_id', '=', $id)->get();
 
-        return view('student.user.show', [
+        return view('student.users.show', [
             'exam' => $exam,
             'examAnswers' => $examAnswers,
         ]);

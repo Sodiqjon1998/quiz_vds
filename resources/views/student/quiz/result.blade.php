@@ -3,7 +3,7 @@
     use App\Models\Question;
     use App\Models\Subjects;
     use App\Models\Teacher\Quiz;
-    use App\Models\User; // User modelini ham ishlatish uchun
+    use App\Models\Users; // Users modelini ham ishlatish uchun
 
     // Natijalarni hisoblash
     $correctAnswersCount = 0;
@@ -25,8 +25,8 @@
 
 @section('content')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+          integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
     <style>
         /* Umumiy stil */
         body {
@@ -308,7 +308,7 @@
                                         $optionClass = 'selected-correct';
                                         $iconClass = 'fas fa-check-circle';
                                     } else {
-                                        $optionClass = 'user-selected-incorrect';
+                                        $optionClass = 'users-selected-incorrect';
                                         $iconClass = 'fas fa-times-circle';
                                     }
                                 } elseif ($isCorrectOption) {
@@ -328,5 +328,5 @@
     </div>
 
     <script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 @endsection

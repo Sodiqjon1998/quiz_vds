@@ -61,13 +61,13 @@ class Classes extends Model
 
     public static function getKoordinator($id)
     {
-        $koordinator = User::where('id', '=', $id)->first();
+        $koordinator = Users::where('id', '=', $id)->first();
         return $koordinator->last_name ?? "-----";
     }
 
     public static function getKordinatorList()
     {
-        $koordinators = User::whereIn('user_type', [User::TYPE_KOORDINATOR])->get();
+        $koordinators = Users::whereIn('user_type', [Users::TYPE_KOORDINATOR])->get();
         return $koordinators;
     }
 

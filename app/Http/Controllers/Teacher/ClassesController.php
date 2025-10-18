@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classes;
-use App\Models\User;
+use App\Models\Users;
 
 class ClassesController extends Controller
 {
@@ -17,10 +17,10 @@ class ClassesController extends Controller
         ]);
     }
 
-    
+
     public function show(string $id)
     {
-        $model = User::where('classes_id', '=', $id)->paginate(20);
+        $model = Users::where('classes_id', '=', $id)->paginate(20);
 
         return view('teacher.classes.show', [
             'model' => $model

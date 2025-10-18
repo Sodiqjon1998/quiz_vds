@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Users;
 use Hash;
 use Illuminate\Http\Request;
 
@@ -48,15 +48,15 @@ class SiteController extends Controller
         ]);
 
         // 2. Yangi foydalanuvchi yaratish
-        $user = new User();
+        $user = new Users();
 
         $user->name = $request->first_name;
         $user->first_name = $request->first_name;
         $user->last_name = $request->last_name;
         $user->password = Hash::make('12345678');
         $user->phone = $request->phone;
-        $user->status = User::STATUS_IN_ACTIVE;
-        $user->user_type = User::TYPE_STUDENT;
+        $user->status = Users::STATUS_IN_ACTIVE;
+        $user->user_type = Users::TYPE_STUDENT;
         $user->classes_id = $request->classes_id;
 
         $user->save();
@@ -73,10 +73,10 @@ class SiteController extends Controller
      */
     public function success(string $id)
     {
-        $user = User::findOrFail($id);
+        $user = Users::findOrFail($id);
 
         return view('frontend.site.success', [
-            'user' => $user
+            'users' => $user
         ]);
     }
 

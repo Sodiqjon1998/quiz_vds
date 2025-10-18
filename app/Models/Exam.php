@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $subject_id
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ExamAnswer> $answers
  * @property-read int|null $answers_count
  * @property-read Quiz $quiz
- * @property-read Teacher $user
+ * @property-read Teacher $users
  * @method static \Illuminate\Database\Eloquent\Builder|Exam newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Exam newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Exam query()

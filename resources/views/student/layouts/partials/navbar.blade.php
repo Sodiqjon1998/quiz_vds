@@ -1,7 +1,7 @@
 @php use App\Models\Student\Student; @endphp
-@php use App\Models\User; @endphp
+@php use App\Models\Users; @endphp
 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-    id="layout-navbar" style="border-bottom: 1px solid #d3cece">
+     id="layout-navbar" style="border-bottom: 1px solid #d3cece">
 
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0   d-xl-none ">
         <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -23,7 +23,7 @@
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <li class="nav-item">
-                <strong>O'quvchi: </strong> &nbsp; {{ User::getStudentFullNameById(Auth::user()->id) }}
+                <strong>O'quvchi: </strong> &nbsp; {{ Users::getStudentFullNameById(Auth::user()->id) }}
             </li>
             <!-- Language -->
             {{-- <li class="nav-item dropdown-language dropdown">
@@ -123,9 +123,9 @@
                         <div class="row row-bordered overflow-visible g-0">
                             <div class="dropdown-shortcuts-item col">
                                 <span class="dropdown-shortcuts-icon rounded-circle mb-3">
-                                    <i class="ri-user-line ri-26px text-heading"></i>
+                                    <i class="ri-users-line ri-26px text-heading"></i>
                                 </span>
-                                <a href="app-user-list.html" class="stretched-link">User App</a>
+                                <a href="app-users-list.html" class="stretched-link">Users App</a>
                                 <small class="mb-0">Manage Users</small>
                             </div>
                             <div class="dropdown-shortcuts-item col">
@@ -416,12 +416,12 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="{{ route('student.user.index') }}">
+                        <a class="dropdown-item" href="{{ route('student.users.index') }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">
                                         <img src="{{ asset('assets/img/avatars/1.png') }}" alt=""
-                                            class="rounded-circle">
+                                             class="rounded-circle">
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
@@ -435,7 +435,7 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="{{ route('student.user.index') }}">
+                        <a class="dropdown-item" href="{{ route('student.users.index') }}">
                             <i class="ri-user-3-line ri-22px me-3"></i><span class="align-middle">My Profile</span>
                         </a>
                     </li>
@@ -444,17 +444,17 @@
                             <i class="ri-settings-4-line ri-22px me-3"></i><span class="align-middle">Settings</span>
                         </a>
                     </li> --}}
-                    
+
                     <li>
                         <div class="d-grid px-4 pt-2 pb-1">
                             <a class="btn btn-sm btn-danger d-flex" href="{{ route('backend.logout') }}"
-                                onclick="event.preventDefault(); document.getElementById('frm-logout').submit();"
-                                target="_blank">
+                               onclick="event.preventDefault(); document.getElementById('frm-logout').submit();"
+                               target="_blank">
                                 <small class="align-middle">Logout</small>
                                 <i class="ri-logout-box-r-line ms-2 ri-16px"></i>
                             </a>
                             <form id="frm-logout" action="{{ route('backend.logout') }}" method="POST"
-                                style="display: none;">
+                                  style="display: none;">
                                 {{ csrf_field() }}
                             </form>
                         </div>
@@ -471,7 +471,7 @@
     <!-- Search Small Screens -->
     <div class="navbar-search-wrapper search-input-wrapper  d-none">
         <input type="text" class="form-control search-input container-xxl border-0" placeholder="Search..."
-            aria-label="Search...">
+               aria-label="Search...">
         <i class="ri-close-fill search-toggler cursor-pointer"></i>
     </div>
 

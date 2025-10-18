@@ -53,23 +53,23 @@
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->phone ?? 'N/A' }}</td>
                             <td>
-                                @if($user->user_type === \App\Models\User::TYPE_ADMIN)
+                                @if($user->user_type === \App\Models\Users::TYPE_ADMIN)
                                     <span class="badge bg-danger">Admin</span>
-                                @elseif($user->user_type === \App\Models\User::TYPE_TEACHER)
+                                @elseif($user->user_type === \App\Models\Users::TYPE_TEACHER)
                                     <span class="badge bg-primary">O'qituvchi</span>
                                 @else
                                     <span class="badge bg-info">Koordinator</span>
                                 @endif
                             </td>
                             <td>
-                                @if($user->user_type === \App\Models\User::TYPE_TEACHER && $user->subject)
+                                @if($user->user_type === \App\Models\Users::TYPE_TEACHER && $user->subject)
                                     {{ $user->subject->name }}
                                 @else
                                     -
                                 @endif
                             </td>
                             <td>
-                                @if($user->status === \App\Models\User::STATUS_ACTIVE)
+                                @if($user->status === \App\Models\Users::STATUS_ACTIVE)
                                     <span class="badge bg-success">Faol</span>
                                 @else
                                     <span class="badge bg-secondary">Bloklangan</span>
@@ -84,6 +84,7 @@
                                 <button
                                     wire:click="editUser({{ $user->id }})"
                                     class="btn btn-sm btn-warning">
+
                                     <i style="font-size: 16px" class="ri-pencil-line"></i>
                                 </button>
                                 <button
@@ -159,6 +160,7 @@
                                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
 
+
                                 {{-- Phone --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Telefon raqam</label>
@@ -221,27 +223,28 @@
                                 </div>
                             </div>
 
+
                             <div class="row">
-                                {{-- User Type --}}
+                                {{-- Users Type --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Lavozim <span class="text-danger">*</span></label>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" wire:model.live="user_type"
-                                               value="{{ \App\Models\User::TYPE_ADMIN }}" id="admin">
+                                               value="{{ \App\Models\Users::TYPE_ADMIN }}" id="admin">
                                         <label class="form-check-label" for="admin">
                                             Super Admin
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" wire:model.live="user_type"
-                                               value="{{ \App\Models\User::TYPE_TEACHER }}" id="teacher">
+                                               value="{{ \App\Models\Users::TYPE_TEACHER }}" id="teacher">
                                         <label class="form-check-label" for="teacher">
                                             O'qituvchi
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" wire:model.live="user_type"
-                                               value="{{ \App\Models\User::TYPE_KOORDINATOR }}" id="koordinator">
+                                               value="{{ \App\Models\Users::TYPE_KOORDINATOR }}" id="koordinator">
                                         <label class="form-check-label" for="koordinator">
                                             Koordinator
                                         </label>
@@ -254,14 +257,14 @@
                                     <label class="form-label">Status <span class="text-danger">*</span></label>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" wire:model="status"
-                                               value="{{ \App\Models\User::STATUS_ACTIVE }}" id="active">
+                                               value="{{ \App\Models\Users::STATUS_ACTIVE }}" id="active">
                                         <label class="form-check-label" for="active">
                                             Faol
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" wire:model="status"
-                                               value="{{ \App\Models\User::STATUS_IN_ACTIVE }}" id="inactive">
+                                               value="{{ \App\Models\Users::STATUS_IN_ACTIVE }}" id="inactive">
                                         <label class="form-check-label" for="inactive">
                                             Bloklangan
                                         </label>
@@ -270,8 +273,9 @@
                                 </div>
                             </div>
 
+
                             {{-- Subject (faqat o'qituvchi uchun) --}}
-                            @if($user_type === \App\Models\User::TYPE_TEACHER)
+                            @if($user_type === \App\Models\Users::TYPE_TEACHER)
                                 <div class="mb-3">
                                     <label class="form-label">Fan <span class="text-danger">*</span></label>
                                     <select wire:model="subject_id"
@@ -342,6 +346,7 @@
                                             <strong>{{ $viewingUser->email }}</strong>
                                         </div>
 
+
                                         <div class="mb-3">
                                             <small class="text-muted d-block">Telefon</small>
                                             <strong>{{ $viewingUser->phone ?? 'Kiritilmagan' }}</strong>
@@ -357,16 +362,16 @@
 
                                         <div class="mb-3">
                                             <small class="text-muted d-block">Lavozim</small>
-                                            @if($viewingUser->user_type === \App\Models\User::TYPE_ADMIN)
+                                            @if($viewingUser->user_type === \App\Models\Users::TYPE_ADMIN)
                                                 <span class="badge bg-danger">Admin</span>
-                                            @elseif($viewingUser->user_type === \App\Models\User::TYPE_TEACHER)
+                                            @elseif($viewingUser->user_type === \App\Models\Users::TYPE_TEACHER)
                                                 <span class="badge bg-primary">O'qituvchi</span>
                                             @else
                                                 <span class="badge bg-info">Koordinator</span>
                                             @endif
                                         </div>
 
-                                        @if($viewingUser->user_type === \App\Models\User::TYPE_TEACHER && $viewingUser->subject)
+                                        @if($viewingUser->user_type === \App\Models\Users::TYPE_TEACHER && $viewingUser->subject)
                                             <div class="mb-3">
                                                 <small class="text-muted d-block">Fan</small>
                                                 <strong>{{ $viewingUser->subject->name }}</strong>
@@ -375,7 +380,7 @@
 
                                         <div class="mb-3">
                                             <small class="text-muted d-block">Status</small>
-                                            @if($viewingUser->status === \App\Models\User::STATUS_ACTIVE)
+                                            @if($viewingUser->status === \App\Models\Users::STATUS_ACTIVE)
                                                 <span class="badge bg-success">Faol</span>
                                             @else
                                                 <span class="badge bg-secondary">Bloklangan</span>

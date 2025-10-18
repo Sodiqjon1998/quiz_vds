@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Classes;
-use App\Models\User;
+use App\Models\Users;
 use Illuminate\Http\Request;
 
 class ClassesController extends Controller
@@ -52,7 +52,7 @@ class ClassesController extends Controller
     public function show(string $id)
     {
         $model = Classes::findOrFail($id);
-        $students = User::where('classes_id', $id)->get();
+        $students = Users::where('classes_id', $id)->get();
         return view('backend.classes.show', [
             'model' => $model,
             'students' => $students
