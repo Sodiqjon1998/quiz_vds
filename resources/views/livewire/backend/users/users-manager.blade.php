@@ -1,0 +1,244 @@
+<div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Hodimlar ro'yxati</h3>
+                        <div class="card-tools">
+                            <button wire:click="createUsers" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Yangi hodim qo'shish
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Flash Message -->
+                        @if (session()->has('message'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('message') }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        @endif
+
+                        <!-- Search -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <input wire:model.live="search" type="text" class="form-control" placeholder="Qidirish (ism yoki email)...">
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th style="width: 10px">#</th>
+                                    <th>Username</th>
+                                    <th>Ism</th>
+                                    <th>Familya</th>
+                                    <th>Email</th>
+                                    <th>Telefon</th>
+                                    <th>Sinf</th>
+                                    <th>Status</th>
+                                    <th style="width: 200px">Amallar</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @forelse($users as $user)
+                                    <tr>
+                                        <td>{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
+                                        <td>{{ $user->name }}</td>
+                                        <td>{{ $user->first_name }}</td>
+                                        <td>{{ $user->last_name }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        <td>{{ $user->phone ?? 'N/A' }}</td>
+                                        <td>{{ $user->classes->name ?? 'N/A' }}</td>
+                                        <td>
+                                            @if($user->status == \App\Models\Users::STATUS_ACTIVE)
+                                                <span class="btn btn-sm btn-outline-success">Faol</span>
+                                            @else
+                                                <span class="btn btn-sm btn-outline-danger">Nofaol</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <button wire:click="viewUsers({{ $user->id }})" class="btn btn-info btn-sm" title="Ko'rish">
+                                                <i class="ri-eye-line"></i>
+                                            </button>
+                                            <button wire:click="editUsers({{ $user->id }})" class="btn btn-warning btn-sm" title="Tahrirlash">
+                                                <i class="ri-pencil-line"></i>
+                                            </button>
+                                            <button wire:click="deleteUsers({{ $user->id }})"
+                                                    onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')"
+                                                    class="btn btn-danger btn-sm"
+                                                    title="O'chirish">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center">Ma'lumot topilmadi</td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="mt-3">
+                            {{ $users->links() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    @if($showModal)
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ $isEdit ? 'Hodimni tahrirlash' : 'Yangi hodim qo\'shish' }}</h5>
+                        <button type="button" wire:click="closeModal" class="close">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <form wire:submit.prevent="saveUsers">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Username <span class="text-danger">*</span></label>
+                                        <input type="text" wire:model="name" class="form-control @error('name') is-invalid @enderror">
+                                        @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Email <span class="text-danger">*</span></label>
+                                        <input type="email" wire:model="email" class="form-control @error('email') is-invalid @enderror">
+                                        @error('email') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Ism <span class="text-danger">*</span></label>
+                                        <input type="text" wire:model="first_name" class="form-control @error('first_name') is-invalid @enderror">
+                                        @error('first_name') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Familya <span class="text-danger">*</span></label>
+                                        <input type="text" wire:model="last_name" class="form-control @error('last_name') is-invalid @enderror">
+                                        @error('last_name') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Telefon</label>
+                                        <input type="text" wire:model="phone" class="form-control @error('phone') is-invalid @enderror">
+                                        @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Sinf <span class="text-danger">*</span></label>
+                                        <select wire:model="classes_id" class="form-control @error('classes_id') is-invalid @enderror">
+                                            <option value="">Tanlang</option>
+                                            @foreach(\App\Models\Classes::all() as $class)
+                                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('classes_id') <span class="text-danger">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+
+                                @if(!$isEdit)
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Parol <span class="text-danger">*</span></label>
+                                            <input type="password" wire:model="password" class="form-control @error('password') is-invalid @enderror">
+                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Yangi parol (bo'sh qoldiring, agar o'zgartirmoqchi bo'lmasangiz)</label>
+                                            <input type="password" wire:model="password" class="form-control @error('password') is-invalid @enderror">
+                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" wire:click="closeModal" class="btn btn-secondary">Bekor qilish</button>
+                            <button type="submit" class="btn btn-primary">{{ $isEdit ? 'Yangilash' : 'Saqlash' }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- View Modal -->
+    @if($showViewModal && $viewingUsrs)
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Hodim ma'lumotlari</h5>
+                        <button type="button" wire:click="closeViewModal" class="close">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Username:</strong> {{ $viewingUsrs->name }}</p>
+                                <p><strong>Ism:</strong> {{ $viewingUsrs->first_name }}</p>
+                                <p><strong>Familya:</strong> {{ $viewingUsrs->last_name }}</p>
+                                <p><strong>Email:</strong> {{ $viewingUsrs->email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Telefon:</strong> {{ $viewingUsrs->phone ?? 'N/A' }}</p>
+                                <p><strong>Sinf:</strong> {{ $viewingUsrs->classes->name ?? 'N/A' }}</p>
+                                <p><strong>Status:</strong>
+                                    @if($viewingUsrs->status == \App\Models\Users::STATUS_ACTIVE)
+                                        <span class="badge badge-success">Faol</span>
+                                    @else
+                                        <span class="badge badge-danger">Nofaol</span>
+                                    @endif
+                                </p>
+                                <p><strong>Ro'yxatdan o'tgan sana:</strong> {{ $viewingUsrs->created_at->format('d.m.Y H:i') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" wire:click="closeViewModal" class="btn btn-secondary">Yopish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+</div>
+
+@push('styles')
+    <style>
+        .modal.show {
+            display: block;
+        }
+    </style>
+@endpush
