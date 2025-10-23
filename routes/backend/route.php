@@ -60,5 +60,6 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/subjects/{id}/edit', 'edit')->name('backend.subjects.edit');
         Route::post('/backend/subjects/{id}/update', 'update')->name('backend.subjects.update');
         Route::delete('/backend/subjects/{id}', 'destroy')->name('backend.subjects.destroy');
+        
     });
 });
