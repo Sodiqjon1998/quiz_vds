@@ -1,0 +1,370 @@
+<?php
+
+namespace App\Http\Controllers\Teacher;
+
+use App\Http\Controllers\Controller;
+use App\Models\Option;
+use App\Models\Student\Quiz;
+use App\Models\Teacher\Question;
+use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+// PhpWord kutubxonalari
+// PHPOffice/PhpWord kutubxonasining kerakli klasslarini import qilish
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Element\Section;
+use PhpOffice\PhpWord\Element\Paragraph; // <--- Mana shu qatorni qo'shing!
+use PhpOffice\PhpWord\Element\TextRun;   // <--- Mana shu qatorni ham qo'shing!
+use PhpOffice\PhpWord\Element\Table;     // Agar faylingizda jadvallar bo'lsa, buni ham qo'shing
+use PhpOffice\PhpWord\Style\Font;
+
+class QuestionController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $model = Question::find()->paginate(20);
+        return view('teacher.question.index', compact('model'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(string $id)
+    {
+        return view('teacher.question.create', [
+            'quizId' => $id,
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        // Ma'lumotlarni validatsiya qilish (tavsiya etiladi!)
+        $request->validate([
+            'question_text' => 'required|string|max:2000',
+            'quiz_id' => 'required|integer|exists:quiz,id', // 'quizzes' sizning quizlar jadvali nomi
+            'status' => 'required|boolean', // Yoki qanday turda bo'lishiga qarab
+            'options' => 'required|array|min:2', // Kamida 2 ta variant bo'lishi kerak
+            'options.*.text' => 'required|string|max:1000', // Har bir variant matni
+            'correct_option_id' => 'required|integer', // To'g'ri javob IDsi
+        ]);
+
+        // Question modelini yaratish va saqlash
+        $question = new Question();
+        $question->name = $request->input('question_text');
+        $question->quiz_id = $request->input('quiz_id');
+        $question->status = $request->input('status', 1); // Agar status kiritilmasa, default 1 bo'lsin
+        $question->created_by = Auth::user()->id;
+        $question->updated_by = Auth::user()->id;
+        // dd($request->input('correct_option_id'));
+
+        if ($question->save()) {
+            // Variantlarni saqlash
+            foreach ($request->input('options') as $optionCounter => $optionData) {
+                $option = new Option();
+                $option->question_id = $question->id;
+                $option->name = $optionData['text']; // Blade dan kelayotgan 'text' maydoni
+
+                // 'correct_option_id' bu 'options' massividagi indeksga mos kelishi kerak
+                // Bizning Blade dagi 'correct_option_id' valusi options ichidagi raqamga mos kelardi.
+                // Masalan, 1-variant uchun radio valusi 1, 2-variant uchun 2 va hokazo.
+                // Shuning uchun bu yerda $optionCounter bilan solishtiramiz.
+                $option->is_correct = ($request->input('correct_option_id') == $optionCounter) ? 1 : 0;
+
+                $option->status = 1; // Default status
+                $option->created_by = Auth::user()->id;
+                $option->updated_by = Auth::user()->id;
+                $option->save();
+            }
+
+            return redirect()->route('teacher.question.create', ['quiz_id' => $question->quiz_id])->with('success', 'Question and options have been created successfully!');
+        }
+
+        return redirect()->route('teacher.question.create', ['quiz_id' => $question->id])->with('error', 'Failed to create question.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Question $question)
+    {
+        // Savolga tegishli variantlar va quiz ma'lumotlarini yuklaymiz
+        $question->load('options', 'quiz');
+        return view('teacher.question.show', compact('question'));
+    }
+
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        // Berilgan ID bo'yicha savolni bazadan topish
+        // with(['options', 'quiz']) bilan options va quiz relatsiyalarini eager-load qilamiz
+        $question = Question::with(['options', 'quiz'])->findOrFail($id);
+
+        // Agar sizda Quiz dropdown listi mavjud bo'lsa, uni ham uzating
+        // (faqat create sahifasida kerak bo'ladi, lekin ba'zida editda ham o'zgartirish imkoniyati bo'lishi mumkin)
+        $quizzes = Quiz::pluck('name', 'id'); // Quiz nomlarini va IDlarini olamiz
+        // Tahrirlash (edit) formasini ko'rsatish
+        // 'teacher.questions.edit' - bu sizning Blade faylingiz joylashgan yo'l
+        return view('teacher.question.edit', compact('question', 'quizzes'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id) // <- Bu yerda o'zgarish
+    {
+        // Berilgan ID bo'yicha savolni topamiz
+        // Agar topa olmasa, avtomatik 404 xatosini qaytaradi
+        $question = Question::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'question_text' => 'required|string|max:2000',
+            // 'quiz' o'rniga 'quizzes' bo'lishi kerak, chunki bu jadval nomi
+            // Agar sizning jadvalingiz nomi "quiz" bo'lsa, uni shu holatda qoldiring.
+            // Lekin Laravel konvensiyasi ko'plikda "quizzes" bo'lishini tavsiya qiladi.
+            'quiz_id' => 'required|exists:quiz,id',
+            'status' => 'required|boolean',
+            'options' => 'required|array|min:2',
+            'options.*.text' => 'required|string|max:500',
+            // To'g'ri variant indeksi options massivining chegarasida bo'lishi kerak
+            'correct_option_id' => 'required|integer|min:0|max:' . (count($request->input('options')) - 1),
+        ], [
+            'question_text.required' => 'Savol matni kiritilishi shart.',
+            'options.required' => 'Savol variantlari kiritilishi shart.',
+            'options.min' => 'Kamida :min ta variant bo\'lishi kerak.',
+            'options.*.text.required' => 'Variant matni bo\'sh bo\'lmasligi kerak.',
+            'correct_option_id.required' => 'To\'g\'ri javobni belgilash shart.',
+            'correct_option_id.min' => 'To\'g\'ri javob indeksi noto\'g\'ri.',
+            'correct_option_id.max' => 'To\'g\'ri javob indeksi variantlar sonidan oshib ketdi.',
+            'quiz_id.required' => 'Quiz tanlanishi shart.',
+            'quiz_id.exists' => 'Tanlangan quiz topilmadi.',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Savolni yangilash
+            // Sizning kodingizda `$question->name` deb yozilgan, agar `questions` jadvalida
+            // savol matni `question_text` ustunida saqlansa, uni `question_text` ga o'zgartiring.
+            // Men avvalgi Blade fayliga moslab `question_text` deb o'zgartiraman.
+            $question->name = $validatedData['question_text'];
+            $question->quiz_id = $validatedData['quiz_id'];
+            $question->status = $validatedData['status'];
+            // Savolni yaratgan foydalanuvchi ID si (created_by) yangilashda o'zgarmasligi kerak.
+            // Faqat updated_by yangilanadi.
+            $question->created_by = Auth::user()->id; // Bu qatorni olib tashlash kerak
+            $question->updated_by = Auth::user()->id;
+            $question->save();
+
+            // Eski variantlarni o'chirish
+            // Bu holatda $question->options()->delete() to'g'ri ishlaydi
+            $question->options()->delete();
+
+            // Yangi variantlarni qo'shish
+            foreach ($validatedData['options'] as $index => $optionData) {
+                $option = new Option();
+                // Sizning kodingizda `$option->name` deb yozilgan, agar `options` jadvalida
+                // variant matni `option_text` ustunida saqlansa, uni `option_text` ga o'zgartiring.
+                // Men avvalgi Blade fayliga moslab `option_text` deb o'zgartiraman.
+                $option->name = $optionData['text'];
+                $option->is_correct = ($index == $validatedData['correct_option_id']);
+                $option->created_by = Auth::user()->id; // Yangi variantlar uchun created_by kerak
+                $option->updated_by = Auth::user()->id;
+                $option->status = 1; // Default status
+                $question->options()->save($option);
+            }
+
+            DB::commit();
+
+            // `teacher.quiz.show` o'rniga `teacher.quizzes.show` bo'lishi mumkin,
+            // marshrutingizga qarab tekshiring.
+            // Avvalgi javobda `teacher.quizzes.show` edi.
+            return redirect()->route('teacher.quiz.show', $question->quiz_id)
+                ->with('success', 'Savol muvaffaqiyatli yangilandi!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Istisnoni batafsilroq loglashni tavsiya qilaman
+            \Log::error("Savolni yangilashda xatolik: " . $e->getMessage() . " on line " . $e->getLine() . " in " . $e->getFile());
+            return back()->withInput()->withErrors(['error' => 'Savolni yangilashda xatolik yuz berdi. Iltimos, qayta urinib ko\'ring. ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        DB::beginTransaction(); // Ma'lumotlar butunligini ta'minlash uchun tranzaksiya boshlaymiz
+
+        try {
+            // 1. O'chirilishi kerak bo'lgan savolni topamiz
+            $question = Question::findOrFail($id);
+
+            // 2. Savolning qaysi quizga tegishli ekanligini yozib olamiz
+            // Chunki savol o'chirilgandan keyin uning quiz_id siga kira olmaymiz
+            $quizIdToRedirect = $question->quiz_id;
+
+            // 3. Savolni o'chiramiz
+            // Avtomatik ravishda unga tegishli variantlar ham o'chirilishi uchun
+            // Question modelida `boot` metodida `deleting` eventiga listener yozishingiz mumkin,
+            // yoki Options modelida `onDelete('cascade')`ni o'rnatgan bo'lishingiz kerak migrationda.
+            // Aks holda, avval variantlarni o'chirish kerak bo'ladi.
+            // Agar `onDelete('cascade')` o'rnatilmagan bo'lsa:
+            // $question->options()->delete();
+            $question->delete();
+
+            DB::commit(); // Tranzaksiyani yakunlaymiz
+
+            // 4. Savol tegishli bo'lgan quizning sahifasiga qayta yo'naltiramiz
+            // Marshrut nomingiz `teacher.quizzes.show` bo'lsa, shuni ishlating
+            return redirect()->route('teacher.quizzes.show', $quizIdToRedirect)
+                ->with('success', 'Savol muvaffaqiyatli o\'chirildi.');
+        } catch (\Exception $e) {
+            DB::rollBack(); // Xato yuz bersa, tranzaksiyani bekor qilish
+            \Log::error("Savolni o'chirishda xatolik: " . $e->getMessage() . " on line " . $e->getLine() . " in " . $e->getFile());
+            return back()->withErrors(['error' => 'Savolni o\'chirishda xatolik yuz berdi. ' . $e->getMessage()]);
+        }
+    }
+
+    public function importFile()
+    {
+        return view('teacher.question.import');
+    }
+
+
+    public function import(Request $request)
+    {
+        set_time_limit(300);
+
+        $request->validate([
+            'word_file' => 'required|mimes:docx|max:2048',
+        ]);
+
+        $file = $request->file('word_file');
+        $filePath = $file->getPathname();
+
+        try {
+            $phpWord = IOFactory::load($filePath);
+            $sections = $phpWord->getSections();
+
+            DB::beginTransaction();
+
+            $currentQuestion = null;
+            $questionOptions = [];
+
+            foreach ($sections as $section) {
+                // Section ichidagi elementlarni olishdan oldin Section obyekti borligiga ishonch hosil qilish
+                if (!$section || !method_exists($section, 'getElements')) {
+                    continue; // Agar section nol yoki getElements metodi yo'q bo'lsa, keyingi section ga o'tish
+                }
+
+                foreach ($section->getElements() as $element) {
+                    // Har bir elementni qayta ishlashdan oldin u null emasligini tekshirish
+                    if (!$element) {
+                        continue; // Agar element null bo'lsa, keyingisiga o'tish
+                    }
+
+                    /** @var \PhpOffice\PhpWord\Element\Paragraph $element */ // <-- Bu qatorni qo'shing
+
+                    $paragraphText = '';
+                    $isParagraphRed = false;
+
+                    // Paragraf ichidagi elementlarni olishdan oldin method_exists tekshiruvi
+                    if (!method_exists($element, 'getElements')) {
+                        // Agar paragraf elementi ichida getElements() metodi bo'lmasa (kamdan-kam uchraydi, lekin ehtiyot shart)
+                        continue;
+                    }
+
+                    foreach ($element->getElements() as $paragraphChildElement) {
+                        if (!$paragraphChildElement) {
+                            continue; // Agar ichki element null bo'lsa, o'tkazib yuborish
+                        }
+
+                        if ($paragraphChildElement instanceof TextRun) {
+                            $paragraphText .= $paragraphChildElement->getText();
+                            $font = $paragraphChildElement->getFont();
+
+                            if ($font && $font->getColor() && strtolower($font->getColor()) === 'ff0000') {
+                                $isParagraphRed = true;
+                            }
+                        }
+                    }
+
+                    $paragraphText = trim($paragraphText);
+
+                    if (preg_match('/^(\d+)(\.|\))\s*(.*)/u', $paragraphText, $matches)) {
+                        if ($currentQuestion && !empty($questionOptions)) {
+                            foreach ($questionOptions as $opt) {
+                                Option::create([
+                                    'question_id' => $currentQuestion->id,
+                                    'name' => $opt['text'],
+                                    'is_correct' => $opt['is_correct'],
+                                ]);
+                            }
+                        }
+
+                        $currentQuestion = Question::create([
+                            'name' => trim($matches[3]),
+                            'type' => 'multiple_choice',
+                        ]);
+                        $questionOptions = [];
+                    } elseif (preg_match('/^[A-DА-Я]\)\s*(.*)/u', $paragraphText, $matches)) {
+                        if ($currentQuestion) {
+                            $questionOptions[] = [
+                                'text' => trim($matches[1]),
+                                'is_correct' => $isParagraphRed,
+                            ];
+                        }
+                    }
+                    // Jadval elementlarini ham xuddi shunday tekshirib o'tish kerak
+                    // if ($element instanceof Table) {
+                    //     if (!$element || !method_exists($element, 'getRows')) { // getRows() orqali qatorlarni olish
+                    //         continue;
+                    //     }
+                    //     foreach ($element->getRows() as $row) {
+                    //         if (!$row || !method_exists($row, 'getCells')) { // getCells() orqali katakchalarni olish
+                    //             continue;
+                    //         }
+                    //         foreach ($row->getCells() as $cell) {
+                    //             if (!$cell || !method_exists($cell, 'getElements')) { // getElements() orqali katakcha ichidagi elementlarni olish
+                    //                 continue;
+                    //             }
+                    //             foreach ($cell->getElements() as $cellElement) {
+                    //                 // Cell ichidagi paragraflar va ularning TextRun larini qayta ishlash
+                    //                 if ($cellElement instanceof Paragraph) {
+                    //                     // ... xuddi yuqoridagi Paragraph logikasi
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                }
+            }
+
+            if ($currentQuestion && !empty($questionOptions)) {
+                foreach ($questionOptions as $opt) {
+                    Option::create([
+                        'question_id' => $currentQuestion->id,
+                        'option_text' => $opt['text'],
+                        'is_correct' => $opt['is_correct'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Savollar muvaffaqiyatli import qilindi!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Savollarni import qilishda xato yuz berdi: ' . $e->getMessage());
+        }
+    }
+}
