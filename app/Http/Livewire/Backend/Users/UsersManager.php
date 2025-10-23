@@ -15,6 +15,7 @@ class UsersManager extends Component
     public $search = '';
     public $userId;
     public $name, $email, $phone, $password, $first_name, $last_name, $subject_id, $status, $user_type;
+    public $classes_id = []; // Ko'p sinflar uchun array
     public $isEdit = false;
     public $showModal = false;
 
@@ -23,16 +24,32 @@ class UsersManager extends Component
     // Validation rules
     protected function rules()
     {
-        return [
+        $rules = [
             'name' => 'required|min:3|unique:users,name,' . $this->userId,
             'email' => 'required|email|unique:users,email,' . $this->userId,
             'phone' => 'nullable|string',
-            'password' => $this->isEdit ? 'nullable|min:6' : 'required|min:6',
+//            'password' => $this->isEdit ? 'nullable|min:6' : 'required|min:6',
             'first_name' => 'required|min:3',
             'last_name' => 'required|min:3',
-            'subject_id' => 'required|exists:subjects,id',
-            'user_type' => 'required|in:' . Users::TYPE_TEACHER . ',' . Users::TYPE_KOORDINATOR, // faqat o'qituvchi va koordinator
+            'user_type' => 'required|in:' . Users::TYPE_TEACHER . ',' . Users::TYPE_KOORDINATOR,
         ];
+
+        // Faqat o'qituvchi uchun fan majburiy
+        if ($this->user_type == Users::TYPE_TEACHER) {
+            $rules['subject_id'] = 'required|exists:subjects,id';
+        } else {
+            $rules['subject_id'] = 'nullable|exists:subjects,id';
+        }
+
+        // Faqat koordinator uchun sinflar majburiy
+        if ($this->user_type == Users::TYPE_KOORDINATOR) {
+            $rules['classes_id'] = 'required|array|min:1';
+            $rules['classes_id.*'] = 'exists:classes,id';
+        } else {
+            $rules['classes_id'] = 'nullable|array';
+        }
+
+        return $rules;
     }
 
     protected $messages = [
@@ -43,11 +60,10 @@ class UsersManager extends Component
         'email.required' => 'Email kiritish majburiy',
         'email.unique' => 'Bu email allaqachon ro\'yxatdan o\'tgan',
         'email.email' => 'Email noto\'g\'ri formatda',
-        'password.required' => 'Parol kiritish majburiy',
-        'password.min' => 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak',
-        'subject_id.required' => 'Sinfni tanlash majburiy',
-        'subject_id.exists' => 'Sinfni tanlash majburiy',
-        'user_type.required' => 'Lavozim kiritish majburiy',
+        'subject_id.required' => 'Fanni tanlash majburiy',
+        'user_type.required' => 'Hodim turini tanlash majburiy',
+        'classes_id.required' => 'Kamida bitta sinf tanlash majburiy',
+        'classes_id.min' => 'Kamida bitta sinf tanlang',
     ];
 
     public function updated($propertyName)
@@ -57,6 +73,16 @@ class UsersManager extends Component
         // Ism va familya o'zgarganda username generatsiya qilish
         if (in_array($propertyName, ['first_name', 'last_name']) && !$this->isEdit) {
             $this->generateUsername();
+        }
+
+        // O'qituvchi tanlansa, sinflarni tozalash
+        if ($propertyName === 'user_type' && $this->user_type == Users::TYPE_TEACHER) {
+            $this->classes_id = [];
+        }
+
+        // Koordinator tanlansa, fanni tozalash
+        if ($propertyName === 'user_type' && $this->user_type == Users::TYPE_KOORDINATOR) {
+            $this->subject_id = null;
         }
     }
 
@@ -119,18 +145,26 @@ class UsersManager extends Component
             $users->name = $this->name;
             $users->first_name = $this->first_name;
             $users->last_name = $this->last_name;
-            $users->subject_id = $this->subject_id;
             $users->email = $this->email;
             $users->phone = $this->phone;
-            $users->user_type = $this->user_type; // QO'SHILDI
+            $users->user_type = $this->user_type;
             $users->status = Users::STATUS_ACTIVE;
+
+            // Hodim turiga qarab fan yoki sinflar saqlash
+            if ($this->user_type == Users::TYPE_TEACHER) {
+                $users->subject_id = $this->subject_id;
+                $users->classes_id = null;
+            } elseif ($this->user_type == Users::TYPE_KOORDINATOR) {
+                $users->subject_id = null;
+                $users->classes_id = json_encode($this->classes_id);
+            }
 
             if ($this->password) {
                 $users->password = bcrypt($this->password);
             }
             $users->save();
 
-            session()->flash('message', 'Student muvaffaqiyatli yangilandi!');
+            session()->flash('message', 'Hodim muvaffaqiyatli yangilandi!');
         } else {
             // Create
             Users::create([
@@ -138,12 +172,12 @@ class UsersManager extends Component
                 'email' => $this->email,
                 'first_name' => $this->first_name,
                 'last_name' => $this->last_name,
-                'subject_id' => $this->subject_id,
+                'subject_id' => $this->user_type == Users::TYPE_TEACHER ? $this->subject_id : null,
+                'classes_id' => $this->user_type == Users::TYPE_KOORDINATOR ? json_encode($this->classes_id) : null,
                 'status' => Users::STATUS_ACTIVE,
                 'phone' => $this->phone,
                 'password' => \Hash::make('12345678'),
-                'user_type' => $this->user_type,
-
+                'user_type' => $this->user_type
             ]);
 
             session()->flash('message', 'Yangi hodim qo\'shildi!');
@@ -164,9 +198,15 @@ class UsersManager extends Component
         $this->first_name = $users->first_name;
         $this->last_name = $users->last_name;
         $this->subject_id = $users->subject_id;
-        $this->user_type = $users->user_type; // QO'SHILDI
+        $this->user_type = $users->user_type;
         $this->isEdit = true;
         $this->showModal = true;
+
+        // Agar classes_id JSON/array bo'lsa va modelda cast qilingan bo'lsa:
+        $this->classes_id = is_array($users->classes_id) ? $users->classes_id : (
+        ($users->classes_id && $users->user_type == Users::TYPE_KOORDINATOR) ? json_decode($users->classes_id, true) : []
+        );
+
     }
 
     // Delete Student
@@ -218,21 +258,24 @@ class UsersManager extends Component
         $this->first_name = '';
         $this->last_name = '';
         $this->subject_id = '';
-        $this->user_type = ''; // QO'SHILDI
+        $this->user_type = '';
+        $this->classes_id = [];
         $this->isEdit = false;
     }
 
     public function render()
     {
-        $users = Users::whereNotIn('user_type', [
-            Users::TYPE_STUDENT,
-            Users::TYPE_ADMIN
-        ])->where(function ($query) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                ->orWhere('email', 'like', '%' . $this->search . '%');
-        })
+        $users = Users::with(['subject'])
+            ->whereNotIn('user_type', [
+                Users::TYPE_STUDENT,
+                Users::TYPE_ADMIN
+            ])->where(function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('email', 'like', '%' . $this->search . '%');
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
         return view('livewire.backend.users.users-manager', [
             'users' => $users
         ]);

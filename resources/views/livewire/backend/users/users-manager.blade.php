@@ -25,7 +25,7 @@
 
                         <!-- Search -->
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-7">
                                 <input wire:model.live="search" type="text" class="form-control"
                                        placeholder="Qidirish (ism yoki email)..." autocomplete="off">
                             </div>
@@ -44,11 +44,12 @@
                                     <th>Telefon</th>
                                     <th>Fan</th>
                                     <th>Hodim lavozimi</th> <!-- QO'SHILDI -->
+                                    <th>Sinflari</th>
                                     <th>Status</th>
                                     <th style="width: 200px">Amallar</th>
                                 </tr>
                                 </thead>
-                                <tbody>
+                                <tbody style="font-size: 14px">
                                 @forelse($users as $user)
                                     <tr>
                                         <td>{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
@@ -60,9 +61,22 @@
                                         <td>{{ $user->subject->name ?? 'N/A' }}</td>
                                         <td>
                                             @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
-                                                <span class="badge badge-info">O'qituvchi</span>
+                                                <span class="btn btn-sm btn-outline-info">O'qituvchi</span>
                                             @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR)
-                                                <span class="badge badge-warning">Koordinator</span>
+                                                <span class="btn btn-sm btn-outline-warning">Koordinator</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
+                                                {{ '---' }}
+                                            @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR && $user->classes_id)
+                                                @php
+                                                    $classIds = json_decode($user->classes_id, true);
+                                                    $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
+                                                @endphp
+                                                {{ implode(', ', $classes) }}
+                                            @else
+                                                N/A
                                             @endif
                                         </td>
                                         <td>
@@ -186,7 +200,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Hodim turi <span class="text-danger">*</span></label>
-                                        <select wire:model="user_type"
+                                        <select wire:model.live="user_type"
                                                 class="form-control @error('user_type') is-invalid @enderror">
                                             <option value="">Tanlang</option>
                                             <option value="{{ \App\Models\Users::TYPE_TEACHER }}">O'qituvchi</option>
@@ -208,44 +222,76 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Fan nomi <span class="text-danger">*</span></label>
-                                        <select wire:model="subject_id"
-                                                class="form-control @error('subject_id') is-invalid @enderror">
-                                            <option value="">Tanlang</option>
-                                            @foreach(\App\Models\Subjects::all() as $subject)
-                                                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('subject_id') <span class="text-danger">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-
-                                @if(!$isEdit)
+                                {{-- O'qituvchi tanlansa - Fan --}}
+                                @if($user_type == \App\Models\Users::TYPE_TEACHER)
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>Parol <span class="text-danger">*</span></label>
-                                            <input type="password"
-                                                   wire:model="password"
-                                                   autocomplete="new-password"
-                                                   class="form-control @error('password') is-invalid @enderror">
-                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label>Yangi parol (bo'sh qoldiring, agar o'zgartirmoqchi
-                                                bo'lmasangiz)</label>
-                                            <input type="password"
-                                                   wire:model="password"
-                                                   autocomplete="new-password"
-                                                   class="form-control @error('password') is-invalid @enderror">
-                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror
+                                            <label>Fan nomi <span class="text-danger">*</span></label>
+                                            <select wire:model="subject_id"
+                                                    class="form-control @error('subject_id') is-invalid @enderror">
+                                                <option value="">Tanlang</option>
+                                                @foreach(\App\Models\Subjects::all() as $subject)
+                                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('subject_id') <span
+                                                class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
                                 @endif
+
+                                {{-- Koordinator tanlansa - Sinflar (ko'p tanlov) --}}
+                                @if($user_type == \App\Models\Users::TYPE_KOORDINATOR)
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>Sinflar <span class="text-danger">*</span></label>
+                                            <select wire:model="classes_id"
+                                                    multiple
+                                                    class="form-control @error('classes_id') is-invalid @enderror"
+                                                    style="height: 120px;">
+                                                @foreach(\App\Models\Classes::all() as $class)
+                                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('classes_id') <span
+                                                class="text-danger">{{ $message }}</span> @enderror
+                                            <small class="form-text text-muted">
+                                                <i class="ri-information-line"></i> Bir nechta sinfni tanlash uchun Ctrl
+                                                tugmasini bosib turing
+                                            </small>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if(!$user_type || ($user_type != \App\Models\Users::TYPE_TEACHER && $user_type != \App\Models\Users::TYPE_KOORDINATOR))
+                                    <div class="col-md-6"></div> {{-- Bo'sh joy --}}
+                                @endif
+
+
+                                {{--                                @if(!$isEdit)--}}
+                                {{--                                    <div class="col-md-6">--}}
+                                {{--                                        <div class="form-group">--}}
+                                {{--                                            <label>Parol <span class="text-danger">*</span></label>--}}
+                                {{--                                            <input type="password"--}}
+                                {{--                                                   wire:model="password"--}}
+                                {{--                                                   autocomplete="new-password"--}}
+                                {{--                                                   class="form-control @error('password') is-invalid @enderror">--}}
+                                {{--                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror--}}
+                                {{--                                        </div>--}}
+                                {{--                                    </div>--}}
+                                {{--                                @else--}}
+                                {{--                                    <div class="col-md-6">--}}
+                                {{--                                        <div class="form-group">--}}
+                                {{--                                            <label>Yangi parol (bo'sh qoldiring, agar o'zgartirmoqchi--}}
+                                {{--                                                bo'lmasangiz)</label>--}}
+                                {{--                                            <input type="password"--}}
+                                {{--                                                   wire:model="password"--}}
+                                {{--                                                   autocomplete="new-password"--}}
+                                {{--                                                   class="form-control @error('password') is-invalid @enderror">--}}
+                                {{--                                            @error('password') <span class="text-danger">{{ $message }}</span> @enderror--}}
+                                {{--                                        </div>--}}
+                                {{--                                    </div>--}}
+                                {{--                                @endif--}}
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -300,6 +346,17 @@
                                         <span class="badge badge-warning">Koordinator</span>
                                     @endif
                                 </p>
+                            </div>
+                            <div class="col-md-6">
+                                @if($viewingUsrs->user_type == \App\Models\Users::TYPE_TEACHER)
+                                    <p><strong>Fan:</strong> {{ $viewingUsrs->subject->name ?? 'N/A' }}</p>
+                                @elseif($viewingUsrs->user_type == \App\Models\Users::TYPE_KOORDINATOR && $viewingUsrs->classes_id)
+                                    @php
+                                        $classIds = json_decode($viewingUsrs->classes_id, true);
+                                        $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
+                                    @endphp
+                                    <p><strong>Sinflar:</strong> {{ implode(', ', $classes) }}</p>
+                                @endif
                             </div>
                         </div>
                     </div>

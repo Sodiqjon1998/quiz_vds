@@ -36,7 +36,7 @@ class Classes extends Model
 
     protected $table = "classes";
 
-    public $timestamps = true;
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.

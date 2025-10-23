@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -77,7 +78,12 @@ class Users extends Authenticatable
         'email',
         'password',
         'user_type',
-        'status'
+        'first_name',
+        'last_name',
+        'status',
+        'classes_id',
+        'phone',
+        'subject_id',
     ];
 
     /**
@@ -99,6 +105,7 @@ class Users extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'classes_id' => 'array',
     ];
 
     public static function getTypes($id = null)
@@ -143,21 +150,31 @@ class Users extends Authenticatable
         return $model;
     }
 
-    public static function getSubjectsById($id){
+    public static function getSubjectsById($id)
+    {
         $model = Subjects::where('id', $id)->first();
         return $model;
     }
 
-    public static function getStudentFullNameById($id){
+    public static function getStudentFullNameById($id)
+    {
         $model = self::where('id', $id)->first();
-        return $model->first_name. ' '. $model->last_name;
+        return $model->first_name . ' ' . $model->last_name;
     }
 
 
-    public static function getByUserClassId($user_id){
+    public static function getByUserClassId($user_id)
+    {
         $user = self::findOrFail($user_id);
         $class = Classes::findOrFail($user->classes_id);
 
         return $class;
     }
+
+    public function subject(): BelongsTo // <--- Shuning uchun yuqorida use Illuminate\Database\Eloquent\Relations\BelongsTo qolishi kerak
+    {
+        // Subject modelini to'g'ri ko'rsatish
+        return $this->belongsTo(Subjects::class, 'subject_id', 'id');
+    }
+
 }

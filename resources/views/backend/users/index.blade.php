@@ -9,15 +9,15 @@ use App\Models\Users;
 
 @section('content')
 
-    {{--    <style>--}}
-    {{--        table,--}}
-    {{--        tr,--}}
-    {{--        th,--}}
-    {{--        td {--}}
-    {{--            padding: 7px !important;--}}
-    {{--            font-size: 14px;--}}
-    {{--        }--}}
-    {{--    </style>--}}
+        <style>
+            table,
+            tr,
+            th,
+            td {
+                padding: 7px !important;
+                font-size: 14px;
+            }
+        </style>
 
     {{--    <nav aria-label="breadcrumb">--}}
     {{--        <ol class="breadcrumb">--}}
