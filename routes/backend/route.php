@@ -60,12 +60,5 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/subjects/{id}/edit', 'edit')->name('backend.subjects.edit');
         Route::post('/backend/subjects/{id}/update', 'update')->name('backend.subjects.update');
         Route::delete('/backend/subjects/{id}', 'destroy')->name('backend.subjects.destroy');
-<<<<<<< HEAD
-
-
-
-        Route::get('backend/test/index', 'test')->name('backend.test');
-=======
->>>>>>> 3652e55304d62efca498d1808ae0ba9ebd4232c6
     });
 });
