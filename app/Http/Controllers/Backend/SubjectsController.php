@@ -84,9 +84,12 @@ class SubjectsController extends Controller
             return redirect()->back()->with('error', 'Xatolik');
         }
     }
+<<<<<<< HEAD
 
     public function test()
     {
         return view('backend.subjects.test');
     }
+=======
+>>>>>>> 3652e55304d62efca498d1808ae0ba9ebd4232c6
 }
