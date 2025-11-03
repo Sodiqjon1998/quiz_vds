@@ -37,7 +37,6 @@
                         <th>Ism va Familya</th>
                         <th>Email</th>
                         <th>Telefon</th>
-                        <th>Sana</th>
                         <th>Amallar</th>
                     </tr>
                     </thead>
@@ -48,7 +47,6 @@
                             <td>{{ $student->first_name. ' ' . $student->last_name }}</td>
                             <td>{{ $student->email }}</td>
                             <td>{{ $student->phone ?? 'N/A' }}</td>
-                            <td>{{ $student->created_at->format('d.m.Y') }}</td>
                             <td>
                                 {{-- Ko'rish tugmasi --}}
                                 <button

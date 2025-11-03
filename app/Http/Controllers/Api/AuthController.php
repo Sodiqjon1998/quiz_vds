@@ -28,6 +28,11 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Foydalanuvchi turini tekshirishni qo'shishingiz mumkin, agar kerak bo'lsa.
+        if ($user->user_type != Users::TYPE_STUDENT) {
+            return response()->json(['message' => 'Ruxsat berilmagan foydalanuvchi turi!'], 403);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([

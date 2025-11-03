@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\QuizController;
 use Illuminate\Support\Facades\Route;
 
 // use Illuminate\Http\Request;
@@ -30,10 +31,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-    
+
     Route::post('/logout', [AuthController::class, 'logout']);
-    
+
     // O'quvchi uchun route'lar
     // Route::post('/quiz-attempt/save', [QuizAttemptController::class, 'saveAttempt']);
     // Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
+
+    // Quiz routes
+    Route::get('/subjects/{subjectId}/quizzes/{quizId}', [QuizController::class, 'show']);
+    Route::post('/subjects/{subjectId}/quizzes/{quizId}/submit', [QuizController::class, 'submitQuiz']);
 });
