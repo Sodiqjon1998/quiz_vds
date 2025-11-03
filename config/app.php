@@ -169,7 +169,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
-//        Yajra\DataTables\DataTablesServiceProvider::class,
+        Laravel\Sanctum\SanctumServiceProvider::class,
+        //        Yajra\DataTables\DataTablesServiceProvider::class,
     ])->toArray(),
 
     /*

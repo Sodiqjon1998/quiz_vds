@@ -1,23 +1,39 @@
 <?php
 
-
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Student\QuizAttemptController;
 
-Route::middleware('auth:sanctum')->get('/users', function (Request $request) {
-    return $request->user();
-});
+// use Illuminate\Http\Request;
+// use App\Http\Controllers\Student\QuizAttemptController;
 
-// Ushbu qatorlardagi middleware('auth:sanctum') ni olib tashlang!
-Route::post('/quiz-attempt/save', [QuizAttemptController::class, 'saveAttempt']);
-Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
+// Route::middleware('auth:sanctum')->get('/users', function (Request $request) {
+//     return $request->user();
+// });
 
-// Yoki: ularni web middleware guruhiga qo'shing, shunda session auth ishlaydi
+// // Ushbu qatorlardagi middleware('auth:sanctum') ni olib tashlang!
+// Route::post('/quiz-attempt/save', [QuizAttemptController::class, 'saveAttempt']);
+// Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
 
-Route::middleware('web')->group(function () {
-    Route::middleware('auth')->group(function () { // 'auth' default web guard uchun
-        Route::post('/quiz-attempt/save', [QuizAttemptController::class, 'saveAttempt']);
-        Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
+// // Yoki: ularni web middleware guruhiga qo'shing, shunda session auth ishlaydi
+
+// Route::middleware('web')->group(function () {
+//     Route::middleware('auth')->group(function () { // 'auth' default web guard uchun
+//         Route::post('/quiz-attempt/save', [QuizAttemptController::class, 'saveAttempt']);
+//         Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
+//     });
+// });
+
+Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
     });
+    
+    Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // O'quvchi uchun route'lar
+    // Route::post('/quiz-attempt/save', [QuizAttemptController::class, 'saveAttempt']);
+    // Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
 });
