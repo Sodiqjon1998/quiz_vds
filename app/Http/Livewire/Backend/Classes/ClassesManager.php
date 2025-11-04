@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Backend\Classes;
 
 use App\Models\Classes;
+use App\Models\Users;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,6 +17,12 @@ class ClassesManager extends Component
     public $name, $status;
     public $isEdit = false;
     public $showModal = false;
+    public $showViewModal = false;
+    public $viewingClass = null;
+
+    // Students pagination
+    public $studentsPage = 1;
+    public $studentsPerPage = 5;
 
     protected $paginationTheme = 'bootstrap';
 
@@ -49,7 +56,6 @@ class ClassesManager extends Component
         $this->validate();
 
         if ($this->isEdit) {
-            // Update
             $class = Classes::find($this->classId);
             $class->name = $this->name;
             $class->status = Classes::STATUS_ACTIVE;
@@ -57,10 +63,11 @@ class ClassesManager extends Component
 
             session()->flash('message', 'Sinf muvaffaqiyatli yangilandi!');
         } else {
-            // Create
             Classes::create([
                 'name' => $this->name,
                 'status' => Classes::STATUS_ACTIVE,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
             ]);
 
             session()->flash('message', 'Yangi sinf qo\'shildi!');
@@ -78,6 +85,7 @@ class ClassesManager extends Component
         $this->name = $class->name;
         $this->isEdit = true;
         $this->showModal = true;
+        $this->showViewModal = false; // Close view modal if open
     }
 
     // Delete Class
@@ -101,14 +109,40 @@ class ClassesManager extends Component
         $this->resetInputFields();
     }
 
-    public $showViewModal = false;
-    public $viewingClass = null;
-
-    // View Class
+    // View Class with Students
     public function viewClass($id)
     {
-        $this->viewingClass = Classes::findOrFail($id);
+        $this->viewingClass = Classes::withCount('students')->findOrFail($id);
+        $this->studentsPage = 1; // Reset pagination
         $this->showViewModal = true;
+    }
+
+    // Students Pagination
+    public function nextStudentsPage()
+    {
+        $this->studentsPage++;
+    }
+
+    public function previousStudentsPage()
+    {
+        if ($this->studentsPage > 1) {
+            $this->studentsPage--;
+        }
+    }
+
+    // Get Students with Pagination
+    // Get Students with Pagination
+    public function getStudentsProperty()
+    {
+        if (!$this->viewingClass) {
+            return collect();
+        }
+
+        // ✅ TO'G'RI: classes_id ni string sifatida solishtirish
+        return Users::where('classes_id', (string) $this->viewingClass->id)
+            ->where('user_type', Users::TYPE_STUDENT)
+            ->orderBy('last_name')
+            ->paginate($this->studentsPerPage, ['*'], 'studentsPage', $this->studentsPage);
     }
 
     // Close View Modal
@@ -116,6 +150,7 @@ class ClassesManager extends Component
     {
         $this->showViewModal = false;
         $this->viewingClass = null;
+        $this->studentsPage = 1;
     }
 
     // Reset Input Fields
@@ -128,7 +163,8 @@ class ClassesManager extends Component
 
     public function render()
     {
-        $classes = Classes::where('name', 'like', '%' . $this->search . '%')
+        $classes = Classes::withCount('students')
+            ->where('name', 'like', '%' . $this->search . '%')
             ->orderBy('name', 'asc')
             ->paginate(10);
 

@@ -265,8 +265,6 @@
                                         <h6 class="text-muted mb-3">O'quv Ma'lumotlari</h6>
                                         <p><strong>Sinfi:</strong> <span class="badge bg-info">{{ $viewingStudent->classRelation->name ?? 'N/A' }}</span></p>
                                         <p><strong>Status:</strong> <span class="badge bg-success">Faol</span></p>
-                                        <!-- <p><strong>Ro'yxatdan o'tgan:</strong> {{ $viewingStudent->created_at->format('d.m.Y H:i') }}</p>
-                                        <p><strong>Oxirgi yangilanish:</strong> {{ $viewingStudent->updated_at->format('d.m.Y H:i') }}</p> -->
                                     </div>
                                 </div>
                             </div>

@@ -45,7 +45,9 @@ class Classes extends Model
      */
     protected $fillable = [
         'name',
-        'status'
+        'status',
+        'created_by',
+        'updated_by',
     ];
 
 
@@ -73,4 +75,16 @@ class Classes extends Model
     }
 
 
+     // ✅ TO'G'RI RELATSIYA (string classes_id uchun)
+    public function students()
+    {
+        return $this->hasMany(Users::class, 'classes_id', 'id')
+            ->where('user_type', Users::TYPE_STUDENT);
+    }
+
+    // ✅ O'quvchilar sonini olish
+    public function getStudentsCountAttribute()
+    {
+        return $this->students()->count();
+    }
 }

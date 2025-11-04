@@ -19,7 +19,7 @@ use App\Models\Users;
             }
         </style>
 
-    {{--    <nav aria-label="breadcrumb">--}}
+    <!-- {{--    <nav aria-label="breadcrumb">--}}
     {{--        <ol class="breadcrumb">--}}
     {{--            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Bosh sahifa</a></li>--}}
     {{--            <li class="breadcrumb-item active" aria-current="page">O'qituvchilar va Kordinatorlar</li>--}}
@@ -144,6 +144,6 @@ use App\Models\Users;
     {{--                this.submit();--}}
     {{--            }--}}
     {{--        });--}}
-    {{--    </script>--}}
+    {{--    </script>--}} -->
     @livewire('backend.users.users-manager')
 @endsection
