@@ -39,6 +39,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::get('/quiz-attempt/load', [QuizAttemptController::class, 'loadAttempt']);
 
     // Quiz routes
-    Route::get('/subjects/{subjectId}/quizzes/{quizId}', [QuizController::class, 'show']);
-    Route::post('/subjects/{subjectId}/quizzes/{quizId}/submit', [QuizController::class, 'submitQuiz']);
+    Route::get('/quizzes', [QuizController::class, 'index']); // ← YANGI
 });

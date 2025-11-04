@@ -178,4 +178,11 @@ class Users extends Authenticatable
         return $this->belongsTo(Subjects::class, 'subject_id', 'id');
     }
 
+
+    // app/Models/Users.php
+
+public function classRelation()
+{
+    return $this->belongsTo(Classes::class, 'classes_id');
+}
 }
