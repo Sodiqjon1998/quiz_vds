@@ -50,9 +50,10 @@ class Question extends Model
     protected $fillable = [
         'quiz_id',
         'name',
+        'order',  // Agar mavjud bo'lsa
         'status',
         'created_by',
-        'updated_by',
+        'updated_by'
     ];
 
     // Quiz relation

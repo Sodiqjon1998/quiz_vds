@@ -6,7 +6,7 @@ use App\Models\Option;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -63,5 +63,54 @@ class Question extends \App\Models\Question
     public function quiz()
     {
         return $this->belongsTo(Quiz::class);
+    }
+
+    protected $fillable = [
+        'quiz_id',
+        'name',
+        'image',
+        'status',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected $casts = [
+        'status' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    // Relationships
+
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\Users::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(\App\Models\Users::class, 'updated_by');
+    }
+
+    // Accessors
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? Storage::url($this->image) : null;
+    }
+
+    // Boot method for handling image deletion
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($question) {
+            // Delete image when question is deleted
+            if ($question->image) {
+                \Storage::disk('public')->delete($question->image);
+            }
+
+            // Delete all related options
+            $question->options()->delete();
+        });
     }
 }
