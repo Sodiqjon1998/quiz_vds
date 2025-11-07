@@ -121,6 +121,18 @@ class Quiz extends Model
         return $this->hasMany(Question::class, 'quiz_id');
     }
 
+    public function attachment()
+    {
+        return $this->hasMany(Attachment::class, 'quiz_id');
+    }
+
+    public function attachmentOne()
+    {
+        // Agar har bir Quizga bitta 'attachment' (sozlama) mos kelsa:
+        return $this->hasOne(Attachment::class, 'quiz_id');
+        // Yoki Attachment modelini to'g'ri import qilish kerak
+    }
+
     /**
      * Scope - faqat faol quizlar
      */

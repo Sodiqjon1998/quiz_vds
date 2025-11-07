@@ -15,4 +15,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/index', [\App\Http\Controllers\Api\SiteController::class, 'index'])->name('api.site.index');
+
+    Route::get('quiz/{id}/start', [\App\Http\Controllers\Api\SiteController::class, 'start']);
 });
