@@ -1,281 +1,17 @@
-{{--<div>--}}
-{{--    --}}{{-- Success Message --}}
-{{--    @if (session()->has('message'))--}}
-{{--        <div class="alert alert-success alert-dismissible fade show" role="alert">--}}
-{{--            <i class="ri-checkbox-circle-line me-2"></i>--}}
-{{--            {{ session('message') }}--}}
-{{--            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>--}}
-{{--        </div>--}}
-{{--    @endif--}}
-
-{{--    --}}{{-- DEBUG (keyinchalik o'chirib tashlang) --}}
-{{--    <div class="alert alert-warning">--}}
-{{--        showModal = {{ $showModal ? 'TRUE' : 'FALSE' }}--}}
-{{--    </div>--}}
-
-{{--    --}}{{-- Header --}}
-{{--    <div class="card">--}}
-{{--        <div class="card-header d-flex justify-content-between align-items-center">--}}
-{{--            <div>--}}
-{{--                <h4 class="mb-0">--}}
-{{--                    <i class="ri-file-list-3-line me-2"></i>--}}
-{{--                    Quizlar Ro'yxati--}}
-{{--                </h4>--}}
-{{--                <p class="text-muted small mb-0">Barcha quizlarni boshqarish</p>--}}
-{{--            </div>--}}
-
-{{--            --}}{{-- MUHIM: wire:click to'g'ri yozilgan --}}
-{{--            <button--}}
-{{--                wire:click="createQuiz"--}}
-{{--                class="btn btn-primary"--}}
-{{--                type="button">--}}
-{{--                <i class="ri-add-line me-1"></i> Yangi Quiz--}}
-{{--            </button>--}}
-{{--        </div>--}}
-
-{{--        <div class="card-body">--}}
-{{--            --}}{{-- Search --}}
-{{--            <div class="row mb-4">--}}
-{{--                <div class="col-md-6">--}}
-{{--                    <div class="input-group">--}}
-{{--                        <span class="input-group-text">--}}
-{{--                            <i class="ri-search-line"></i>--}}
-{{--                        </span>--}}
-{{--                        <input--}}
-{{--                            type="text"--}}
-{{--                            wire:model.live="search"--}}
-{{--                            class="form-control"--}}
-{{--                            placeholder="Quiz nomini qidiring...">--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--                <div class="col-md-6 text-end">--}}
-{{--                    <span class="text-muted">--}}
-{{--                        <i class="ri-information-line"></i>--}}
-{{--                        Jami: <strong>{{ $quizzes->total() }}</strong> ta quiz--}}
-{{--                    </span>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-
-{{--            --}}{{-- Table --}}
-{{--            <div class="table-responsive">--}}
-{{--                <table class="table table-hover align-middle">--}}
-{{--                    <thead class="table-light">--}}
-{{--                        <tr>--}}
-{{--                            <th>ID</th>--}}
-{{--                            <th>Quiz nomi</th>--}}
-{{--                            <th>Fan</th>--}}
-{{--                            <th>Sinf</th>--}}
-{{--                            <th>Savollar</th>--}}
-{{--                            <th>Yaratuvchi</th>--}}
-{{--                            <th>Holat</th>--}}
-{{--                            <th>Sana</th>--}}
-{{--                            <th class="text-end">Amallar</th>--}}
-{{--                        </tr>--}}
-{{--                    </thead>--}}
-{{--                    <tbody>--}}
-{{--                        @forelse($quizzes as $quiz)--}}
-{{--                            <tr>--}}
-{{--                                <td>{{ $quiz->id }}</td>--}}
-{{--                                <td>--}}
-{{--                                    <div class="d-flex align-items-center">--}}
-{{--                                        <div class="avatar avatar-sm me-2">--}}
-{{--                                            <div class="avatar-initial rounded-circle bg-label-primary">--}}
-{{--                                                <i class="ri-file-list-3-line"></i>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
-{{--                                        <strong>{{ $quiz->name }}</strong>--}}
-{{--                                    </div>--}}
-{{--                                </td>--}}
-{{--                                <td>--}}
-{{--                                    <span class="badge bg-label-info">--}}
-{{--                                        {{ $quiz->subject->name ?? 'N/A' }}--}}
-{{--                                    </span>--}}
-{{--                                </td>--}}
-{{--                                <td>--}}
-{{--                                    <span class="badge bg-label-success">--}}
-{{--                                        {{ $quiz->class->name ?? 'N/A' }}--}}
-{{--                                    </span>--}}
-{{--                                </td>--}}
-{{--                                <td>--}}
-{{--                                    <span class="badge bg-label-primary">--}}
-{{--                                        <i class="ri-question-line me-1"></i>--}}
-{{--                                        {{ $quiz->questions_count }} ta--}}
-{{--                                    </span>--}}
-{{--                                </td>--}}
-{{--                                <td>--}}
-{{--                                    <small class="text-muted">--}}
-{{--                                        {{ $quiz->creator->name ?? 'N/A' }}--}}
-{{--                                    </small>--}}
-{{--                                </td>--}}
-{{--                                <td>--}}
-{{--                                    @if($quiz->status == \App\Models\Teacher\Quiz::STATUS_ACTIVE)--}}
-{{--                                        <span class="badge bg-success">Faol</span>--}}
-{{--                                    @else--}}
-{{--                                        <span class="badge bg-secondary">Nofaol</span>--}}
-{{--                                    @endif--}}
-{{--                                </td>--}}
-{{--                                <td>--}}
-{{--                                    <small class="text-muted">--}}
-{{--                                        {{ $quiz->created_at->format('d.m.Y') }}--}}
-{{--                                    </small>--}}
-{{--                                </td>--}}
-{{--                                <td class="text-end">--}}
-
-{{--                                    <button wire:click="viewQuiz({{ $quiz->id }})"--}}
-{{--                                            class="btn btn-sm btn-info"--}}
-{{--                                            title="Ko'rish">--}}
-{{--                                        <i class="ri-eye-line"></i>--}}
-{{--                                    </button>--}}
-{{--                                    <button wire:click="editQuiz({{ $quiz->id }})"--}}
-{{--                                            class="btn btn-sm btn-warning"--}}
-{{--                                            title="Tahrirlash">--}}
-{{--                                        <i class="ri-pencil-line"></i>--}}
-{{--                                    </button>--}}
-{{--                                    <button wire:click="deleteQuiz({{ $quiz->id }})"--}}
-{{--                                            onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')"--}}
-{{--                                            class="btn btn-sm btn-danger"--}}
-{{--                                            title="O'chirish">--}}
-{{--                                        <i class="ri-delete-bin-line"></i>--}}
-{{--                                    </button>--}}
-{{--                                </td>--}}
-{{--                            </tr>--}}
-{{--                        @empty--}}
-{{--                            <tr>--}}
-{{--                                <td colspan="9" class="text-center py-5">--}}
-{{--                                    <i class="ri-inbox-line" style="font-size: 64px; opacity: 0.3;"></i>--}}
-{{--                                    <h5 class="text-muted mt-3">Hozircha quizlar mavjud emas</h5>--}}
-{{--                                    <p class="text-muted">Yangi quiz qo'shish uchun yuqoridagi tugmani bosing</p>--}}
-{{--                                </td>--}}
-{{--                            </tr>--}}
-{{--                        @endforelse--}}
-{{--                    </tbody>--}}
-{{--                </table>--}}
-{{--            </div>--}}
-
-{{--            --}}{{-- Pagination --}}
-{{--            <div class="mt-4">--}}
-{{--                {{ $quizzes->links() }}--}}
-{{--            </div>--}}
-{{--        </div>--}}
-{{--    </div>--}}
-
-{{--    --}}{{-- Create/Edit Modal --}}
-{{--    @if($showModal)--}}
-{{--        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">--}}
-{{--            <div class="modal-dialog modal-dialog-centered modal-lg">--}}
-{{--                <div class="modal-content">--}}
-{{--                    <div class="modal-header bg-primary text-white">--}}
-{{--                        <h5 class="modal-title">--}}
-{{--                            <i class="ri-file-list-3-line me-2"></i>--}}
-{{--                            {{ $isEdit ? 'Quiz tahrirlash' : 'Yangi Quiz qo\'shish' }}--}}
-{{--                        </h5>--}}
-{{--                        <button type="button" class="btn-close btn-close-white" wire:click="closeModal"></button>--}}
-{{--                    </div>--}}
-{{--                    <form wire:submit.prevent="saveQuiz" autocomplete="off">--}}
-{{--                        <div class="modal-body">--}}
-{{--                            <div class="row">--}}
-{{--                                --}}{{-- Quiz Name --}}
-{{--                                <div class="col-12 mb-3">--}}
-{{--                                    <label class="form-label">--}}
-{{--                                        Quiz nomi <span class="text-danger">*</span>--}}
-{{--                                    </label>--}}
-{{--                                    <div class="input-group">--}}
-{{--                                        <span class="input-group-text">--}}
-{{--                                            <i class="ri-file-text-line"></i>--}}
-{{--                                        </span>--}}
-{{--                                        <input--}}
-{{--                                            type="text"--}}
-{{--                                            wire:model.live="name"--}}
-{{--                                            autocomplete="off"--}}
-{{--                                            class="form-control @error('name') is-invalid @enderror"--}}
-{{--                                            placeholder="Masalan: Matematika Test 1">--}}
-{{--                                    </div>--}}
-{{--                                    @error('name')--}}
-{{--                                        <div class="text-danger small mt-1">--}}
-{{--                                            <i class="ri-error-warning-line me-1"></i>{{ $message }}--}}
-{{--                                        </div>--}}
-{{--                                    @enderror--}}
-{{--                                </div>--}}
-
-{{--                                --}}{{-- Subject --}}
-{{--                                <div class="col-md-6 mb-3">--}}
-{{--                                    <label class="form-label">--}}
-{{--                                        Fan <span class="text-danger">*</span>--}}
-{{--                                    </label>--}}
-{{--                                    <select--}}
-{{--                                        wire:model="subject_id"--}}
-{{--                                        class="form-select @error('subject_id') is-invalid @enderror">--}}
-{{--                                        <option value="">Tanlang</option>--}}
-{{--                                        @foreach($subjects as $subject)--}}
-{{--                                            <option value="{{ $subject->id }}">{{ $subject->name }}</option>--}}
-{{--                                        @endforeach--}}
-{{--                                    </select>--}}
-{{--                                    @error('subject_id')--}}
-{{--                                        <div class="text-danger small mt-1">--}}
-{{--                                            <i class="ri-error-warning-line me-1"></i>{{ $message }}--}}
-{{--                                        </div>--}}
-{{--                                    @enderror--}}
-{{--                                </div>--}}
-
-{{--                                --}}{{-- Class --}}
-{{--                                <div class="col-md-6 mb-3">--}}
-{{--                                    <label class="form-label">--}}
-{{--                                        Sinf <span class="text-danger">*</span>--}}
-{{--                                    </label>--}}
-{{--                                    <select--}}
-{{--                                        wire:model="classes_id"--}}
-{{--                                        class="form-select @error('classes_id') is-invalid @enderror">--}}
-{{--                                        <option value="">Tanlang</option>--}}
-{{--                                        @foreach($classes as $class)--}}
-{{--                                            <option value="{{ $class->id }}">{{ $class->name }}</option>--}}
-{{--                                        @endforeach--}}
-{{--                                    </select>--}}
-{{--                                    @error('classes_id')--}}
-{{--                                        <div class="text-danger small mt-1">--}}
-{{--                                            <i class="ri-error-warning-line me-1"></i>{{ $message }}--}}
-{{--                                        </div>--}}
-{{--                                    @enderror--}}
-{{--                                </div>--}}
-
-{{--                                --}}{{-- Info --}}
-{{--                                @if(!$isEdit)--}}
-{{--                                    <div class="col-12">--}}
-{{--                                        <div class="alert alert-info mb-0">--}}
-{{--                                            <div class="d-flex align-items-start">--}}
-{{--                                                <i class="ri-lightbulb-line me-2 mt-1"></i>--}}
-{{--                                                <div>--}}
-{{--                                                    <strong>Eslatma:</strong> Quiz yaratilgandan so'ng unga savollar qo'shishingiz mumkin.--}}
-{{--                                                </div>--}}
-{{--                                            </div>--}}
-{{--                                        </div>--}}
-{{--                                    </div>--}}
-{{--                                @endif--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
-{{--                        <div class="modal-footer">--}}
-{{--                            <button type="button" wire:click="closeModal" class="btn btn-secondary">--}}
-{{--                                <i class="ri-close-line me-1"></i> Bekor qilish--}}
-{{--                            </button>--}}
-{{--                            <button type="submit" class="btn btn-primary">--}}
-{{--                                <i class="ri-save-line me-1"></i>--}}
-{{--                                {{ $isEdit ? 'Yangilash' : 'Saqlash' }}--}}
-{{--                            </button>--}}
-{{--                        </div>--}}
-{{--                    </form>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        </div>--}}
-{{--    @endif--}}
-
-{{--    --}}{{-- View Modal xuddi avvalgidek... --}}
-{{--</div>--}}
-
 <div>
     {{-- Success Message --}}
     @if (session()->has('message'))
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="ri-checkbox-circle-line me-2 fs-5"></i>
             <strong>Barakalla!</strong> {{ session('message') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="ri-error-warning-line me-2 fs-5"></i>
+            <strong>Xatolik!</strong> {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
@@ -327,13 +63,14 @@
                     <thead class="table-light">
                     <tr>
                         <th class="text-center" style="width: 5%">ID</th>
-                        <th style="width: 25%">Quiz nomi</th>
-                        <th class="text-center" style="width: 12%">Fan</th>
-                        <th class="text-center" style="width: 12%">Sinf</th>
-                        <th class="text-center" style="width: 15%">Savollar</th>
-                        <th style="width: 12%">Yaratuvchi</th>
+                        <th style="width: 20%">Quiz nomi</th>
+                        <th class="text-center" style="width: 10%">Fan</th>
+                        <th class="text-center" style="width: 10%">Sinf</th>
+                        <th class="text-center" style="width: 12%">Savollar</th>
+                        <th class="text-center" style="width: 12%">Attachments</th>
+                        <th style="width: 10%">Yaratuvchi</th>
                         <th class="text-center" style="width: 8%">Holat</th>
-                        <th class="text-center" style="width: 11%">Amallar</th>
+                        <th class="text-center" style="width: 13%">Amallar</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -342,7 +79,9 @@
                             <td class="text-center fw-bold text-muted">#{{ $quiz->id }}</td>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-sm bg-primary-subtle rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <div
+                                        class="avatar avatar-sm bg-primary-subtle rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                        style="width: 40px; height: 40px;">
                                         <i class="ri-file-list-3-line text-primary fs-5"></i>
                                     </div>
                                     <div>
@@ -368,6 +107,13 @@
                                         class="btn btn-sm btn-primary shadow-sm">
                                     <i class="ri-question-line me-1"></i>
                                     {{ $quiz->questions_count }} ta
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <button wire:click="manageAttachments({{ $quiz->id }})"
+                                        class="btn btn-sm btn-warning shadow-sm">
+                                    <i class="ri-attachment-2 me-1"></i>
+                                    Fayllar
                                 </button>
                             </td>
                             <td>
@@ -412,7 +158,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="9" class="text-center py-5">
                                 <div class="text-center py-5">
                                     <i class="ri-inbox-line text-muted" style="font-size: 80px; opacity: 0.2;"></i>
                                     <h5 class="text-muted mt-3 mb-2">Hozircha quizlar mavjud emas</h5>
@@ -533,6 +279,215 @@
         </div>
     @endif
 
+    {{-- Attachment Modal (YANGI) --}}
+    @if($showAttachmentModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); z-index: 1070;">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-gradient-warning text-white border-0">
+                        <h5 class="modal-title fw-bold">
+                            <i class="ri-attachment-2 me-2"></i>
+                            Attachments - Fayllar Boshqaruvi
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white"
+                                wire:click="closeAttachmentModal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        {{-- Yangi Attachment qo'shish formi --}}
+                        <div class="card border-warning mb-4">
+                            <div class="card-header bg-warning-subtle">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="ri-add-circle-line me-2"></i>
+                                    Yangi Fayl Yuklash
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <form wire:submit.prevent="saveAttachment">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="ri-calendar-line me-1"></i>
+                                                Sana <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" wire:model="attachmentDate"
+                                                   class="form-control @error('attachmentDate') is-invalid @enderror">
+                                            @error('attachmentDate')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="ri-calendar-line me-1"></i>
+                                                Sana <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="number" wire:model="attachmentNumber"
+                                                   class="form-control @error('attachmentNumber') is-invalid @enderror">
+                                            @error('attachmentNumber')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="ri-time-line me-1"></i>
+                                                Vaqt <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="time" wire:model="attachmentTime"
+                                                   class="form-control @error('attachmentTime') is-invalid @enderror">
+                                            @error('attachmentTime')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+{{--                                        <div class="col-12">--}}
+{{--                                            <label class="form-label fw-semibold">--}}
+{{--                                                <i class="ri-hashtag me-1"></i>--}}
+{{--                                                Raqam / ID <small class="text-muted">(ixtiyoriy)</small>--}}
+{{--                                            </label>--}}
+{{--                                            <input type="text" wire:model="attachmentNumber"--}}
+{{--                                                   class="form-control @error('attachmentNumber') is-invalid @enderror"--}}
+{{--                                                   placeholder="Masalan: DOC-2024-001">--}}
+{{--                                            @error('attachmentNumber')--}}
+{{--                                            <div class="invalid-feedback">{{ $message }}</div>--}}
+{{--                                            @enderror--}}
+{{--                                        </div>--}}
+
+                                        {{--                                        <div class="col-12">--}}
+                                        {{--                                            <label class="form-label fw-semibold">--}}
+                                        {{--                                                <i class="ri-file-upload-line me-1"></i>--}}
+                                        {{--                                                Fayl <span class="text-danger">*</span>--}}
+                                        {{--                                            </label>--}}
+                                        {{--                                            <div class="card border-dashed border-2 border-warning">--}}
+                                        {{--                                                <div class="card-body text-center py-4">--}}
+                                        {{--                                                    <input type="file" wire:model="attachmentFile"--}}
+                                        {{--                                                           class="d-none"--}}
+                                        {{--                                                           id="attachmentFileInput"--}}
+                                        {{--                                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.zip">--}}
+                                        {{--                                                    <label for="attachmentFileInput"--}}
+                                        {{--                                                           class="btn btn-outline-warning btn-lg w-100">--}}
+                                        {{--                                                        <i class="ri-upload-cloud-line fs-3 d-block mb-2"></i>--}}
+                                        {{--                                                        <span>Fayl tanlash</span>--}}
+                                        {{--                                                        <small class="d-block text-muted mt-1">PDF, Word, Excel, ZIP--}}
+                                        {{--                                                            (Max: 10MB)</small>--}}
+                                        {{--                                                    </label>--}}
+                                        {{--                                                </div>--}}
+                                        {{--                                            </div>--}}
+
+                                        {{--                                            @if($attachmentFile)--}}
+                                        {{--                                                <div class="alert alert-success border-0 shadow-sm mt-3">--}}
+                                        {{--                                                    <i class="ri-checkbox-circle-line me-2"></i>--}}
+                                        {{--                                                    <strong>Fayl--}}
+                                        {{--                                                        tanlandi:</strong> {{ $attachmentFile->getClientOriginalName() }}--}}
+                                        {{--                                                </div>--}}
+                                        {{--                                            @endif--}}
+
+                                        {{--                                            @error('attachmentFile')--}}
+                                        {{--                                            <div class="alert alert-danger border-0 mt-2">--}}
+                                        {{--                                                <i class="ri-error-warning-line me-1"></i>{{ $message }}--}}
+                                        {{--                                            </div>--}}
+                                        {{--                                            @enderror--}}
+                                        {{--                                        </div>--}}
+
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-warning btn-lg shadow w-100">
+                                                <span wire:loading.remove wire:target="saveAttachment">
+                                                    <i class="ri-save-line me-1"></i>Attachment Saqlash
+                                                </span>
+                                                <span wire:loading wire:target="saveAttachment">
+                                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                                    Yuklanmoqda...
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        {{-- Mavjud Attachmentlar ro'yxati --}}
+                        <div class="card border-info">
+                            <div class="card-header bg-info-subtle">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="ri-folder-open-line me-2"></i>
+                                    Yuklangan Fayllar
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>№</th>
+                                            <th>Sana</th>
+                                            <th>Vaqt</th>
+                                            <th>Raqam</th>
+                                            <th>Holat</th>
+                                            <th class="text-end">Amallar</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @forelse($this->attachments as $index => $attachment)
+                                            <tr>
+                                                <td class="fw-bold">{{ $index + 1 }}</td>
+                                                <td>
+                                                    <i class="ri-calendar-line text-primary me-1"></i>
+                                                    {{ \Carbon\Carbon::parse($attachment->date)->format('d.m.Y') }}
+                                                </td>
+                                                <td>
+                                                    <i class="ri-time-line text-info me-1"></i>
+                                                    {{ $attachment->time }}
+                                                </td>
+                                                <td>
+                                                    @if($attachment->number)
+                                                        <span
+                                                            class="badge bg-secondary">{{ $attachment->number }}</span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($attachment->status == 1)
+                                                        <span class="badge bg-success">
+                                                            <i class="ri-check-line me-1"></i>Faol
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-secondary">Nofaol</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end">
+                                                    <button wire:click="deleteAttachment({{ $attachment->id }})"
+                                                            onclick="return confirm('O\'chirmoqchimisiz?')"
+                                                            class="btn btn-sm btn-danger">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <i class="ri-inbox-line text-muted"
+                                                       style="font-size: 60px; opacity: 0.2;"></i>
+                                                    <p class="text-muted mt-3">Hozircha attachmentlar yo'q</p>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button wire:click="closeAttachmentModal" class="btn btn-secondary btn-lg">
+                            <i class="ri-close-line me-1"></i> Yopish
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Question Create/Edit Modal --}}
     @if($showQuestionFormModal)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7); z-index: 1060;">
@@ -586,7 +541,8 @@
                                 @if($questionText)
                                     <div class="alert alert-info border-0 shadow-sm mt-3">
                                         <strong><i class="ri-eye-line me-1"></i>Ko'rinishi:</strong>
-                                        <div class="mt-2 p-3 bg-white rounded question-preview">{!! $questionText !!}</div>
+                                        <div
+                                            class="mt-2 p-3 bg-white rounded question-preview">{!! $questionText !!}</div>
                                     </div>
                                 @endif
                             </div>
@@ -661,7 +617,8 @@
                             <div class="row g-3">
                                 @foreach(['A', 'B', 'C', 'D'] as $index => $letter)
                                     <div class="col-md-6">
-                                        <div class="card h-100 {{ $correctOption == $index ? 'border-success border-3 shadow' : 'border' }}">
+                                        <div
+                                            class="card h-100 {{ $correctOption == $index ? 'border-success border-3 shadow' : 'border' }}">
                                             <div class="card-body">
                                                 <div class="form-check mb-3">
                                                     <input class="form-check-input"
@@ -670,7 +627,8 @@
                                                            value="{{ $index }}"
                                                            id="correct{{ $index }}"
                                                            name="correctOption">
-                                                    <label class="form-check-label fw-bold fs-5" for="correct{{ $index }}">
+                                                    <label class="form-check-label fw-bold fs-5"
+                                                           for="correct{{ $index }}">
                                                         <span class="badge bg-primary me-2">{{ $letter }}</span>
                                                         {{ $letter }} varianti
                                                         @if($correctOption == $index)
@@ -691,7 +649,8 @@
                                                 @if($options[$index])
                                                     <div class="mt-2 p-2 bg-light rounded">
                                                         <small class="text-muted">Ko'rinishi:</small>
-                                                        <div class="option-preview-{{ $index }}">{!! $options[$index] !!}</div>
+                                                        <div
+                                                            class="option-preview-{{ $index }}">{!! $options[$index] !!}</div>
                                                     </div>
                                                 @endif
                                             </div>
@@ -837,7 +796,8 @@
                                 @empty
                                     <tr>
                                         <td colspan="4" class="text-center py-5">
-                                            <i class="ri-question-line text-muted" style="font-size: 80px; opacity: 0.2;"></i>
+                                            <i class="ri-question-line text-muted"
+                                               style="font-size: 80px; opacity: 0.2;"></i>
                                             <p class="text-muted mt-3">Hozircha savollar yo'q. Yangi savol qo'shing.</p>
                                         </td>
                                     </tr>
@@ -948,10 +908,12 @@
                                                             $letters = ['A', 'B', 'C', 'D'];
                                                         @endphp
                                                         <div class="col-md-6">
-                                                            <div class="card h-100 {{ $option->is_correct ? 'border-success border-3 bg-success-subtle' : 'border' }}">
+                                                            <div
+                                                                class="card h-100 {{ $option->is_correct ? 'border-success border-3 bg-success-subtle' : 'border' }}">
                                                                 <div class="card-body">
                                                                     <div class="d-flex align-items-center mb-2">
-                                                                        <span class="badge {{ $option->is_correct ? 'bg-success' : 'bg-secondary' }} me-2">
+                                                                        <span
+                                                                            class="badge {{ $option->is_correct ? 'bg-success' : 'bg-secondary' }} me-2">
                                                                             {{ $letters[$optIndex] }}
                                                                         </span>
                                                                         @if($option->is_correct)
@@ -1018,6 +980,10 @@
         background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
     }
 
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
     /* Question Text */
     .question-text {
         font-size: 1rem;
@@ -1064,13 +1030,13 @@
 
     /* Button Shadows */
     .btn-lg {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
     }
 
     .btn-lg:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     /* Border Dashed for Upload */

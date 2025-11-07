@@ -36,45 +36,69 @@ class QuizManager extends Component
 
     public $questionId;
     public $questionText = '';
-    public $questionImage = null; // Yangi: savol uchun rasm
-    public $existingImage = null; // Mavjud rasm
+    public $questionImage = null;
+    public $existingImage = null;
     public $options = ['', '', '', ''];
     public $correctOption = null;
     public $isEditQuestion = false;
     public $questionSearch = '';
+
+    // === Attachment (Yangi) ===
+    public $showAttachmentModal = false;
+    public $attachmentQuizId;
+    public $attachmentFile;
+    public $attachmentDate;
+    public $attachmentTime;
+    public $attachmentNumber;
 
     protected $paginationTheme = 'bootstrap';
 
     // === VALIDATION RULES ===
     protected function rules()
     {
-        $rules = [
-            'name' => 'required|min:3',
-            'subject_id' => 'required|exists:subjects,id',
-            'classes_id' => 'required|exists:classes,id',
-        ];
+        // Quiz uchun validation
+        if ($this->showModal) {
+            return [
+                'name' => 'required|min:3',
+                'subject_id' => 'required|exists:subjects,id',
+                'classes_id' => 'required|exists:classes,id',
+            ];
+        }
 
+        // Question uchun validation
         if ($this->showQuestionFormModal) {
-            $rules = array_merge($rules, [
+            return [
                 'questionText' => 'required|min:5',
-                'questionImage' => 'nullable|image|max:2048', // Max 2MB
+                'questionImage' => 'nullable|image|max:2048',
                 'options.0' => 'required|min:1',
                 'options.1' => 'required|min:1',
                 'options.2' => 'required|min:1',
                 'options.3' => 'required|min:1',
                 'correctOption' => 'required|in:0,1,2,3',
-            ]);
+            ];
         }
 
-        return $rules;
+        // Attachment uchun validation
+        if ($this->showAttachmentModal) {
+            return [
+                'attachmentFile' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,zip|max:10240',
+                'attachmentDate' => 'required|date',
+                'attachmentTime' => 'required',
+                'attachmentNumber' => 'nullable|string|max:50',
+            ];
+        }
+
+        return [];
     }
 
     protected $messages = [
+        // Quiz messages
         'name.required' => 'Quiz nomini kiritish majburiy',
         'name.min' => 'Quiz nomi kamida 3 ta belgidan iborat bo\'lishi kerak',
         'subject_id.required' => 'Fanni tanlash majburiy',
         'classes_id.required' => 'Sinfni tanlash majburiy',
 
+        // Question messages
         'questionText.required' => 'Savol matnini kiriting',
         'questionText.min' => 'Savol kamida 5 ta belgidan iborat bo\'lishi kerak',
         'questionImage.image' => 'Faqat rasm fayllarini yuklash mumkin',
@@ -84,11 +108,34 @@ class QuizManager extends Component
         'options.2.required' => 'C variantini to\'ldiring',
         'options.3.required' => 'D variantini to\'ldiring',
         'correctOption.required' => 'To\'g\'ri javobni tanlang',
+
+        // Attachment messages
+//        'attachmentFile.required' => 'Faylni yuklang',
+//        'attachmentFile.mimes' => 'Faqat PDF, Word, Excel yoki ZIP fayllarini yuklash mumkin',
+//        'attachmentFile.max' => 'Fayl hajmi 10MB dan oshmasligi kerak',
+        'attachmentDate.required' => 'Sanani tanlang',
+        'attachmentTime.required' => 'Vaqtni kiriting',
     ];
 
     public function updated($propertyName)
     {
-        $this->validateOnly($propertyName);
+        // Faqat hozirgi ochiq modal uchun validate qilish
+        if ($this->showModal && str_starts_with($propertyName, 'name') ||
+            str_starts_with($propertyName, 'subject_id') ||
+            str_starts_with($propertyName, 'classes_id')) {
+            $this->validateOnly($propertyName);
+        }
+
+        if ($this->showQuestionFormModal && (
+                str_starts_with($propertyName, 'questionText') ||
+                str_starts_with($propertyName, 'options') ||
+                str_starts_with($propertyName, 'correctOption'))) {
+            $this->validateOnly($propertyName);
+        }
+
+        if ($this->showAttachmentModal && str_starts_with($propertyName, 'attachment')) {
+            $this->validateOnly($propertyName);
+        }
     }
 
     public function updatingSearch()
@@ -222,7 +269,7 @@ class QuizManager extends Component
 
     public function saveQuestion()
     {
-//        $this->validate();
+        $this->validate();
 
         if ($this->correctOption === null || $this->correctOption === '') {
             session()->flash('question_error', 'To\'g\'ri javobni tanlang!');
@@ -233,7 +280,6 @@ class QuizManager extends Component
 
         DB::beginTransaction();
         try {
-            // Rasmni yuklash
             $imagePath = null;
             if ($this->questionImage) {
                 $imagePath = $this->questionImage->store('questions', 'public');
@@ -242,7 +288,6 @@ class QuizManager extends Component
             if ($this->isEditQuestion) {
                 $question = Question::findOrFail($this->questionId);
 
-                // Eski rasmni o'chirish
                 if ($imagePath && $question->image) {
                     Storage::disk('public')->delete($question->image);
                 }
@@ -265,7 +310,6 @@ class QuizManager extends Component
                 ]);
             }
 
-            // Variantlarni qo'shish
             foreach ($this->options as $index => $optionText) {
                 $trimmedText = trim($optionText);
 
@@ -336,7 +380,6 @@ class QuizManager extends Component
             ->whereHas('quiz', fn($q) => $q->where('created_by', Auth::id()))
             ->firstOrFail();
 
-        // Rasmni o'chirish
         if ($question->image) {
             Storage::disk('public')->delete($question->image);
         }
@@ -363,6 +406,90 @@ class QuizManager extends Component
     }
 
     // ======================
+    // === ATTACHMENT MANAGEMENT (YANGI) ===
+    // ======================
+
+    public function manageAttachments($quizId)
+    {
+        $this->attachmentQuizId = $quizId;
+        $this->resetAttachmentFields();
+        $this->showAttachmentModal = true;
+    }
+
+    public function closeAttachmentModal()
+    {
+        $this->showAttachmentModal = false;
+        $this->resetAttachmentFields();
+    }
+
+    public function saveAttachment()
+    {
+//        $this->validate();
+
+        DB::beginTransaction();
+        try {
+//            $filePath = $this->attachmentFile->store('attachments', 'public');
+
+            DB::table('attachment')->insert([
+                'quiz_id' => $this->attachmentQuizId,
+                'date' => $this->attachmentDate,
+                'time' => $this->attachmentTime,
+                'number' => $this->attachmentNumber,
+                'status' => 1,
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Fayl nomini attachment jadvaliga saqlash
+            // Agar sizning attachment jadvalingizda file_path ustuni bo'lsa
+            // 'file_path' => $filePath qo'shing
+
+            DB::commit();
+
+            session()->flash('message', 'Attachment muvaffaqiyatli qo\'shildi!');
+            $this->closeAttachmentModal();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Attachment save error: ' . $e->getMessage());
+            session()->flash('error', 'Attachment saqlashda xatolik!'. $e->getMessage());
+        }
+    }
+
+    public function getAttachmentsProperty()
+    {
+        if (!$this->attachmentQuizId) {
+            return collect();
+        }
+
+        return DB::table('attachment')
+            ->where('quiz_id', $this->attachmentQuizId)
+            ->where('created_by', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    public function deleteAttachment($id)
+    {
+        $attachment = DB::table('attachment')
+            ->where('id', $id)
+            ->where('created_by', Auth::id())
+            ->first();
+
+        if ($attachment) {
+            // Agar file_path ustuni bo'lsa, faylni ham o'chirish
+            // if ($attachment->file_path) {
+            //     Storage::disk('public')->delete($attachment->file_path);
+            // }
+
+            DB::table('attachment')->where('id', $id)->delete();
+            session()->flash('message', 'Attachment o\'chirildi!');
+        }
+    }
+
+    // ======================
     // === RESET FIELDS ===
     // ======================
 
@@ -373,6 +500,7 @@ class QuizManager extends Component
         $this->subject_id = null;
         $this->classes_id = null;
         $this->isEdit = false;
+        $this->resetValidation();
     }
 
     private function resetQuestionFields()
@@ -384,6 +512,15 @@ class QuizManager extends Component
         $this->options = ['', '', '', ''];
         $this->correctOption = null;
         $this->isEditQuestion = false;
+        $this->resetValidation();
+    }
+
+    private function resetAttachmentFields()
+    {
+        $this->attachmentFile = null;
+        $this->attachmentDate = null;
+        $this->attachmentTime = null;
+        $this->attachmentNumber = null;
         $this->resetValidation();
     }
 
