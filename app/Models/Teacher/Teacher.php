@@ -57,17 +57,18 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class Teacher extends Users
 {
-    public static function findTeacher(){
+    public static function findTeacher()
+    {
         return static::query()->where('user_type', '=', Users::TYPE_TEACHER);
     }
 
-    public static function subject($id){
-        $subject = Subjects::where('id','=',$id)->first();
-        return $subject;
-    }
+    // public function subject()
+    // {
+    //     return $this->belongsTo(Subjects::class, 'subject_id');
+    // }
 
-
-    public static function studentCount(string $id){
+    public static function studentCount(string $id)
+    {
         return self::where('classes_id', '=', $id)->count();
     }
 }

@@ -4,11 +4,13 @@ namespace App\Models\Teacher;
 
 use App\Models\Classes;
 use App\Models\Option;
+use App\Models\Subjects;
+use App\Models\Users;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -51,6 +53,14 @@ class Quiz extends Model
 
     public $timestamps = true;
 
+    protected $fillable = [
+        'name',
+        'subject_id',
+        'classes_id',
+        'status',
+        'created_by',
+        'updated_by'
+    ];
 
     public static function getStatus($id = null)
     {
@@ -85,8 +95,37 @@ class Quiz extends Model
     }
 
 
+    // Relations
+    public function subject()
+    {
+        return $this->belongsTo(Subjects::class, 'subject_id');
+    }
+
+    public function class()
+    {
+        return $this->belongsTo(Classes::class, 'classes_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(Users::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(Users::class, 'updated_by');
+    }
+
     public function questions()
     {
-        return $this->hasMany(Question::class);
+        return $this->hasMany(Question::class, 'quiz_id');
+    }
+
+    /**
+     * Scope - faqat faol quizlar
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
     }
 }

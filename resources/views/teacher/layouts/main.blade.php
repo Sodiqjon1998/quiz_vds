@@ -15,20 +15,20 @@
 
 
 <html lang="en" class="light-style layout-navbar-fixed layout-menu-fixed layout-compact " dir="ltr"
-      data-theme="theme-default" data-assets-path="assets/" data-template="vertical-menu-template" data-style="light">
+    data-theme="theme-default" data-assets-path="assets/" data-template="vertical-menu-template" data-style="light">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
     <title>Andijon Yuksalish Maktabi -- O'qituvchi</title>
 
 
     <meta name="description"
-          content="Materialize – is the most developer friendly &amp; highly customizable Admin Dashboard Template.">
+        content="Materialize – is the most developer friendly &amp; highly customizable Admin Dashboard Template.">
     <meta name="keywords"
-          content="dashboard, material, material design, bootstrap 5 dashboard, bootstrap 5 design, bootstrap 5">
+        content="dashboard, material, material design, bootstrap 5 dashboard, bootstrap 5 design, bootstrap 5">
     <!-- Canonical SEO -->
     <link rel="canonical" href="https://1.envato.market/materialize_admin">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -85,10 +85,10 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/bootstrap-select/bootstrap-select.css') }}">
-    {{--    Picker  --}}
+    {{-- Picker  --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css') }}">
     <link rel="stylesheet"
-          href="{{ asset('assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css') }}">
+        href="{{ asset('assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/pickr/pickr-themes.css') }}">
 
@@ -110,143 +110,145 @@
 
     {{-- teacher.layouts.main faylida yoki sizning asosiy layout faylingizda <head> ichida --}}
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+    @livewireStyles
 </head>
 
 <body>
 
 
-<!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
-<noscript>
-    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5J3LMKC" height="0" width="0"
+    <!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5J3LMKC" height="0" width="0"
             style="display: none; visibility: hidden"></iframe>
-</noscript>
-<!-- End Google Tag Manager (noscript) -->
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
 
-<!-- Layout wrapper -->
-<div class="layout-wrapper layout-content-navbar  ">
-    <div class="layout-container">
-
-
-        <!-- Menu -->
-
-        @include('teacher.layouts.partials.aside')
-        <!-- / Menu -->
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar  ">
+        <div class="layout-container">
 
 
-        <!-- Layout container -->
-        <div class="layout-page">
+            <!-- Menu -->
 
-            <!-- Navbar -->
-
-            @include('teacher.layouts.partials.navbar')
-
-            <!-- / Navbar -->
-
-            <!-- Content wrapper -->
-            <div class="content-wrapper">
-
-                <!-- Content -->
-                <div class="container-xxl flex-grow-1 container-p-y">
+            @include('teacher.layouts.partials.aside')
+            <!-- / Menu -->
 
 
-                    @yield('content')
+            <!-- Layout container -->
+            <div class="layout-page">
 
+                <!-- Navbar -->
+
+                @include('teacher.layouts.partials.navbar')
+
+                <!-- / Navbar -->
+
+                <!-- Content wrapper -->
+                <div class="content-wrapper">
+
+                    <!-- Content -->
+                    <div class="container-xxl flex-grow-1 container-p-y">
+
+
+                        @yield('content')
+
+                    </div>
+                    <!-- /Content -->
+
+                    <!-- Footer -->
+                    @include('teacher.layouts.partials.footer')
+                    <!-- / Footer -->
+
+
+                    <div class="content-backdrop fade"></div>
                 </div>
-                <!-- /Content -->
-
-                <!-- Footer -->
-                @include('teacher.layouts.partials.footer')
-                <!-- / Footer -->
-
-
-                <div class="content-backdrop fade"></div>
+                <!-- Content wrapper -->
             </div>
-            <!-- Content wrapper -->
+            <!-- / Layout page -->
         </div>
-        <!-- / Layout page -->
+
+
+        <!-- Overlay -->
+        <div class="layout-overlay layout-menu-toggle"></div>
+
+
+        <!-- Drag Target Area To SlideIn Menu On Small Screens -->
+        <div class="drag-target"></div>
     </div>
-
-
-    <!-- Overlay -->
-    <div class="layout-overlay layout-menu-toggle"></div>
-
-
-    <!-- Drag Target Area To SlideIn Menu On Small Screens -->
-    <div class="drag-target"></div>
-</div>
-</div>
-<!-- / Layout wrapper -->
+    </div>
+    <!-- / Layout wrapper -->
 
 
 
-<!-- Core JS -->
-<!-- build:js assets/vendor/js/core.js -->
-<script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
-<script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/typeahead-js/typeahead.js') }}"></script>
-<script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/popper/popper.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/node-waves/node-waves.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/typeahead-js/typeahead.js') }}"></script>
+    <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
-<!-- endbuild -->
+    <!-- endbuild -->
 
-<!-- Vendors JS -->
-<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/swiper/swiper.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/cleavejs/cleave.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/cleavejs/cleave-phone.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/tagify/tagify.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/%40form-validation/popular.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/%40form-validation/bootstrap5.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/%40form-validation/auto-focus.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/autosize/autosize.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/jquery-repeater/jquery-repeater.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/bootstrap-select/bootstrap-select.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/bloodhound/bloodhound.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/pickr/pickr.js') }}"></script>
-
-
-<!-- Main JS -->
-<script src="{{ asset('assets/js/main.js') }}"></script>
+    <!-- Vendors JS -->
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/swiper/swiper.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/cleavejs/cleave.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/cleavejs/cleave-phone.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/tagify/tagify.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/%40form-validation/popular.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/%40form-validation/bootstrap5.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/%40form-validation/auto-focus.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/autosize/autosize.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/jquery-repeater/jquery-repeater.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/bootstrap-select/bootstrap-select.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/bloodhound/bloodhound.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/jquery-timepicker/jquery-timepicker.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/pickr/pickr.js') }}"></script>
 
 
-<!-- Page JS -->
-<script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
-<script src="{{ asset('assets/js/modal-edit-users.js') }}"></script>
-<script src="{{ asset('assets/js/modal-enable-otp.js') }}"></script>
-<script src="{{ asset('assets/js/app-users-view.js') }}"></script>
-<script src="{{ asset('assets/js/app-users-view-security.js') }}"></script>
-<script src="{{ asset('assets/js/forms-selects.js') }}"></script>
-<script src="{{ asset('assets/js/forms-tagify.js') }}"></script>
-<script src="{{ asset('assets/js/forms-typeahead.js') }}"></script>
-<script src="{{ asset('assets/js/forms-pickers.js') }}"></script>
+    <!-- Main JS -->
+    <script src="{{ asset('assets/js/main.js') }}"></script>
 
-{{-- form-layouts JS --}}
 
-<script src="{{ asset('assets/js/form-layouts.js') }}"></script>
-<script>
-    window.replainSettings = {
-        id: '95f6de91-7691-4565-8411-448079268f89'
-    };
-    (function(u) {
-        var s = document.createElement('script');
-        s.async = true;
-        s.src = u;
-        var x = document.getElementsByTagName('script')[0];
-        x.parentNode.insertBefore(s, x);
-    })('https://widget.replain.cc/dist/client.js');
-</script>
+    <!-- Page JS -->
+    <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
+    <script src="{{ asset('assets/js/modal-edit-users.js') }}"></script>
+    <script src="{{ asset('assets/js/modal-enable-otp.js') }}"></script>
+    <script src="{{ asset('assets/js/app-users-view.js') }}"></script>
+    <script src="{{ asset('assets/js/app-users-view-security.js') }}"></script>
+    <script src="{{ asset('assets/js/forms-selects.js') }}"></script>
+    <script src="{{ asset('assets/js/forms-tagify.js') }}"></script>
+    <script src="{{ asset('assets/js/forms-typeahead.js') }}"></script>
+    <script src="{{ asset('assets/js/forms-pickers.js') }}"></script>
+
+    {{-- form-layouts JS --}}
+
+    <script src="{{ asset('assets/js/form-layouts.js') }}"></script>
+    <script>
+        window.replainSettings = {
+            id: '95f6de91-7691-4565-8411-448079268f89'
+        };
+        (function(u) {
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = u;
+            var x = document.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);
+        })('https://widget.replain.cc/dist/client.js');
+    </script>
+
+    @livewireScripts
 </body>
 
 </html>

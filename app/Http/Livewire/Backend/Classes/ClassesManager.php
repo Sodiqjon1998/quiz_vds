@@ -166,7 +166,7 @@ class ClassesManager extends Component
         $classes = Classes::withCount('students')
             ->where('name', 'like', '%' . $this->search . '%')
             ->orderBy('name', 'asc')
-            ->paginate(10);
+            ->paginate(12);
 
         return view('livewire.backend.classes.classes-manager', [
             'classes' => $classes

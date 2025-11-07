@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $question_id
@@ -34,11 +34,32 @@ use Illuminate\Database\Eloquent\Model;
 class Option extends Model
 {
     use HasFactory;
+
     protected $table = 'option';
 
     public static function getOptionById($id)
     {
         $model = self::where('id', $id)->first();
         return $model;
+    }
+
+
+    protected $fillable = [
+        'question_id',
+        'name',
+        'is_correct',
+        'status',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected $casts = [
+        'is_correct' => 'boolean',
+    ];
+
+    // Question relation
+    public function question()
+    {
+        return $this->belongsTo(\App\Models\Teacher\Question::class);
     }
 }

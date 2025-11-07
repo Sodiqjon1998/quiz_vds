@@ -109,69 +109,69 @@
 <body>
 
 
-    <!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5J3LMKC" height="0" width="0"
-                style="display: none; visibility: hidden"></iframe>
-    </noscript>
-    <!-- End Google Tag Manager (noscript) -->
+<!-- ?PROD Only: Google Tag Manager (noscript) (Default ThemeSelection: GTM-5DDHKGP, PixInvent: GTM-5J3LMKC) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5J3LMKC" height="0" width="0"
+            style="display: none; visibility: hidden"></iframe>
+</noscript>
+<!-- End Google Tag Manager (noscript) -->
 
-    <!-- Layout wrapper -->
-    <div class="layout-wrapper layout-content-navbar  ">
-        <div class="layout-container">
-
-
-            <!-- Menu -->
-
-            @include('backend.layouts.partials.aside')
-            <!-- / Menu -->
+<!-- Layout wrapper -->
+<div class="layout-wrapper layout-content-navbar  ">
+    <div class="layout-container">
 
 
-            <!-- Layout container -->
-            <div class="layout-page">
+        <!-- Menu -->
 
-                <!-- Navbar -->
-
-                @include('backend.layouts.partials.navbar')
-
-                <!-- / Navbar -->
-
-                <!-- Content wrapper -->
-                <div class="content-wrapper">
-
-                    <!-- Content -->
-                    <div class="container-xxl flex-grow-1 container-p-y">
+        @include('backend.layouts.partials.aside')
+        <!-- / Menu -->
 
 
-                        @yield('content')
+        <!-- Layout container -->
+        <div class="layout-page">
 
-                    </div>
-                    <!-- /Content -->
+            <!-- Navbar -->
 
-                    <!-- Footer -->
-                    @include('backend.layouts.partials.footer')
-                    <!-- / Footer -->
+            @include('backend.layouts.partials.navbar')
+
+            <!-- / Navbar -->
+
+            <!-- Content wrapper -->
+            <div class="content-wrapper">
+
+                <!-- Content -->
+                <div class="container-xxl flex-grow-1 container-p-y">
 
 
-                    <div class="content-backdrop fade"></div>
+                    @yield('content')
+
                 </div>
-                <!-- Content wrapper -->
+                <!-- /Content -->
+
+                <!-- Footer -->
+                @include('backend.layouts.partials.footer')
+                <!-- / Footer -->
+
+
+                <div class="content-backdrop fade"></div>
             </div>
-            <!-- / Layout page -->
+            <!-- Content wrapper -->
         </div>
-
-
-        <!-- Overlay -->
-        <div class="layout-overlay layout-menu-toggle"></div>
-
-
-        <!-- Drag Target Area To SlideIn Menu On Small Screens -->
-        <div class="drag-target"></div>
+        <!-- / Layout page -->
     </div>
-    </div>
-    <!-- / Layout wrapper -->
 
-    @livewireScripts
+
+    <!-- Overlay -->
+    <div class="layout-overlay layout-menu-toggle"></div>
+
+
+    <!-- Drag Target Area To SlideIn Menu On Small Screens -->
+    <div class="drag-target"></div>
+</div>
+</div>
+<!-- / Layout wrapper -->
+
+@livewireScripts
 <!-- Core JS -->
 <!-- build:js assets/vendor/js/core.js -->
 <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>

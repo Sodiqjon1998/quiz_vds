@@ -40,6 +40,7 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
     Route::prefix('/teacher')->controller(QuestionController::class)->group(function () {
 
         //QUESTION ROUTE
+
         Route::get('/question/index', 'index')->name('teacher.question.index');
         Route::get('/question/{quiz_id}/create', 'create')->name('teacher.question.create');
         Route::get('/question/{id}', 'show')->name('teacher.question.show');
@@ -50,6 +51,8 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
         Route::get('/questions/import-file', 'importFile')->name('teacher.question.importFile');
         Route::post('/questions/import', 'import')->name('teacher.question.import');
+
+
     });
 
     Route::prefix('/teacher')->controller(ExamController::class)->group(function () {

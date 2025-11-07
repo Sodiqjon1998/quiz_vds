@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Teacher\Quiz;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -46,6 +47,39 @@ class Question extends Model
     public $timestamps = true;
 
 
+    protected $fillable = [
+        'quiz_id',
+        'name',
+        'status',
+        'created_by',
+        'updated_by',
+    ];
+
+    // Quiz relation
+    public function quiz()
+    {
+        return $this->belongsTo(Quiz::class);
+    }
+
+    // Options relation
+    public function options()
+    {
+        return $this->hasMany(Option::class);
+    }
+
+    // Correct option
+    public function correctOption()
+    {
+        return $this->hasOne(Option::class)->where('is_correct', 1);
+    }
+
+    // Creator
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\Users::class, 'created_by');
+    }
+
+
     public static function getStatus($id = null)
     {
         $status = [
@@ -60,11 +94,5 @@ class Question extends Model
     {
         $model = Question::where('id', $id)->first();
         return $model;
-    }
-
-
-    public function options()
-    {
-        return $this->hasMany(Option::class);
     }
 }

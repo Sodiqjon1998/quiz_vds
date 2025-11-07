@@ -1,7 +1,7 @@
 @php use App\Models\Teacher\Teacher; @endphp
 @php use App\Models\Users; @endphp
 <nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
-     id="layout-navbar" style="border-bottom: 1px solid #d3cece">
+    id="layout-navbar" style="border-bottom: 1px solid #d3cece">
 
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0   d-xl-none ">
         <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
@@ -23,7 +23,7 @@
         <ul class="navbar-nav flex-row align-items-center ms-auto">
 
             <li class="nav-item">
-                <strong>Fan nomi:</strong> {{Teacher::subject(Auth::user()->subject_id)->name ?? "-----"}}
+                <strong>Fan nomi: {{ auth()->user()->subject->name ?? 'Fan tanlanmagan' }}</strong>
             </li>
             <!-- Language -->
 
@@ -58,7 +58,9 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <span class="fw-medium d-block small"></strong> {{Teacher::subject(Auth::user()->subject_id)->name ?? "-----"}}</span>
+                                    <span class="fw-medium d-block small">
+                                        {{ auth()->user()->subject->name ?? "-----" }}
+                                    </span>
                                     <small class="text-muted">O'qituvchi</small>
                                 </div>
                             </div>
@@ -103,13 +105,13 @@
                     <li>
                         <div class="d-grid px-4 pt-2 pb-1">
                             <a class="btn btn-sm btn-danger d-flex" href="{{ route('teacher.logout') }}"
-                               onclick="event.preventDefault(); document.getElementById('frm-logout').submit();"
-                               target="_blank">
+                                onclick="event.preventDefault(); document.getElementById('frm-logout').submit();"
+                                target="_blank">
                                 <small class="align-middle">Logout</small>
                                 <i class="ri-logout-box-r-line ms-2 ri-16px"></i>
                             </a>
                             <form id="frm-logout" action="{{ route('backend.logout') }}" method="POST"
-                                  style="display: none;">
+                                style="display: none;">
                                 {{ csrf_field() }}
                             </form>
                         </div>
@@ -126,7 +128,7 @@
     <!-- Search Small Screens -->
     <div class="navbar-search-wrapper search-input-wrapper  d-none">
         <input type="text" class="form-control search-input container-xxl border-0" placeholder="Search..."
-               aria-label="Search...">
+            aria-label="Search...">
         <i class="ri-close-fill search-toggler cursor-pointer"></i>
     </div>
 

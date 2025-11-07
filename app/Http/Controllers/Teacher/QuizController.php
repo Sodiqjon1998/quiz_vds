@@ -33,17 +33,24 @@ class QuizController extends Controller
      */
     public function store(Request $request)
     {
-        $model = new Quiz();
-        $model->name = $request->input('name');
-        $model->status = $request->input('status');
-        $model->classes_id = $request->input('classes_id');
-        $model->subject_id = Teacher::subject(Auth::user()->subject_id)->id;
-        $model->created_by = Auth::user()->id;
-        $model->updated_by = Auth::user()->id;
-        if ($model->save()) {
-            return redirect()->route('teacher.quiz.index');
-        }
-        return redirect()->route('teacher.quiz.create');
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:0,1',
+            'classes_id' => 'required|exists:classes,id',
+        ]);
+
+        Quiz::create([
+            'name' => $request->name,
+            'status' => $request->status,
+            'classes_id' => $request->classes_id,
+            'subject_id' => auth()->user()->subject_id, // ← Oddiy
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
+        ]);
+
+        return redirect()
+            ->route('teacher.quiz.index')
+            ->with('success', 'Test muvaffaqiyatli yaratildi!');
     }
 
     /**

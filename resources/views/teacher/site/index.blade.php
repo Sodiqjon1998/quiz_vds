@@ -1154,7 +1154,6 @@
             });
         }
 
-        {{-- YANGI O'ZGARTIRILGAN KOD BOSHLANISHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
         const classQuizPerformanceData = @json($classQuizPerformance); // Bu ma'lumot 2025 yilning joriy oyi uchun filtrlangan deb faraz qilamiz
 
         // Joriy oyni aniqlash (frontendda, agar backenddan kelmasa)
@@ -1260,7 +1259,6 @@
         }));
 
         showValues3d();
-        {{-- YANGI O'ZGARTIRILGAN KOD TUGASHI: Sinflar bo'yicha to'g'ri javob foizi grafigi JavaScript --}}
     </script>
 @endsection
 

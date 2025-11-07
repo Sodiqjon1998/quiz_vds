@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Models\Users;
 use Hash;
 
-class AuthController extends Controller
+class SiteController extends Controller
 {
 
     public function index(Request $request)
