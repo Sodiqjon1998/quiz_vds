@@ -469,6 +469,7 @@ class QuizManager extends Component
             ->where('created_by', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
+
     }
 
     public function deleteAttachment($id)
@@ -549,7 +550,7 @@ class QuizManager extends Component
     {
         $userId = Auth::id();
 
-        $quizzes = Quiz::with(['subject', 'class', 'creator'])
+        $quizzes = Quiz::with(['subject', 'class', 'creator', 'attachment'])
             ->withCount('questions')
             ->where('created_by', $userId)
             ->where('name', 'like', '%' . $this->search . '%')
