@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -181,8 +182,118 @@ class Users extends Authenticatable
 
     // app/Models/Users.php
 
-public function classRelation()
-{
-    return $this->belongsTo(Classes::class, 'classes_id');
-}
+    public function classRelation()
+    {
+        return $this->belongsTo(Classes::class, 'classes_id');
+    }
+
+
+     /**
+     * Get all reading records for the user.
+     */
+    public function readingRecords(): HasMany
+    {
+        return $this->hasMany(ReadingRecord::class);
+    }
+
+    /**
+     * Bugungi yozuv bormi?
+     */
+    public function hasTodayReading(): bool
+    {
+        return $this->readingRecords()
+            ->today()
+            ->active()
+            ->exists();
+    }
+
+    /**
+     * O'sha oydagi yozuvlar soni
+     */
+    public function monthlyReadingsCount($month = null, $year = null): int
+    {
+        $month = $month ?? now()->month;
+        $year = $year ?? now()->year;
+
+        return $this->readingRecords()
+            ->month($month, $year)
+            ->active()
+            ->count();
+    }
+
+    /**
+     * Jami o'qish vaqti (sekundlarda)
+     */
+    public function totalReadingTime(): int
+    {
+        return $this->readingRecords()
+            ->active()
+            ->sum('duration');
+    }
+
+    /**
+     * Oxirgi 7 kunlik statistika
+     */
+    public function weeklyReadingStats(): array
+    {
+        $records = $this->readingRecords()
+            ->where('created_at', '>=', now()->subDays(7))
+            ->active()
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return [
+            'count' => $records->count(),
+            'total_duration' => $records->sum('duration'),
+            'average_duration' => $records->avg('duration') ?? 0,
+        ];
+    }
+
+    /**
+     * Eng ko'p o'qigan oyi
+     */
+    public function bestMonth(): ?array
+    {
+        $monthlyStats = $this->readingRecords()
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count')
+            ->active()
+            ->groupBy('year', 'month')
+            ->orderBy('count', 'desc')
+            ->first();
+
+        if (!$monthlyStats) {
+            return null;
+        }
+
+        return [
+            'year' => $monthlyStats->year,
+            'month' => $monthlyStats->month,
+            'count' => $monthlyStats->count,
+        ];
+    }
+
+    /**
+     * O'qish streak'i (ketma-ket kunlar)
+     */
+    public function readingStreak(): int
+    {
+        $streak = 0;
+        $currentDate = now()->startOfDay();
+
+        while (true) {
+            $hasReading = $this->readingRecords()
+                ->whereDate('created_at', $currentDate)
+                ->active()
+                ->exists();
+
+            if (!$hasReading) {
+                break;
+            }
+
+            $streak++;
+            $currentDate->subDay();
+        }
+
+        return $streak;
+    }
 }

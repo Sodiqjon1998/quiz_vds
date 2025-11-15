@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ReadingController;
 use App\Http\Controllers\Api\SiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/submit', [SiteController::class, 'submit'])->name('submit');
     });
 
-    // === OLD ROUTE (Backward Compatibility) - Remove after testing ===
-    // Route::get('/index', [SiteController::class, 'index'])->name('api.site.index');
+
+   Route::prefix('readings')->group(function () {
+        Route::get('/', [ReadingController::class, 'index']);
+        Route::post('/upload', [ReadingController::class, 'upload']);
+        Route::delete('/{id}', [ReadingController::class, 'delete']);
+    });
 });
