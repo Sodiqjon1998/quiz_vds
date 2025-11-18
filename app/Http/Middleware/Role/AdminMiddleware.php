@@ -17,16 +17,24 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!empty(Auth::check())){
-            if(Auth::user()->user_type == Users::TYPE_ADMIN){
-                return $next($request);
-            }else{
-                Auth::logout();
-                return redirect('backend/login');
-            }
-        }else{
-            Auth::logout();
-            return redirect('backend/login');
+        // 1. Autentifikatsiya tekshiruvi
+        if (!Auth::check()) {
+            return redirect('backend/login')->with('error', 'Iltimos, tizimga kiring');
         }
+
+        $user = Auth::user();
+
+        // 2. Rol tekshiruvi
+        if ($user->user_type != Users::TYPE_ADMIN) {
+            return redirect('/')->with('error', 'Sizda bu sahifaga kirish huquqi yo\'q');
+        }
+
+        // 3. Status tekshiruvi
+        if ($user->status != Users::STATUS_ACTIVE) {
+            Auth::logout();
+            return redirect('backend/login')->with('error', 'Sizning akkauntingiz bloklangan');
+        }
+
+        return $next($request);
     }
 }

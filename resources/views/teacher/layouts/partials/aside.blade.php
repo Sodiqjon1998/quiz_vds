@@ -103,6 +103,13 @@
             </a>
         </li>
 
+         <li class="menu-item {{ Route::is('chat') ? 'active' : '' }}">
+            <a href="{{route('chat')}}" class="menu-link">
+                <i class="ri-chat-cap-fill"></i> &nbsp;
+                <div data-i18n="Chat">Chat</div>
+            </a>
+        </li>
+
         {{--        <li class="menu-item {{ Route::is('teacher.student.index') ? 'active' : '' }}"> --}}
         {{--            <a href="{{route('teacher.student.index')}}" class="menu-link"> --}}
         {{--                <i class="ri-school-fill"></i> &nbsp; --}}
