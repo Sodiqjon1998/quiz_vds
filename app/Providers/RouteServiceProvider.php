@@ -19,6 +19,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     public const HOME = '/dashboard';
     public const TEACHER = '/teacher';
+    public const KOORDINATOR = '/koordinator';
+    public const PARENT = '/parent';
     public const STUDENT = '/student';
 
     /**

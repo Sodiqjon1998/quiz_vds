@@ -249,6 +249,13 @@
           'type' => App\Models\Users::TYPE_TEACHER
         ],
         [
+          'icon' => '👨‍🏫',
+          'title' => 'Koordinator',
+          'description' => 'Darslarni boshqarish, o\'quvchilarni baholash va dars jadvalini ko\'rish',
+          'route' => 'koordinator',
+          'type' => App\Models\Users::TYPE_KOORDINATOR
+        ],
+        [
           'icon' => '👨‍🎓',
           'title' => 'O\'quvchi',
           'description' => 'Darslar jadvali, baholar, vazifalar va o\'quv materiallari bilan tanishish',

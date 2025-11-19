@@ -40,7 +40,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
@@ -56,6 +56,7 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.teacher' => \App\Http\Middleware\AuthenticateTeacher::class,
+        'auth.koordinator' => \App\Http\Middleware\AuthenticateKoordinator::class,
         'auth.parent' => \App\Http\Middleware\AuthenticateParent::class,
         'auth.student' => \App\Http\Middleware\AuthenticateStudent::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
@@ -71,6 +72,7 @@ class Kernel extends HttpKernel
         'admin' => \App\Http\Middleware\Role\AdminMiddleware::class,
         'teacher' => \App\Http\Middleware\Role\TeacherMiddleware::class,
         'parent' => \App\Http\Middleware\Role\ParentMiddleware::class,
+        "koordinator" => \App\Http\Middleware\Role\KoordinatorMiddleware::class,
         'student' => \App\Http\Middleware\Role\StudentMiddleware::class,
     ];
 }

@@ -17,6 +17,8 @@ Route::post('/chat/join', [ChatController::class, 'joinRoom'])->name('chat.join'
 
 require __DIR__ . '/teacher/route.php';
 require __DIR__ . '/teacher/auth.php';
+require __DIR__ . '/koordinator/auth.php';
+require __DIR__ . '/koordinator/route.php';
 require __DIR__ . '/backend/auth.php';
 require __DIR__ . '/backend/route.php';
 require __DIR__ . '/frontend/route.php';
