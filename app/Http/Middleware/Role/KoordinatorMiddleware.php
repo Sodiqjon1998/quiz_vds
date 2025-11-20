@@ -19,7 +19,7 @@ class KoordinatorMiddleware
     {
         // 1. Autentifikatsiya tekshiruvi
         if (!Auth::check()) {
-            return redirect('backend/login')->with('error', 'Iltimos, tizimga kiring');
+            return redirect('koordinator/login')->with('error', 'Iltimos, tizimga kiring');
         }
 
         $user = Auth::user();
@@ -32,7 +32,7 @@ class KoordinatorMiddleware
         // 3. Status tekshiruvi
         if ($user->status != Users::STATUS_ACTIVE) {
             Auth::logout();
-            return redirect('backend/login')->with('error', 'Sizning akkauntingiz bloklangan');
+            return redirect('koordinator/login')->with('error', 'Sizning akkauntingiz bloklangan');
         }
 
         return $next($request);
