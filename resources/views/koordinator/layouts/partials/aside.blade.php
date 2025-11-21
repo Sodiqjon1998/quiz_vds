@@ -44,6 +44,13 @@
                 <div data-i18n="Bosh sahifa">Bosh Sahifa</div>
             </a>
         </li>
+
+        <li class="menu-item {{ Route::is('koordinator.exam-results') ? 'active' : '' }}">
+            <a href="{{route('koordinator.exam-results')}}" class="menu-link">
+                <i class="ri-draft-line"></i> &nbsp;
+                <div data-i18n="Natijalar">Natijalar</div>
+            </a>
+        </li>
         <!-- koordinators -->
         {{-- <li class="menu-item {{ Route::is('koordinator') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
