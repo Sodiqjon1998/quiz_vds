@@ -188,7 +188,7 @@ class Users extends Authenticatable
     }
 
 
-     /**
+    /**
      * Get all reading records for the user.
      */
     public function readingRecords(): HasMany
@@ -295,5 +295,48 @@ class Users extends Authenticatable
         }
 
         return $streak;
+    }
+
+    /**
+     * Studentning barcha reportlari
+     */
+    public function dailyReports()
+    {
+        return $this->hasMany(DailyReport::class, 'student_id');
+    }
+
+    /**
+     * Bugungi reportni olish
+     */
+    public function todayReport()
+    {
+        return $this->dailyReports()
+            ->whereDate('report_date', today())
+            ->with('taskCompletions')
+            ->first();
+    }
+
+    /**
+     * Ma'lum sananing reportini olish
+     */
+    public function getReportByDate($date)
+    {
+        return $this->dailyReports()
+            ->whereDate('report_date', $date)
+            ->with('taskCompletions')
+            ->first();
+    }
+
+    /**
+     * Oylik statistika
+     */
+    public function getMonthlyStats($year, $month)
+    {
+        return $this->dailyReports()
+            ->whereYear('report_date', $year)
+            ->whereMonth('report_date', $month)
+            ->pluck('report_date')
+            ->map(fn($date) => $date->format('Y-m-d'))
+            ->toArray();
     }
 }

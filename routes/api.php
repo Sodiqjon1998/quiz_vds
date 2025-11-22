@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ReadingController;
 use App\Http\Controllers\Api\SiteController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -71,5 +72,33 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [ReadingController::class, 'index']);
         Route::post('/upload', [ReadingController::class, 'upload']);
         Route::delete('/{id}', [ReadingController::class, 'delete']);
+    });
+
+
+    // === Daily Tasks Management ===
+    Route::prefix('tasks')->name('api.tasks.')->group(function () {
+
+        /**
+         * Get tasks for a specific date
+         * GET /api/tasks?date=2024-11-22
+         */
+        Route::get('/', [TaskController::class, 'getTasks'])->name('get');
+
+        /**
+         * Toggle task completion status
+         * POST /api/tasks/{taskId}/toggle
+         * Body: { "date": "2024-11-22" }
+         */
+        Route::post('/{taskId}/toggle', [TaskController::class, 'toggleTask'])->name('toggle');
+    });
+
+    // === Statistics ===
+    Route::prefix('stats')->name('api.stats.')->group(function () {
+
+        /**
+         * Get monthly statistics
+         * GET /api/stats/monthly?year=2024&month=11
+         */
+        Route::get('/monthly', [TaskController::class, 'monthlyStats'])->name('monthly');
     });
 });

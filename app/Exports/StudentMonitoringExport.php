@@ -98,7 +98,7 @@ class StudentMonitoringExport implements FromCollection, WithHeadings, WithStyle
             $headings[3][] = '';
         }
 
-        $headings[3][] = 'XULQIQO\'L';
+        $headings[3][] = 'XULQI';
         $headings[3][] = '';
         $headings[3][] = 'KITOBXONLIK';
         $headings[3][] = 'UMUMIY';
