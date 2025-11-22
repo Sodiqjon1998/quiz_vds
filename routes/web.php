@@ -2,8 +2,7 @@
 
 use App\Http\Controllers\WebSocket\ChatController;
 use Illuminate\Support\Facades\Route;
-
-
+use Livewire\Livewire;
 
 // Chat sahifasi
 Route::get('/chat', [ChatController::class, 'index'])->name('chat');
@@ -13,6 +12,7 @@ Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.se
 
 // Xonaga kirish (ixtiyoriy)
 Route::post('/chat/join', [ChatController::class, 'joinRoom'])->name('chat.join');
+
 
 
 require __DIR__ . '/teacher/route.php';
