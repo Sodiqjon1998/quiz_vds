@@ -189,25 +189,6 @@ class Users extends Authenticatable
 
 
     /**
-     * Get all reading records for the user.
-     */
-    public function readingRecords(): HasMany
-    {
-        return $this->hasMany(ReadingRecord::class);
-    }
-
-    /**
-     * Bugungi yozuv bormi?
-     */
-    public function hasTodayReading(): bool
-    {
-        return $this->readingRecords()
-            ->today()
-            ->active()
-            ->exists();
-    }
-
-    /**
      * O'sha oydagi yozuvlar soni
      */
     public function monthlyReadingsCount($month = null, $year = null): int
@@ -338,5 +319,35 @@ class Users extends Authenticatable
             ->pluck('report_date')
             ->map(fn($date) => $date->format('Y-m-d'))
             ->toArray();
+    }
+
+    /**
+     * Foydalanuvchining barcha kitobxonlik yozuvlari
+     */
+    public function readingRecords()
+    {
+        return $this->hasMany(ReadingRecord::class, 'users_id');
+    }
+
+    /**
+     * Bugun audio yuklangan bormi?
+     */
+    public function hasTodayReading()
+    {
+        return $this->readingRecords()
+            ->whereDate('created_at', today())
+            ->where('status', ReadingRecord::STATUS_ACTIVE)
+            ->exists();
+    }
+
+    /**
+     * Oxirgi yozuvni olish
+     */
+    public function latestReading()
+    {
+        return $this->readingRecords()
+            ->where('status', ReadingRecord::STATUS_ACTIVE)
+            ->latest()
+            ->first();
     }
 }

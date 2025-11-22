@@ -11,11 +11,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
 // ======================
@@ -47,37 +42,35 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // === Quiz Management ===
     Route::prefix('quiz')->name('api.quiz.')->group(function () {
-
-        /**
-         * Get all available quizzes for current user
-         * GET /api/quiz
-         */
         Route::get('/', [SiteController::class, 'index'])->name('index');
-
-        /**
-         * Start a specific quiz
-         * GET /api/quiz/{id}/start
-         */
         Route::get('/{id}/start', [SiteController::class, 'start'])->name('start');
-
-        /**
-         * Submit quiz answers
-         * POST /api/quiz/{id}/submit
-         */
         Route::post('/{id}/submit', [SiteController::class, 'submit'])->name('submit');
     });
 
+    // === Reading/Kitobxonlik Management ===
+    Route::prefix('readings')->name('api.readings.')->group(function () {
+        /**
+         * Get monthly readings
+         * GET /api/readings?month=11&year=2024
+         */
+        Route::get('/', [ReadingController::class, 'index'])->name('index');
 
-   Route::prefix('readings')->group(function () {
-        Route::get('/', [ReadingController::class, 'index']);
-        Route::post('/upload', [ReadingController::class, 'upload']);
-        Route::delete('/{id}', [ReadingController::class, 'delete']);
+        /**
+         * Upload audio file
+         * POST /api/readings/upload
+         * Body: FormData with 'audio' file
+         */
+        Route::post('/upload', [ReadingController::class, 'upload'])->name('upload');
+
+        /**
+         * Delete recording
+         * DELETE /api/readings/{id}
+         */
+        Route::delete('/{id}', [ReadingController::class, 'delete'])->name('delete');
     });
-
 
     // === Daily Tasks Management ===
     Route::prefix('tasks')->name('api.tasks.')->group(function () {
-
         /**
          * Get tasks for a specific date
          * GET /api/tasks?date=2024-11-22
@@ -87,14 +80,13 @@ Route::middleware('auth:sanctum')->group(function () {
         /**
          * Toggle task completion status
          * POST /api/tasks/{taskId}/toggle
-         * Body: { "date": "2024-11-22" }
+         * Body: { "date": "2024-11-22", "is_completed": true/false }
          */
         Route::post('/{taskId}/toggle', [TaskController::class, 'toggleTask'])->name('toggle');
     });
 
     // === Statistics ===
     Route::prefix('stats')->name('api.stats.')->group(function () {
-
         /**
          * Get monthly statistics
          * GET /api/stats/monthly?year=2024&month=11

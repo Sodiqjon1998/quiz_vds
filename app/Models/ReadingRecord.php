@@ -4,32 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ReadingRecord extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     */
-    protected $table = 'reading_records';
+    const STATUS_ACTIVE = 1;
+    const STATUS_DELETED = 0;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
         'users_id',
-        'filename',
         'file_url',
         'file_size',
+        'filename',
         'duration',
         'status',
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected $casts = [
         'file_size' => 'integer',
         'duration' => 'integer',
@@ -39,21 +31,15 @@ class ReadingRecord extends Model
     ];
 
     /**
-     * Status constants
+     * Foydalanuvchi bilan bog'lanish
      */
-    const STATUS_ACTIVE = 1;
-    const STATUS_INACTIVE = 0;
-
-    /**
-     * Get the user that owns the reading record.
-     */
-    public function user(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(Users::class);
+        return $this->belongsTo(Users::class, 'users_id');
     }
 
     /**
-     * Scope: Faqat faol yozuvlar
+     * Scope: Faqat aktiv yozuvlar
      */
     public function scopeActive($query)
     {
@@ -61,76 +47,40 @@ class ReadingRecord extends Model
     }
 
     /**
-     * Scope: Bugungi yozuvlar
-     */
-    public function scopeToday($query)
-    {
-        return $query->whereDate('created_at', today());
-    }
-
-    /**
-     * Scope: O'sha oydagi yozuvlar
+     * Scope: Ma'lum oy bo'yicha
      */
     public function scopeMonth($query, $month, $year)
     {
-        return $query->whereMonth('created_at', $month)
-                     ->whereYear('created_at', $year);
+        return $query->whereYear('created_at', $year)
+                     ->whereMonth('created_at', $month);
     }
 
     /**
-     * Accessor: Fayl URL'ini qaytarish
+     * Yozuv o'chirilganda faylni ham o'chirish
      */
-    public function getFileUrlAttribute(): string
+    protected static function booted()
     {
-        return asset('storage/' . $this->file_path);
-    }
-
-    /**
-     * Accessor: Fayl hajmini human-readable formatda
-     */
-    public function getFileSizeFormattedAttribute(): string
-    {
-        $bytes = $this->file_size;
-        
-        if ($bytes < 1024) {
-            return $bytes . ' B';
-        } elseif ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 2) . ' KB';
-        } else {
-            return round($bytes / (1024 * 1024), 2) . ' MB';
-        }
-    }
-
-    /**
-     * Accessor: Davomiylikni formatda qaytarish (HH:MM:SS)
-     */
-    public function getDurationFormattedAttribute(): string
-    {
-        $seconds = $this->duration;
-        
-        $hours = floor($seconds / 3600);
-        $minutes = floor(($seconds % 3600) / 60);
-        $secs = $seconds % 60;
-
-        if ($hours > 0) {
-            return sprintf('%02d:%02d:%02d', $hours, $minutes, $secs);
-        }
-        
-        return sprintf('%02d:%02d', $minutes, $secs);
-    }
-
-    /**
-     * Boot method
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Yozuv o'chirilganda faylni ham o'chirish
         static::deleting(function ($record) {
-            if ($record->file_path && \Storage::disk('public')->exists($record->file_path)) {
-                \Storage::disk('public')->delete($record->file_path);
+            if ($record->file_url && Storage::disk('public')->exists($record->file_url)) {
+                Storage::disk('public')->delete($record->file_url);
             }
         });
+    }
+
+    /**
+     * File URL ni to'liq formatda qaytarish
+     */
+    public function getFileUrlAttribute($value)
+    {
+        if (!$value) return null;
+        return Storage::disk('public')->url($value);
+    }
+
+    /**
+     * File URL ni set qilish (faqat path)
+     */
+    public function setFileUrlAttribute($value)
+    {
+        $this->attributes['file_url'] = $value;
     }
 }

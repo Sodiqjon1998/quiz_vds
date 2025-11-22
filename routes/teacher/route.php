@@ -51,8 +51,6 @@ Route::middleware(['auth.teacher', 'teacher'])->group(function () {
 
         Route::get('/questions/import-file', 'importFile')->name('teacher.question.importFile');
         Route::post('/questions/import', 'import')->name('teacher.question.import');
-
-
     });
 
     Route::prefix('/teacher')->controller(ExamController::class)->group(function () {

@@ -96,6 +96,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ Route::is('teacher.users.index') ? 'active' : '' }}">
+            <a href="{{ route('teacher.users.index') }}" class="menu-link">
+               <i class="ri-calendar-todo-fill"></i> &nbsp;
+                <div data-i18n="Monito'ring jadvali">Monito'ring jadvali</div>
+            </a>
+        </li>
+
         <li class="menu-item {{ Route::is('teacher.classes.index') ? 'active' : '' }}">
             <a href="{{route('teacher.classes.index')}}" class="menu-link">
                 <i class="ri-graduation-cap-fill"></i> &nbsp;

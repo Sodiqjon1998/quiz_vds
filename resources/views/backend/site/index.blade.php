@@ -83,7 +83,7 @@
                     enabled: false
                 },
                 series: [{
-                    name: '{{ date('Y') }} Yil',
+                    name: "{{ date('Y') }} Yil",
                     data: [{{ $teachers2025 }}, {{ $koordinators2025 }}],
                     color: '#bd6c8e'
                 }, {
