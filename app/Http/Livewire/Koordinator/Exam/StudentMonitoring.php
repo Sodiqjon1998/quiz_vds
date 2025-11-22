@@ -39,7 +39,7 @@ class StudentMonitoring extends Component
         if ($classId) {
             $this->classFilter = $classId;
         }
-        
+
         $this->updateClassName();
     }
 
@@ -62,18 +62,17 @@ class StudentMonitoring extends Component
                 'students' => collect([]),
                 'classes' => Classes::where('status', 1)->orderBy('name')->get(),
                 'subjects' => Subjects::where('status', 1)->orderBy('name')->get(),
+                'availableSubjects' => collect([]), // ✅ YANGI
                 'showEmptyMessage' => true,
             ]);
         }
 
-        \Log::info('CLASS FILTER: ' . $this->classFilter);
-
         $studentsQuery = Users::select([
-                'users.id',
-                'users.first_name',
-                'users.last_name',
-                'users.classes_id'
-            ])
+            'users.id',
+            'users.first_name',
+            'users.last_name',
+            'users.classes_id'
+        ])
             ->where('users.user_type', Users::TYPE_STUDENT)
             ->where('users.status', 1)
             ->where('classes_id', $this->classFilter)
@@ -87,110 +86,120 @@ class StudentMonitoring extends Component
 
         $students = $studentsQuery->paginate(20);
 
-        \Log::info('STUDENTS COUNT: ' . $students->count());
-
         $dateRange = $this->getQuarterDateRange($this->quarter);
+
+        // ✅ YANGI: Barcha mavjud fanlarni olish (bu sinf uchun test topshirilgan fanlar)
+        $availableSubjects = DB::table('exam')
+            ->select([
+                'subjects.id',
+                'subjects.name'
+            ])
+            ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
+            ->join('subjects', 'subjects.id', '=', 'quiz.subject_id')
+            ->join('users', 'users.id', '=', 'exam.user_id')
+            ->where('users.classes_id', $this->classFilter)
+            ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
+            ->when($this->subjectFilter, function ($query) {
+                $query->where('subjects.id', $this->subjectFilter);
+            })
+            ->groupBy('subjects.id', 'subjects.name')
+            ->orderBy('subjects.name')
+            ->get();
 
         foreach ($students as $index => $student) {
             $student->number = ($students->currentPage() - 1) * $students->perPage() + $index + 1;
 
-            // Fanlar bo'yicha testlar
-            $subjects = DB::table('exam')
-                ->select([
-                    'subjects.id as subject_id',
-                    'subjects.name as subject_name',
-                    DB::raw('COUNT(DISTINCT exam.id) as exam_count'),
-                    DB::raw('SUM(CASE WHEN option.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers'),
-                    DB::raw('COUNT(exam_answer.id) as total_questions')
-                ])
-                ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
-                ->join('subjects', 'subjects.id', '=', 'quiz.subject_id')
-                ->leftJoin('exam_answer', 'exam_answer.exam_id', '=', 'exam.id')
-                ->leftJoin('option', 'option.id', '=', 'exam_answer.option_id')
-                ->where('exam.user_id', $student->id)
-                ->where('quiz.classes_id', $this->classFilter)
-                ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
-                ->when($this->subjectFilter, function ($query) {
-                    $query->where('subjects.id', $this->subjectFilter);
-                })
-                ->groupBy('subjects.id', 'subjects.name')
-                ->get();
+            // Har bir fan uchun ma'lumot
+            $subjectsData = [];
 
-            // Xulqatvor (conduct) - agar jadvalingiz bo'lsa
+            foreach ($availableSubjects as $availableSubject) {
+                // ✅ Har bir exam uchun alohida hisoblash, keyin eng yuqorisini olish
+                $examResults = DB::table('exam')
+                    ->select([
+                        'exam.id as exam_id',
+                        DB::raw('COUNT(exam_answer.id) as total_questions'),
+                        DB::raw('SUM(CASE WHEN option.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+                    ])
+                    ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
+                    ->leftJoin('exam_answer', 'exam_answer.exam_id', '=', 'exam.id')
+                    ->leftJoin('option', 'option.id', '=', 'exam_answer.option_id')
+                    ->where('exam.user_id', $student->id)
+                    ->where('quiz.subject_id', $availableSubject->id)
+                    ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
+                    ->groupBy('exam.id')
+                    ->get();
+
+                // Eng yuqori foizni topish
+                $maxScore = 0;
+                $examCount = $examResults->count();
+
+                foreach ($examResults as $result) {
+                    if ($result->total_questions > 0) {
+                        $score = round(($result->correct_answers / $result->total_questions) * 100);
+                        if ($score > $maxScore) {
+                            $maxScore = $score;
+                        }
+                    }
+                }
+
+                $subjectsData[$availableSubject->id] = [
+                    'subject_id' => $availableSubject->id,
+                    'subject_name' => $availableSubject->name,
+                    'score' => $maxScore, // ✅ Eng yuqori natija
+                    'grade' => $this->getGrade($maxScore),
+                    'exam_count' => $examCount
+                ];
+            }
+
+            $student->subjectsData = collect($subjectsData);
+
+            // Xulqatvor, uy vazifalari, kitobxonlik
             $conductData = $this->getConductData($student->id, $dateRange);
-            
-            // Uy vazifalari (homework) - agar jadvalingiz bo'lsa
             $homeworkData = $this->getHomeworkData($student->id, $dateRange);
-            
-            // Kitobxonlik - agar jadvalingiz bo'lsa
             $readingData = $this->getReadingData($student->id, $dateRange);
 
-            if ($subjects->isEmpty() && !$conductData && !$homeworkData && !$readingData) {
-                $student->subjects = collect([]);
+            // Umumiy ball hisoblash
+            $totalScore = 0;
+            $subjectCount = 0;
+
+            foreach ($subjectsData as $data) {
+                if ($data['score'] > 0) {
+                    $totalScore += $data['score'];
+                    $subjectCount++;
+                }
+            }
+
+            if ($conductData) {
+                $student->conduct_grade = $conductData['grade'];
+                $student->conduct_score = $conductData['score'];
+                $totalScore += $conductData['score'];
+                $subjectCount++;
+            } else {
                 $student->conduct_grade = '-';
                 $student->conduct_score = 0;
+            }
+
+            if ($homeworkData) {
+                $student->homework_grade = $homeworkData['grade'];
+                $student->homework_score = $homeworkData['score'];
+                $totalScore += $homeworkData['score'];
+                $subjectCount++;
+            } else {
                 $student->homework_grade = '-';
                 $student->homework_score = 0;
-                $student->reading_score = 0;
-                $student->total_score = 0;
-                $student->average_score = 0;
-                $student->overall_grade = '-';
-            } else {
-                $totalScore = 0;
-                $subjectCount = 0;
-
-                // Fanlar
-                $student->subjects = $subjects->map(function($subject) use (&$totalScore, &$subjectCount) {
-                    $score = $subject->total_questions > 0 
-                        ? round(($subject->correct_answers / $subject->total_questions) * 100) 
-                        : 0;
-                    
-                    $subject->score = $score;
-                    $subject->grade = $this->getGrade($score);
-                    
-                    if ($score > 0) {
-                        $totalScore += $score;
-                        $subjectCount++;
-                    }
-                    
-                    return $subject;
-                });
-
-                // Xulqatvor
-                if ($conductData) {
-                    $student->conduct_grade = $conductData['grade'];
-                    $student->conduct_score = $conductData['score'];
-                    $totalScore += $conductData['score'];
-                    $subjectCount++;
-                } else {
-                    $student->conduct_grade = '-';
-                    $student->conduct_score = 0;
-                }
-
-                // Uy vazifalari
-                if ($homeworkData) {
-                    $student->homework_grade = $homeworkData['grade'];
-                    $student->homework_score = $homeworkData['score'];
-                    $totalScore += $homeworkData['score'];
-                    $subjectCount++;
-                } else {
-                    $student->homework_grade = '-';
-                    $student->homework_score = 0;
-                }
-
-                // Kitobxonlik
-                if ($readingData) {
-                    $student->reading_score = $readingData['score'];
-                    $totalScore += $readingData['score'];
-                    $subjectCount++;
-                } else {
-                    $student->reading_score = 0;
-                }
-
-                $student->total_score = $totalScore;
-                $student->average_score = $subjectCount > 0 ? round($totalScore / $subjectCount) : 0;
-                $student->overall_grade = $this->getGrade($student->average_score);
             }
+
+            if ($readingData) {
+                $student->reading_score = $readingData['score'];
+                $totalScore += $readingData['score'];
+                $subjectCount++;
+            } else {
+                $student->reading_score = 0;
+            }
+
+            $student->total_score = $totalScore;
+            $student->average_score = $subjectCount > 0 ? round($totalScore / $subjectCount) : 0;
+            $student->overall_grade = $this->getGrade($student->average_score);
         }
 
         // Reytingni hisoblash
@@ -205,6 +214,7 @@ class StudentMonitoring extends Component
             'students' => $students,
             'classes' => Classes::where('status', 1)->orderBy('name')->get(),
             'subjects' => Subjects::where('status', 1)->orderBy('name')->get(),
+            'availableSubjects' => $availableSubjects, // ✅ YANGI
             'showEmptyMessage' => false,
         ]);
     }
@@ -220,14 +230,14 @@ class StudentMonitoring extends Component
         //     ->where('student_id', $studentId)
         //     ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
         //     ->first();
-        
+
         // if ($conduct) {
         //     return [
         //         'score' => $conduct->score,
         //         'grade' => $this->getGrade($conduct->score)
         //     ];
         // }
-        
+
         // Hozircha null qaytaramiz (ma'lumot yo'q)
         return null;
     }
@@ -242,14 +252,14 @@ class StudentMonitoring extends Component
         //     ->where('student_id', $studentId)
         //     ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
         //     ->first();
-        
+
         // if ($homework) {
         //     return [
         //         'score' => $homework->score,
         //         'grade' => $this->getGrade($homework->score)
         //     ];
         // }
-        
+
         return null;
     }
 
@@ -263,11 +273,11 @@ class StudentMonitoring extends Component
         //     ->where('student_id', $studentId)
         //     ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
         //     ->sum('pages_read'); // yoki boshqa metrika
-        
+
         // if ($reading > 0) {
         //     return ['score' => min($reading, 100)]; // Max 100
         // }
-        
+
         return null;
     }
 
@@ -277,7 +287,7 @@ class StudentMonitoring extends Component
     private function getQuarterDateRange($quarter)
     {
         $year = Carbon::now()->year;
-        
+
         $quarters = [
             // 2024-2025 o'quv yili
             'Sentyabr' => [
@@ -335,7 +345,7 @@ class StudentMonitoring extends Component
                 'end' => Carbon::create($year + 1, 5, 31)->endOfDay(),
             ],
         ];
-        
+
         return $quarters[$quarter] ?? [
             'start' => Carbon::now()->startOfMonth(),
             'end' => Carbon::now()->endOfMonth(),
