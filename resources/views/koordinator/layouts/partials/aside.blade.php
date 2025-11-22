@@ -51,8 +51,22 @@
                 <div data-i18n="Natijalar">Natijalar</div>
             </a>
         </li>
+
+        <li class="menu-item {{ Route::is('koordinator.exam.monitoring') ? 'active' : '' }}">
+            <a href="{{route('koordinator.exam.monitoring')}}" class="menu-link">
+                <i class="ri-table-fill"></i> &nbsp;
+                <div data-i18n="Natijalar jadvali">Natijalar jadvali</div>
+            </a>
+        </li>
+
+        <li class="menu-item {{ Route::is('koordinator.report.performance') ? 'active' : '' }}">
+            <a href="{{route('koordinator.report.performance')}}" class="menu-link">
+                <i class="ri-calendar-todo-fill"></i> &nbsp;
+                <div data-i18n="Kunlik vazifalar">Kunlik vazifalar</div>
+            </a>
+        </li>
         <!-- koordinators -->
-        {{-- <li class="menu-item {{ Route::is('koordinator') ? 'active open' : '' }}">
+        <!-- {{-- <li class="menu-item {{ Route::is('koordinator') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ri-home-smile-line"></i>
                 <div data-i18n="koordinators">koordinators</div>
@@ -85,7 +99,7 @@
                     </a>
                 </li>
             </ul>
-        </li> --}}
+        </li> --}} -->
 
         <!-- e-commerce-app menu start -->
 
@@ -93,8 +107,8 @@
         <!-- Academy menu start -->
 
 
-        
-      
+
+
 
         {{-- <li class="menu-item">
             <a href="https://demos.pixinvent.com/materialize-html-admin-template/documentation/" target="_blank"

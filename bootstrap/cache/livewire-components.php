@@ -4,6 +4,7 @@
   'backend.users.users-manager' => 'App\\Http\\Livewire\\Backend\\Users\\UsersManager',
   'koordinator.exam.exam-result' => 'App\\Http\\Livewire\\Koordinator\\Exam\\ExamResult',
   'koordinator.exam.student-monitoring' => 'App\\Http\\Livewire\\Koordinator\\Exam\\StudentMonitoring',
+  'koordinator.report.class-performance' => 'App\\Http\\Livewire\\Koordinator\\Report\\ClassPerformance',
   'teacher.quiz.question-manager' => 'App\\Http\\Livewire\\Teacher\\Quiz\\QuestionManager',
   'teacher.quiz.quiz-manager' => 'App\\Http\\Livewire\\Teacher\\Quiz\\QuizManager',
 );
