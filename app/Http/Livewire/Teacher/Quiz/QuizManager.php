@@ -21,7 +21,7 @@ class QuizManager extends Component
     // === Quiz ===
     public $search = '';
     public $quizId;
-    public $name, $subject_id, $classes_id;
+    public $name, $classes_id; // ✅ subject_id o'chirildi
     public $isEdit = false;
     public $showModal = false;
 
@@ -43,7 +43,7 @@ class QuizManager extends Component
     public $isEditQuestion = false;
     public $questionSearch = '';
 
-    // === Attachment (Yangi) ===
+    // === Attachment ===
     public $showAttachmentModal = false;
     public $attachmentQuizId;
     public $attachmentFile;
@@ -60,7 +60,7 @@ class QuizManager extends Component
         if ($this->showModal) {
             return [
                 'name' => 'required|min:3',
-                'subject_id' => 'required|exists:subjects,id',
+                // ✅ subject_id o'chirildi - avtomatik beriladi
                 'classes_id' => 'required|exists:classes,id',
             ];
         }
@@ -81,10 +81,9 @@ class QuizManager extends Component
         // Attachment uchun validation
         if ($this->showAttachmentModal) {
             return [
-                'attachmentFile' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,zip|max:10240',
                 'attachmentDate' => 'required|date',
                 'attachmentTime' => 'required',
-                'attachmentNumber' => 'nullable|string|max:50',
+                'attachmentNumber' => 'required|numeric',
             ];
         }
 
@@ -95,7 +94,6 @@ class QuizManager extends Component
         // Quiz messages
         'name.required' => 'Quiz nomini kiritish majburiy',
         'name.min' => 'Quiz nomi kamida 3 ta belgidan iborat bo\'lishi kerak',
-        'subject_id.required' => 'Fanni tanlash majburiy',
         'classes_id.required' => 'Sinfni tanlash majburiy',
 
         // Question messages
@@ -110,19 +108,16 @@ class QuizManager extends Component
         'correctOption.required' => 'To\'g\'ri javobni tanlang',
 
         // Attachment messages
-//        'attachmentFile.required' => 'Faylni yuklang',
-//        'attachmentFile.mimes' => 'Faqat PDF, Word, Excel yoki ZIP fayllarini yuklash mumkin',
-//        'attachmentFile.max' => 'Fayl hajmi 10MB dan oshmasligi kerak',
         'attachmentDate.required' => 'Sanani tanlang',
         'attachmentTime.required' => 'Vaqtni kiriting',
+        'attachmentNumber.required' => 'Raqamni kiriting',
     ];
 
     public function updated($propertyName)
     {
         // Faqat hozirgi ochiq modal uchun validate qilish
-        if ($this->showModal && str_starts_with($propertyName, 'name') ||
-            str_starts_with($propertyName, 'subject_id') ||
-            str_starts_with($propertyName, 'classes_id')) {
+        if ($this->showModal && (str_starts_with($propertyName, 'name') ||
+            str_starts_with($propertyName, 'classes_id'))) {
             $this->validateOnly($propertyName);
         }
 
@@ -155,6 +150,10 @@ class QuizManager extends Component
 
     public function saveQuiz()
     {
+        // ✅ O'qituvchining fanini olish
+        $userSubjectId = Auth::user()->subject_id;
+
+        // Validation
         $this->validate();
 
         if ($this->isEdit) {
@@ -164,7 +163,7 @@ class QuizManager extends Component
 
             $quiz->update([
                 'name' => $this->name,
-                'subject_id' => $this->subject_id,
+                'subject_id' => $userSubjectId, // ✅ Avtomatik o'qituvchi fani
                 'classes_id' => $this->classes_id,
                 'status' => Quiz::STATUS_ACTIVE,
                 'updated_by' => Auth::id(),
@@ -174,7 +173,7 @@ class QuizManager extends Component
         } else {
             Quiz::create([
                 'name' => $this->name,
-                'subject_id' => $this->subject_id,
+                'subject_id' => $userSubjectId, // ✅ Avtomatik o'qituvchi fani
                 'classes_id' => $this->classes_id,
                 'status' => Quiz::STATUS_ACTIVE,
                 'created_by' => Auth::id(),
@@ -195,7 +194,7 @@ class QuizManager extends Component
 
         $this->quizId = $quiz->id;
         $this->name = $quiz->name;
-        $this->subject_id = $quiz->subject_id;
+        // ✅ subject_id avtomatik, input'da ko'rsatilmaydi
         $this->classes_id = $quiz->classes_id;
         $this->isEdit = true;
         $this->showModal = true;
@@ -406,7 +405,7 @@ class QuizManager extends Component
     }
 
     // ======================
-    // === ATTACHMENT MANAGEMENT (YANGI) ===
+    // === ATTACHMENT MANAGEMENT ===
     // ======================
 
     public function manageAttachments($quizId)
@@ -424,12 +423,10 @@ class QuizManager extends Component
 
     public function saveAttachment()
     {
-//        $this->validate();
+        $this->validate();
 
         DB::beginTransaction();
         try {
-//            $filePath = $this->attachmentFile->store('attachments', 'public');
-
             DB::table('attachment')->insert([
                 'quiz_id' => $this->attachmentQuizId,
                 'date' => $this->attachmentDate,
@@ -442,14 +439,10 @@ class QuizManager extends Component
                 'updated_at' => now(),
             ]);
 
-            // Fayl nomini attachment jadvaliga saqlash
-            // Agar sizning attachment jadvalingizda file_path ustuni bo'lsa
-            // 'file_path' => $filePath qo'shing
-
             DB::commit();
 
             session()->flash('message', 'Attachment muvaffaqiyatli qo\'shildi!');
-            $this->closeAttachmentModal();
+            $this->resetAttachmentFields();
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -469,7 +462,6 @@ class QuizManager extends Component
             ->where('created_by', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
-
     }
 
     public function deleteAttachment($id)
@@ -480,11 +472,6 @@ class QuizManager extends Component
             ->first();
 
         if ($attachment) {
-            // Agar file_path ustuni bo'lsa, faylni ham o'chirish
-            // if ($attachment->file_path) {
-            //     Storage::disk('public')->delete($attachment->file_path);
-            // }
-
             DB::table('attachment')->where('id', $id)->delete();
             session()->flash('message', 'Attachment o\'chirildi!');
         }
@@ -498,7 +485,7 @@ class QuizManager extends Component
     {
         $this->quizId = null;
         $this->name = '';
-        $this->subject_id = null;
+        // ✅ subject_id o'chirildi
         $this->classes_id = null;
         $this->isEdit = false;
         $this->resetValidation();
