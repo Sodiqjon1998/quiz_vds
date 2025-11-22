@@ -19,6 +19,14 @@
                     </p>
                     @endif
                 </div>
+
+                {{-- ✅ YANGI: Export tugmasi --}}
+                @if($classFilter && !$students->isEmpty())
+                <button wire:click="exportToExcel" class="btn btn-light btn-lg shadow-sm">
+                    <i class="ri-file-excel-2-line me-2"></i>
+                    Excel yuklab olish
+                </button>
+                @endif
             </div>
         </div>
 

@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Carbon\Carbon;
+use App\Exports\StudentMonitoringExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentMonitoring extends Component
 {
@@ -22,6 +24,143 @@ class StudentMonitoring extends Component
     public $quarter = 'Noyabr';
 
     protected $paginationTheme = 'bootstrap';
+
+    public function exportToExcel()
+    {
+        if (!$this->classFilter) {
+            session()->flash('error', 'Iltimos, avval sinfni tanlang!');
+            return;
+        }
+
+        // Barcha o'quvchilarni olish (paginationsiz)
+        $studentsQuery = Users::select([
+            'users.id',
+            'users.first_name',
+            'users.last_name',
+            'users.classes_id'
+        ])
+            ->where('users.user_type', Users::TYPE_STUDENT)
+            ->where('users.status', 1)
+            ->where('classes_id', $this->classFilter)
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('users.first_name', 'like', '%' . $this->search . '%')
+                        ->orWhere('users.last_name', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->orderBy('users.first_name')
+            ->get();
+
+        $dateRange = $this->getQuarterDateRange($this->quarter);
+
+        $availableSubjects = DB::table('exam')
+            ->select([
+                'subjects.id',
+                'subjects.name'
+            ])
+            ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
+            ->join('subjects', 'subjects.id', '=', 'quiz.subject_id')
+            ->join('users', 'users.id', '=', 'exam.user_id')
+            ->where('users.classes_id', $this->classFilter)
+            ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
+            ->when($this->subjectFilter, function ($query) {
+                $query->where('subjects.id', $this->subjectFilter);
+            })
+            ->groupBy('subjects.id', 'subjects.name')
+            ->orderBy('subjects.name')
+            ->get();
+
+        foreach ($studentsQuery as $student) {
+            $subjectsData = [];
+
+            foreach ($availableSubjects as $availableSubject) {
+                $examResults = DB::table('exam')
+                    ->select([
+                        'exam.id as exam_id',
+                        DB::raw('COUNT(exam_answer.id) as total_questions'),
+                        DB::raw('SUM(CASE WHEN option.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+                    ])
+                    ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
+                    ->leftJoin('exam_answer', 'exam_answer.exam_id', '=', 'exam.id')
+                    ->leftJoin('option', 'option.id', '=', 'exam_answer.option_id')
+                    ->where('exam.user_id', $student->id)
+                    ->where('quiz.subject_id', $availableSubject->id)
+                    ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
+                    ->groupBy('exam.id')
+                    ->get();
+
+                $maxScore = 0;
+                $examCount = $examResults->count();
+
+                foreach ($examResults as $result) {
+                    if ($result->total_questions > 0) {
+                        $score = round(($result->correct_answers / $result->total_questions) * 100);
+                        if ($score > $maxScore) {
+                            $maxScore = $score;
+                        }
+                    }
+                }
+
+                $subjectsData[$availableSubject->id] = [
+                    'subject_id' => $availableSubject->id,
+                    'subject_name' => $availableSubject->name,
+                    'score' => $maxScore,
+                    'grade' => $this->getGrade($maxScore),
+                    'exam_count' => $examCount
+                ];
+            }
+
+            $student->subjectsData = collect($subjectsData);
+
+            $conductData = $this->getConductData($student->id, $dateRange);
+            $homeworkData = $this->getHomeworkData($student->id, $dateRange);
+            $readingData = $this->getReadingData($student->id, $dateRange);
+
+            $totalScore = 0;
+            $subjectCount = 0;
+
+            foreach ($subjectsData as $data) {
+                if ($data['score'] > 0) {
+                    $totalScore += $data['score'];
+                    $subjectCount++;
+                }
+            }
+
+            if ($conductData) {
+                $student->conduct_grade = $conductData['grade'];
+                $student->conduct_score = $conductData['score'];
+                $totalScore += $conductData['score'];
+                $subjectCount++;
+            } else {
+                $student->conduct_grade = '-';
+                $student->conduct_score = 0;
+            }
+
+            if ($readingData) {
+                $student->reading_score = $readingData['score'];
+                $totalScore += $readingData['score'];
+                $subjectCount++;
+            } else {
+                $student->reading_score = 0;
+            }
+
+            $student->total_score = $totalScore;
+            $student->average_score = $subjectCount > 0 ? round($totalScore / $subjectCount) : 0;
+        }
+
+        // Reytingni hisoblash
+        $studentsQuery = $studentsQuery->sortByDesc('total_score')->values();
+        foreach ($studentsQuery as $index => $student) {
+            $student->rank = $index + 1;
+        }
+
+        $fileName = $this->className . ' - ' . $this->quarter . ' - ' . date('Y-m-d') . '.xlsx';
+
+        return Excel::download(
+            new StudentMonitoringExport($studentsQuery, $availableSubjects, $this->schoolName, $this->className, $this->quarter),
+            $fileName
+        );
+    }
 
     public function updatingSearch()
     {
