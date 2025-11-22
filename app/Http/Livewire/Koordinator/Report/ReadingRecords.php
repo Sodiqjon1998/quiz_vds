@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ReadingRecords extends Component
 {
@@ -18,16 +19,16 @@ class ReadingRecords extends Component
     public $dateTo = '';
     public $studentFilter = '';
 
-    // Modal
+    // Modal - FIXED: Object emas, ID saqlaymiz
     public $showDetailModal = false;
-    public $selectedRecord = null;
+    public $selectedRecordId = null;
 
     protected $paginationTheme = 'bootstrap';
 
     public function mount()
     {
-        // Default sanalar (oxirgi 30 kun)
-        $this->dateFrom = Carbon::now()->subDays(30)->format('Y-m-d');
+        // Default sanalar - BUGUNGI KUN
+        $this->dateFrom = Carbon::now()->format('Y-m-d');
         $this->dateTo = Carbon::now()->format('Y-m-d');
     }
 
@@ -46,29 +47,60 @@ class ReadingRecords extends Component
         $this->resetPage();
     }
 
+    // Tezkor sana tanlash
+    public function setDateRange($range)
+    {
+        switch ($range) {
+            case 'today':
+                $this->dateFrom = Carbon::now()->format('Y-m-d');
+                $this->dateTo = Carbon::now()->format('Y-m-d');
+                break;
+            case 'yesterday':
+                $this->dateFrom = Carbon::yesterday()->format('Y-m-d');
+                $this->dateTo = Carbon::yesterday()->format('Y-m-d');
+                break;
+            case 'week':
+                $this->dateFrom = Carbon::now()->subDays(6)->format('Y-m-d');
+                $this->dateTo = Carbon::now()->format('Y-m-d');
+                break;
+            case 'month':
+                $this->dateFrom = Carbon::now()->subDays(29)->format('Y-m-d');
+                $this->dateTo = Carbon::now()->format('Y-m-d');
+                break;
+        }
+    }
+
     public function viewDetail($recordId)
     {
-        $this->selectedRecord = DB::table('reading_records')
-            ->select([
-                'reading_records.*',
-                'users.first_name',
-                'users.last_name',
-                'classes.name as class_name',
-            ])
-            ->join('users', 'users.id', '=', 'reading_records.users_id')
-            ->leftJoin('classes', 'classes.id', '=', 'users.classes_id')
-            ->where('reading_records.id', $recordId)
-            ->first();
-
-        if ($this->selectedRecord) {
-            $this->showDetailModal = true;
-        }
+        $this->selectedRecordId = $recordId;
+        $this->showDetailModal = true;
     }
 
     public function closeDetailModal()
     {
         $this->showDetailModal = false;
-        $this->selectedRecord = null;
+        $this->selectedRecordId = null;
+    }
+
+    // Getter method - view'da ishlatish uchun
+    public function getSelectedRecordProperty()
+    {
+        if (!$this->selectedRecordId) {
+            return null;
+        }
+
+        return DB::table('reading_records')
+            ->select([
+                'reading_records.*',
+                'users.first_name',
+                'users.last_name',
+                'users.classes_id',
+                'classes.name as class_name',
+            ])
+            ->join('users', 'users.id', '=', 'reading_records.users_id')
+            ->leftJoin('classes', 'classes.id', '=', 'users.classes_id')
+            ->where('reading_records.id', $this->selectedRecordId)
+            ->first();
     }
 
     public function deleteRecord($recordId)
@@ -95,7 +127,15 @@ class ReadingRecords extends Component
 
     public function render()
     {
-        // O'quvchilar va ularning yozuvlari
+        // Koordinatorning JSON formatdagi classes_id
+        $user = Auth::user();
+        $koordinatorClassIds = json_decode($user->classes_id, true) ?? [];
+
+        if (empty($koordinatorClassIds)) {
+            $koordinatorClassIds = [];
+        }
+
+        // Faqat koordinator sinflaridagi o'quvchilarning yozuvlari
         $records = DB::table('reading_records')
             ->select([
                 'reading_records.*',
@@ -103,9 +143,16 @@ class ReadingRecords extends Component
                 'users.last_name',
                 'users.classes_id',
                 'classes.name as class_name',
+                DB::raw('CAST(users.classes_id AS CHAR) as classes_id_raw') // DEBUG
             ])
             ->join('users', 'users.id', '=', 'reading_records.users_id')
-            ->leftJoin('classes', 'classes.id', '=', 'users.classes_id')
+            ->leftJoin('classes', function($join) {
+                // INT yoki STRING bo'lsa ham ishlaydi
+                $join->on(DB::raw('CAST(users.classes_id AS UNSIGNED)'), '=', 'classes.id');
+            })
+            ->when(!empty($koordinatorClassIds), function ($query) use ($koordinatorClassIds) {
+                $query->whereIn('users.classes_id', $koordinatorClassIds);
+            })
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('users.first_name', 'like', '%' . $this->search . '%')
@@ -129,21 +176,42 @@ class ReadingRecords extends Component
             ->paginate(20);
 
         // Statistika
+        $statisticsQuery = DB::table('reading_records')
+            ->join('users', 'users.id', '=', 'reading_records.users_id');
+
+        if (!empty($koordinatorClassIds)) {
+            $statisticsQuery->whereIn('users.classes_id', $koordinatorClassIds);
+        }
+
         $statistics = [
-            'total_records' => DB::table('reading_records')->count(),
-            'total_students' => DB::table('reading_records')->distinct('users_id')->count('users_id'),
-            'total_duration' => $this->formatDuration(DB::table('reading_records')->sum('duration')),
-            'total_size' => $this->formatFileSize(DB::table('reading_records')->sum('file_size')),
+            'total_records' => (clone $statisticsQuery)->count(),
+            'total_students' => (clone $statisticsQuery)->distinct('reading_records.users_id')->count('reading_records.users_id'),
+            'total_duration' => $this->formatDuration((clone $statisticsQuery)->sum('reading_records.duration')),
+            'total_size' => $this->formatFileSize((clone $statisticsQuery)->sum('reading_records.file_size')),
         ];
 
-        // Sinflar ro'yxati
-        $classes = DB::table('classes')->where('status', 1)->orderBy('name')->get();
+        // Sinflar ro'yxati - koordinator sinflari
+        $classes = DB::table('classes')
+            ->whereIn('id', $koordinatorClassIds)
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get();
 
+        // O'quvchilar - faqat koordinator sinflaridan
         $students = DB::table('users')
-            ->select(['users.id', 'users.first_name', 'users.last_name', 'users.classes_id', 'classes.name as class_name'])
+            ->select([
+                'users.id', 
+                'users.first_name', 
+                'users.last_name', 
+                'users.classes_id',
+                'classes.name as class_name'
+            ])
             ->leftJoin('classes', 'classes.id', '=', 'users.classes_id')
-            ->where('users.user_type', Users::TYPE_STUDENT) // ✅ STUDENT
+            ->where('user_type', Users::TYPE_STUDENT)
             ->where('users.status', 1)
+            ->when(!empty($koordinatorClassIds), function ($query) use ($koordinatorClassIds) {
+                $query->whereIn('users.classes_id', $koordinatorClassIds);
+            })
             ->when($this->classFilter, function ($query) {
                 $query->where('users.classes_id', $this->classFilter);
             })
@@ -172,13 +240,11 @@ class ReadingRecords extends Component
 
     private function formatFileSize($bytes)
     {
-        if ($bytes >= 1073741824) {
-            return number_format($bytes / 1073741824, 2) . ' GB';
-        } elseif ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2) . ' MB';
-        } elseif ($bytes >= 1024) {
-            return number_format($bytes / 1024, 2) . ' KB';
-        }
-        return $bytes . ' B';
+        // Megabit (Mb) ga o'tkazish
+        $kilobytes = $bytes / 1024;
+        $kilobits = $kilobytes * 8;
+        $megabits = $kilobits / 1000;
+        
+        return number_format($megabits, 2) . ' Mb';
     }
 }

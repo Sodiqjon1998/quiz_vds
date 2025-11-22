@@ -101,7 +101,7 @@
                         <i class="ri-user-line me-1"></i>O'quvchi
                     </label>
                     <select wire:model.live="studentFilter" class="form-select">
-                        <option value="">-- O'quvchini tanlang --</option>
+                        <option value="">Barchasi</option>
                         @foreach($students as $student)
                         <option value="{{ $student->id }}">
                             {{ $student->first_name }} {{ $student->last_name }}
@@ -113,22 +113,45 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">
-                        <i class="ri-calendar-line me-1"></i>Dan
+                        <i class="ri-calendar-line me-1"></i>Sana oralig'i
                     </label>
-                    <input type="date" wire:model.live="dateFrom" class="form-control">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold">
-                        <i class="ri-calendar-line me-1"></i>Gacha
-                    </label>
-                    <input type="date" wire:model.live="dateTo" class="form-control">
+                    <div class="input-group">
+                        <input type="date" 
+                               wire:model.live="dateFrom" 
+                               class="form-control"
+                               max="{{ date('Y-m-d') }}"
+                               style="border-right: none;">
+                        <span class="input-group-text bg-white" style="border-left: none; border-right: none;">
+                            <i class="ri-arrow-right-line"></i>
+                        </span>
+                        <input type="date" 
+                               wire:model.live="dateTo" 
+                               class="form-control"
+                               max="{{ date('Y-m-d') }}"
+                               style="border-left: none;">
+                    </div>
+                    
+                    {{-- Tezkor tanlov tugmalari --}}
+                    <div class="btn-group btn-group-sm mt-2 w-100" role="group">
+                        <button type="button" wire:click="setDateRange('today')" class="btn btn-outline-primary">
+                            Bugun
+                        </button>
+                        <button type="button" wire:click="setDateRange('yesterday')" class="btn btn-outline-primary">
+                            Kecha
+                        </button>
+                        <button type="button" wire:click="setDateRange('week')" class="btn btn-outline-primary">
+                            7 kun
+                        </button>
+                        <button type="button" wire:click="setDateRange('month')" class="btn btn-outline-primary">
+                            30 kun
+                        </button>
+                    </div>
                 </div>
 
                 <div class="col-md-1 d-flex align-items-end">
-                    <button wire:click="$refresh" class="btn btn-primary w-100">
+                    <button wire:click="$refresh" class="btn btn-primary w-100" title="Yangilash">
                         <i class="ri-refresh-line"></i>
                     </button>
                 </div>
@@ -164,6 +187,7 @@
                             <td>
                                 <span class="badge bg-info-subtle text-info px-3 py-2">
                                     {{ $record->class_name ?? 'N/A' }}
+                                    <!-- <small class="text-danger">(ID: {{ $record->classes_id }})</small> -->
                                 </span>
                             </td>
                             <td>
@@ -177,7 +201,7 @@
                             </td>
                             <td class="text-center">
                                 <small class="text-muted">
-                                    {{ number_format($record->file_size / 1024 / 1024, 2) }} MB
+                                    {{ number_format(($record->file_size / 1024 * 8) / 1000, 2) }} Mb
                                 </small>
                             </td>
                             <td>
@@ -188,17 +212,22 @@
                             <td class="text-center">
                                 <div class="btn-group" role="group">
                                     <button wire:click="viewDetail({{ $record->id }})"
-                                        class="btn btn-sm btn-info" title="Ko'rish">
+                                        type="button"
+                                        class="btn btn-sm btn-info" 
+                                        title="Ko'rish">
                                         <i class="ri-eye-line"></i>
                                     </button>
                                     <a href="{{ asset('storage/' . $record->file_url) }}"
                                         target="_blank"
-                                        class="btn btn-sm btn-success" title="Eshitish">
+                                        class="btn btn-sm btn-success" 
+                                        title="Eshitish">
                                         <i class="ri-play-circle-line"></i>
                                     </a>
                                     <button wire:click="deleteRecord({{ $record->id }})"
+                                        type="button"
                                         onclick="return confirm('O\'chirmoqchimisiz?')"
-                                        class="btn btn-sm btn-danger" title="O'chirish">
+                                        class="btn btn-sm btn-danger" 
+                                        title="O'chirish">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
                                 </div>
@@ -223,55 +252,109 @@
         </div>
     </div>
 
-    {{-- Detail Modal --}}
-    @if($showDetailModal && $selectedRecord)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-dialog-centered">
+    {{-- Detail Modal - FIXED --}}
+    @if($showDetailModal && $this->selectedRecord)
+    <div class="modal fade show d-block" 
+         tabindex="-1" 
+         style="background: rgba(0,0,0,0.7); z-index: 9999;"
+         wire:ignore.self>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
                         <i class="ri-file-music-line me-2"></i>
                         Yozuv tafsilotlari
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" wire:click="closeDetailModal"></button>
+                    <button type="button" 
+                            class="btn-close btn-close-white" 
+                            wire:click="closeDetailModal"
+                            aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <strong>O'quvchi:</strong>
-                        <p>{{ $selectedRecord->first_name }} {{ $selectedRecord->last_name }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Sinf:</strong>
-                        <p>{{ $selectedRecord->class_name ?? 'N/A' }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Fayl nomi:</strong>
-                        <p>{{ $selectedRecord->filename }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Davomiylik:</strong>
-                        <p>{{ gmdate('i:s', $selectedRecord->duration) }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Hajm:</strong>
-                        <p>{{ number_format($selectedRecord->file_size / 1024 / 1024, 2) }} MB</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Yuklangan sana:</strong>
-                        <p>{{ \Carbon\Carbon::parse($selectedRecord->created_at)->format('d.m.Y H:i:s') }}</p>
-                    </div>
-                    <div class="mb-3">
-                        <strong>Audio:</strong>
-                        <audio controls class="w-100 mt-2">
-                            <source src="{{ asset('storage/' . $selectedRecord->file_url) }}" type="audio/mpeg">
-                        </audio>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="border-start border-primary border-4 ps-3 py-2">
+                                <small class="text-muted d-block">O'quvchi</small>
+                                <strong>{{ $this->selectedRecord->first_name }} {{ $this->selectedRecord->last_name }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="border-start border-info border-4 ps-3 py-2">
+                                <small class="text-muted d-block">Sinf</small>
+                                <strong>{{ $this->selectedRecord->class_name ?? 'N/A' }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="border-start border-success border-4 ps-3 py-2">
+                                <small class="text-muted d-block">Fayl nomi</small>
+                                <strong>{{ $this->selectedRecord->filename }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="border-start border-warning border-4 ps-3 py-2">
+                                <small class="text-muted d-block">Davomiylik</small>
+                                <strong>{{ gmdate('i:s', $this->selectedRecord->duration) }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="border-start border-danger border-4 ps-3 py-2">
+                                <small class="text-muted d-block">Hajm</small>
+                                <strong>{{ number_format(($this->selectedRecord->file_size / 1024 * 8) / 1000, 2) }} Mb</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="border-start border-secondary border-4 ps-3 py-2">
+                                <small class="text-muted d-block">Yuklangan</small>
+                                <strong>{{ \Carbon\Carbon::parse($this->selectedRecord->created_at)->format('d.m.Y H:i') }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <label class="form-label fw-bold">
+                                        <i class="ri-headphone-line me-1"></i>
+                                        Audio eshitish
+                                    </label>
+                                    <audio controls class="w-100">
+                                        <source src="{{ asset('storage/' . $this->selectedRecord->file_url) }}" type="audio/mpeg">
+                                        Brauzeringiz audio ni qo'llab-quvvatlamaydi.
+                                    </audio>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button wire:click="closeDetailModal" class="btn btn-secondary">Yopish</button>
+                    <a href="{{ asset('storage/' . $this->selectedRecord->file_url) }}" 
+                       download 
+                       class="btn btn-success">
+                        <i class="ri-download-line me-1"></i>
+                        Yuklab olish
+                    </a>
+                    <button type="button" 
+                            wire:click="closeDetailModal" 
+                            class="btn btn-secondary">
+                        <i class="ri-close-line me-1"></i>
+                        Yopish
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     @endif
 </div>
+
+{{-- Modal backdrop fix --}}
+@if($showDetailModal)
+<style>
+    body {
+        overflow: hidden;
+    }
+</style>
+@endif

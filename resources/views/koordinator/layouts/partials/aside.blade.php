@@ -65,6 +65,22 @@
                 <div data-i18n="Kunlik vazifalar">Kunlik vazifalar</div>
             </a>
         </li>
+
+        <li class="menu-item {{ Route::is('koordinator.reading.records') ? 'active' : '' }}">
+            <a href="{{route('koordinator.reading.records')}}" class="menu-link">
+                <i class="ri-contacts-book-3-fill"></i> &nbsp;
+                <div data-i18n="Kitobxonlik">Kitobxonlik</div>
+            </a>
+        </li>
+
+        <!-- Kitob tashlamaganlar -->
+        <li class="menu-item {{ Route::is('koordinator.non-readers-report') ? 'active' : '' }}">
+            <a href="{{route('koordinator.non-readers-report')}}" class="menu-link">
+                <i class="ri-error-warning-line me-2"></i> &nbsp;
+                <div data-i18n="Kitob tashlamaganlar">Kitob tashlamaganlar</div>
+            </a>
+        </li>
+
         <!-- koordinators -->
         <!-- {{-- <li class="menu-item {{ Route::is('koordinator') ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">

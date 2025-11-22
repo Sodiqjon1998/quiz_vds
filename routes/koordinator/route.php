@@ -3,6 +3,7 @@
 use App\Http\Controllers\Koordinator\ExamController;
 use App\Http\Controllers\Koordinator\SiteController;
 use App\Http\Livewire\Koordinator\ExamResults;
+use App\Http\Livewire\Koordinator\Report\NonReadingRecords;
 
 Route::middleware(['auth.koordinator', 'koordinator'])->group(function () {
 
@@ -28,4 +29,11 @@ Route::middleware(['auth.koordinator', 'koordinator'])->group(function () {
     Route::get('/koordinator/reading-records', function () {
         return view('koordinator.report.reading-records');
     })->name('koordinator.reading.records');
+
+
+    // ✅ YANGI: Kitob tashlamaganlar hisoboti
+    Route::get('/koordinator/non-readers-report', function () {
+        return view('koordinator.report.non-readers-report');
+    })->name('koordinator.non-readers-report');
+
 });
