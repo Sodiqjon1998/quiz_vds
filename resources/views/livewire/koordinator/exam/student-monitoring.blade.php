@@ -8,7 +8,6 @@
                         <i class="ri-file-list-3-line me-2"></i>
                         "{{ $schoolName }}" maktabi
                     </h4>
-                    {{-- ✅ Sinf tanlangan bo'lsa ko'rsatish --}}
                     @if($classFilter && $className)
                         <p class="text-white mb-0">
                             <strong>{{ $className }}</strong> sinfi o'quvchilarining <strong>{{ $quarter }}</strong> monitoring
@@ -20,15 +19,6 @@
                         </p>
                     @endif
                 </div>
-                
-                {{-- Debug info (test uchun) --}}
-                @if(config('app.debug'))
-                    <div class="text-end">
-                        <small class="text-white-50">
-                            Class ID: {{ $classFilter ?? 'not selected' }}
-                        </small>
-                    </div>
-                @endif
             </div>
         </div>
 
@@ -48,7 +38,6 @@
                     </select>
                 </div>
 
-                {{-- ✅ Sinf tanlangan bo'lsagina boshqa filtrlar ko'rinsin --}}
                 @if($classFilter)
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">
@@ -73,19 +62,33 @@
 
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">
-                            <i class="ri-calendar-line me-1"></i>Chorak
+                            <i class="ri-calendar-line me-1"></i>Davr
                         </label>
                         <select wire:model.live="quarter" class="form-select">
-                            <option value="Sentyabr">Sentyabr</option>
-                            <option value="Oktyabr">Oktyabr</option>
-                            <option value="Noyabr">Noyabr</option>
-                            <option value="Dekabr">Dekabr</option>
+                            <optgroup label="Oylar">
+                                <option value="Sentyabr">Sentyabr</option>
+                                <option value="Oktyabr">Oktyabr</option>
+                                <option value="Noyabr">Noyabr</option>
+                                <option value="Dekabr">Dekabr</option>
+                                <option value="Yanvar">Yanvar</option>
+                                <option value="Fevral">Fevral</option>
+                                <option value="Mart">Mart</option>
+                                <option value="Aprel">Aprel</option>
+                                <option value="May">May</option>
+                            </optgroup>
+                            <optgroup label="Choraklar">
+                                <option value="1-chorak">1-chorak (Sen-Noy)</option>
+                                <option value="2-chorak">2-chorak (Dek-Fev)</option>
+                                <option value="3-chorak">3-chorak (Mar-May)</option>
+                            </optgroup>
+                            <optgroup label="Umumiy">
+                                <option value="Yillik">Yillik (Sen-May)</option>
+                            </optgroup>
                         </select>
                     </div>
                 @endif
             </div>
 
-            {{-- ✅ Sinf tanlanmagan holat --}}
             @if($showEmptyMessage ?? false)
                 <div class="alert alert-info border-0 shadow-sm" role="alert">
                     <div class="d-flex align-items-center">
@@ -100,7 +103,6 @@
                     </div>
                 </div>
 
-            {{-- ✅ Sinf tanlangan, lekin o'quvchilar yo'q --}}
             @elseif($students->isEmpty())
                 <div class="alert alert-warning border-0 shadow-sm" role="alert">
                     <div class="d-flex align-items-center">
@@ -114,7 +116,6 @@
                     </div>
                 </div>
 
-            {{-- ✅ Ma'lumotlar bor --}}
             @else
                 {{-- Monitoring Table --}}
                 <div class="table-responsive">
@@ -214,34 +215,54 @@
 
                                     {{-- Natijalar Umumiy --}}
                                     <td class="text-center bg-light">
-                                        <strong class="text-primary">{{ $student->total_score }}</strong>
+                                        @if($student->total_score > 0)
+                                            <strong class="text-primary">{{ $student->total_score }}</strong>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
 
                                     {{-- Natijalar O'rtacha --}}
                                     <td class="text-center bg-light">
-                                        <span class="badge bg-secondary">{{ $student->average_score }}</span>
+                                        @if($student->average_score > 0)
+                                            <span class="badge bg-secondary">{{ $student->average_score }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
 
                                     {{-- Jami Umumiy --}}
                                     <td class="text-center bg-warning bg-opacity-25">
-                                        <strong class="text-dark">{{ $student->total_score }}</strong>
+                                        @if($student->total_score > 0)
+                                            <strong class="text-dark">{{ $student->total_score }}</strong>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
 
                                     {{-- Jami O'rtacha --}}
                                     <td class="text-center bg-warning bg-opacity-25">
-                                        <span class="badge bg-dark fs-6">{{ $student->average_score }}</span>
+                                        @if($student->average_score > 0)
+                                            <span class="badge bg-dark fs-6">{{ $student->average_score }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
 
                                     {{-- O'rni --}}
                                     <td class="text-center">
-                                        @if($student->rank == 1)
-                                            <span class="badge bg-warning text-dark fs-5">🥇 1</span>
-                                        @elseif($student->rank == 2)
-                                            <span class="badge bg-secondary text-white fs-5">🥈 2</span>
-                                        @elseif($student->rank == 3)
-                                            <span class="badge bg-danger text-white fs-5">🥉 3</span>
+                                        @if($student->total_score > 0)
+                                            @if($student->rank == 1)
+                                                <span class="badge bg-warning text-dark fs-5">🥇 1</span>
+                                            @elseif($student->rank == 2)
+                                                <span class="badge bg-secondary text-white fs-5">🥈 2</span>
+                                            @elseif($student->rank == 3)
+                                                <span class="badge bg-danger text-white fs-5">🥉 3</span>
+                                            @else
+                                                <strong class="fs-5">{{ $student->rank }}</strong>
+                                            @endif
                                         @else
-                                            <strong class="fs-5">{{ $student->rank }}</strong>
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                 </tr>
