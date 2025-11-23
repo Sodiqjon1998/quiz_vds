@@ -36,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
             'data' => $request->user()
         ]);
     })->name('api.user');
+    
+    // === User Profile (with class info) ===
+    Route::get('/user/profile', [AuthController::class, 'profile'])->name('api.user.profile');
 
     // === Logout ===
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
@@ -83,6 +86,19 @@ Route::middleware('auth:sanctum')->group(function () {
          * Body: { "date": "2024-11-22", "is_completed": true/false }
          */
         Route::post('/{taskId}/toggle', [TaskController::class, 'toggleTask'])->name('toggle');
+        
+        /**
+         * Create new task (for teachers/admins)
+         * POST /api/tasks
+         * Body: { "name": "Task name", "emoji": "🎯", "description": "..." }
+         */
+        Route::post('/', [TaskController::class, 'createTask'])->name('create');
+        
+        /**
+         * Delete task
+         * DELETE /api/tasks/{taskId}
+         */
+        Route::delete('/{taskId}', [TaskController::class, 'deleteTask'])->name('delete');
     });
 
     // === Statistics ===

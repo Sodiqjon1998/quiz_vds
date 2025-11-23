@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Koordinator\Report;
 
+use App\Models\Users;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -42,10 +43,12 @@ class NonReadersReport extends Component
 
     public function render()
     {
-        // Koordinatorning sinflari
         $user = Auth::user();
+
+        // 1. Koordinator sinflarini olish
         $koordinatorClassIds = json_decode($user->classes_id, true) ?? [];
 
+        // Agar bo'sh bo'lsa - BARCHA sinflar (Super Admin uchun)
         if (empty($koordinatorClassIds)) {
             $koordinatorClassIds = DB::table('classes')
                 ->where('status', 1)
@@ -53,40 +56,34 @@ class NonReadersReport extends Component
                 ->toArray();
         }
 
-        // 1. TANLANGAN KUNDA KITOB TASHLAGAN O'QUVCHILAR
-        $readersQuery = DB::table('reading_records')
+        // 2. Bugun kitob tashlaganlar (faqat koordinator sinflari)
+        $readersToday = DB::table('reading_records')
             ->join('users', 'users.id', '=', 'reading_records.users_id')
             ->whereDate('reading_records.created_at', $this->selectedDate)
             ->where('reading_records.status', 1)
-            ->where('users.user_type', 3)
-            ->where('users.status', 1);
-
-        // ✅ whereIn ishlatamiz
-        if (!empty($koordinatorClassIds)) {
-            $readersQuery->whereIn('users.classes_id', $koordinatorClassIds);
-        }
-
-        $readersToday = $readersQuery
+            ->where('users.user_type', Users::TYPE_STUDENT)
+            ->where('users.status', 1)
+            ->whereIn('users.classes_id', $koordinatorClassIds) // ✅ Faqat o'z sinflari
             ->pluck('reading_records.users_id')
             ->unique()
             ->toArray();
 
-        // 2. JAMI O'QUVCHILAR
+        // 3. Barcha o'quvchilar (faqat koordinator sinflari)
         $allStudentsQuery = DB::table('users')
-            ->where('user_type', 3)
-            ->where('status', 1);
+            ->where('user_type', Users::TYPE_STUDENT)
+            ->where('status', 1)
+            ->whereIn('classes_id', $koordinatorClassIds); // ✅ Faqat o'z sinflari
 
-        if (!empty($koordinatorClassIds)) {
-            $allStudentsQuery->whereIn('classes_id', $koordinatorClassIds);
-        }
-
+        // Agar sinf tanlangan bo'lsa
         if ($this->classFilter) {
             $allStudentsQuery->where('classes_id', $this->classFilter);
         }
 
-        $totalStudents = $allStudentsQuery->count();
+        $allStudents = $allStudentsQuery->pluck('id')->toArray();
 
-        // 3. KITOB TASHLAMAGAN O'QUVCHILAR
+        // 4. Kitob tashlamaganlar
+        $nonReadersIds = array_diff($allStudents, $readersToday);
+
         $nonReadersQuery = DB::table('users')
             ->select([
                 'users.id',
@@ -96,43 +93,25 @@ class NonReadersReport extends Component
                 'classes.name as class_name',
             ])
             ->leftJoin('classes', 'classes.id', '=', DB::raw('CAST(users.classes_id AS UNSIGNED)'))
-            ->where('users.user_type', 3)
-            ->where('users.status', 1);
-
-        if (!empty($koordinatorClassIds)) {
-            $nonReadersQuery->whereIn('users.classes_id', $koordinatorClassIds);
-        }
-
-        if ($this->classFilter) {
-            $nonReadersQuery->where('users.classes_id', $this->classFilter);
-        }
-
-        // ✅ whereNotIn to'g'ri ishlatamiz
-        if (!empty($readersToday)) {
-            $nonReadersQuery->whereNotIn('users.id', $readersToday);
-        }
-
-        $nonReaders = $nonReadersQuery
+            ->whereIn('users.id', $nonReadersIds)
             ->orderBy('classes.name')
-            ->orderBy('users.first_name')
-            ->paginate(20);
+            ->orderBy('users.first_name');
 
-        // 4. SINFLAR
+        $nonReaders = $nonReadersQuery->paginate(20);
+
+        // 5. Sinflar ro'yxati (faqat koordinator sinflari)
         $classes = DB::table('classes')
-            ->whereIn('id', $koordinatorClassIds)
+            ->whereIn('id', $koordinatorClassIds) // ✅ Faqat o'z sinflari
             ->where('status', 1)
             ->orderBy('name')
             ->get();
 
-        // 5. STATISTIKA
-        $readCount = count($readersToday);
-        $notReadCount = $totalStudents - $readCount;
-
+        // 6. Statistika
         $statistics = [
-            'total_students' => $totalStudents,
-            'read_today' => $readCount,
-            'not_read_today' => $notReadCount,
-            'percentage' => $totalStudents > 0 ? round(($readCount / $totalStudents) * 100, 1) : 0,
+            'total_students' => count($allStudents),
+            'read_today' => count($readersToday),
+            'not_read_today' => count($nonReadersIds),
+            'percentage' => count($allStudents) > 0 ? round((count($readersToday) / count($allStudents)) * 100, 1) : 0,
         ];
 
         return view('livewire.koordinator.report.non-readers-report', [
