@@ -1,0 +1,43 @@
+[phases.setup]
+nixPkgs = ["php82", "php82Extensions.mbstring", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "nodejs"]
+
+[phases.install]
+cmds = [
+    "composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader"
+]
+
+[phases.build]
+cmds = [
+    "php artisan config:cache",
+    "php artisan route:cache",
+    "php artisan view:cache"
+]
+
+[start]
+cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+```
+
+### 2️⃣ **Yoki oddiyroq: `Procfile` yarating**
+
+Agar `nixpacks.toml` ishlamasa, `Procfile` yarating:
+
+**`Procfile`:**
+```
+web: php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+```
+
+### 3️⃣ **`.railwayignore` fayl (ixtiyoriy)**
+
+**`.railwayignore`:**
+```
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log

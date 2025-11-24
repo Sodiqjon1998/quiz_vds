@@ -113,23 +113,30 @@ class QuizManager extends Component
         'attachmentNumber.required' => 'Raqamni kiriting',
     ];
 
+    // ✅ updated() metodini optimallashtirish
     public function updated($propertyName)
     {
-        // Faqat hozirgi ochiq modal uchun validate qilish
-        if ($this->showModal && (str_starts_with($propertyName, 'name') ||
-            str_starts_with($propertyName, 'classes_id'))) {
-            $this->validateOnly($propertyName);
+        // Faqat kerakli paytda validation
+        if ($this->showModal) {
+            if ($propertyName === 'name' || $propertyName === 'classes_id') {
+                $this->validateOnly($propertyName);
+            }
         }
 
-        if ($this->showQuestionFormModal && (
-                str_starts_with($propertyName, 'questionText') ||
-                str_starts_with($propertyName, 'options') ||
-                str_starts_with($propertyName, 'correctOption'))) {
-            $this->validateOnly($propertyName);
+        if ($this->showQuestionFormModal) {
+            if ($propertyName === 'questionText') {
+                $this->validateOnly('questionText');
+            } elseif (str_starts_with($propertyName, 'options.')) {
+                $this->validateOnly($propertyName);
+            } elseif ($propertyName === 'correctOption') {
+                $this->validateOnly('correctOption');
+            }
         }
 
-        if ($this->showAttachmentModal && str_starts_with($propertyName, 'attachment')) {
-            $this->validateOnly($propertyName);
+        if ($this->showAttachmentModal) {
+            if (str_starts_with($propertyName, 'attachment')) {
+                $this->validateOnly($propertyName);
+            }
         }
     }
 
@@ -268,8 +275,18 @@ class QuizManager extends Component
 
     public function saveQuestion()
     {
-        $this->validate();
+        // Validation qilish
+        $this->validate([
+            'questionText' => 'required|min:5',
+            'questionImage' => 'nullable|image|max:2048',
+            'options.0' => 'required|min:1',
+            'options.1' => 'required|min:1',
+            'options.2' => 'required|min:1',
+            'options.3' => 'required|min:1',
+            'correctOption' => 'required|in:0,1,2,3',
+        ]);
 
+        // To'g'ri javob tekshiruvi
         if ($this->correctOption === null || $this->correctOption === '') {
             session()->flash('question_error', 'To\'g\'ri javobni tanlang!');
             return;
@@ -279,14 +296,17 @@ class QuizManager extends Component
 
         DB::beginTransaction();
         try {
+            // Rasm yuklash
             $imagePath = null;
             if ($this->questionImage) {
                 $imagePath = $this->questionImage->store('questions', 'public');
             }
 
+            // Savol yaratish yoki yangilash
             if ($this->isEditQuestion) {
                 $question = Question::findOrFail($this->questionId);
 
+                // Eski rasmni o'chirish
                 if ($imagePath && $question->image) {
                     Storage::disk('public')->delete($question->image);
                 }
@@ -297,8 +317,10 @@ class QuizManager extends Component
                     'updated_by' => Auth::id(),
                 ]);
 
+                // Eski variantlarni o'chirish
                 Option::where('question_id', $question->id)->delete();
             } else {
+                // Yangi savol yaratish
                 $question = Question::create([
                     'quiz_id' => $this->currentQuiz->id,
                     'name' => $this->questionText,
@@ -309,6 +331,7 @@ class QuizManager extends Component
                 ]);
             }
 
+            // Variantlarni saqlash
             foreach ($this->options as $index => $optionText) {
                 $trimmedText = trim($optionText);
 
@@ -329,22 +352,30 @@ class QuizManager extends Component
 
             DB::commit();
 
+            // ✅ SUCCESS MESSAGE
             session()->flash('question_message', $this->isEditQuestion ? 'Savol yangilandi!' : 'Savol qo\'shildi!');
 
+            // ✅ MUHIM: State'ni tozalash
             $this->resetQuestionFields();
             $this->showQuestionFormModal = false;
 
-            $this->currentQuiz->refresh();
-            $this->currentQuiz->load(['subject', 'class']);
+            // ✅ currentQuiz'ni yangilash
+            $this->currentQuiz = Quiz::where('id', $this->currentQuiz->id)
+                ->where('created_by', Auth::id())
+                ->with(['subject', 'class'])
+                ->first();
 
+            // ✅ Livewire event'ini dispatch qilish
+            $this->dispatch('questionSaved');
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Question save error', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
-            session()->flash('question_error', 'Xatolik: ' . $e->getMessage());
+            session()->flash('question_error', 'Xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
         }
     }
 
@@ -443,11 +474,10 @@ class QuizManager extends Component
 
             session()->flash('message', 'Attachment muvaffaqiyatli qo\'shildi!');
             $this->resetAttachmentFields();
-
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Attachment save error: ' . $e->getMessage());
-            session()->flash('error', 'Attachment saqlashda xatolik!'. $e->getMessage());
+            session()->flash('error', 'Attachment saqlashda xatolik!' . $e->getMessage());
         }
     }
 
@@ -491,6 +521,7 @@ class QuizManager extends Component
         $this->resetValidation();
     }
 
+    // ✅ resetQuestionFields metodini yangilash
     private function resetQuestionFields()
     {
         $this->questionId = null;
@@ -500,7 +531,10 @@ class QuizManager extends Component
         $this->options = ['', '', '', ''];
         $this->correctOption = null;
         $this->isEditQuestion = false;
+
+        // ✅ Validation xatolarini tozalash
         $this->resetValidation();
+        $this->resetErrorBag();
     }
 
     private function resetAttachmentFields()
