@@ -7,6 +7,7 @@ use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -74,7 +75,12 @@ class AuthController extends Controller
                 'phone' => $user->phone ?? null,
                 'user_type' => $user->user_type,
                 'classes_id' => $classesId,
-                'class' => $classInfo, // Bu muhim!
+                'class' => $user->classRelation ? [ // ← classRelation ishlatish
+                    'id' => $user->classRelation->id,
+                    'name' => $user->classRelation->name,
+                    'telegram_chat_id' => $user->classRelation->telegram_chat_id ?? null,
+                    'telegram_topic_id' => $user->classRelation->telegram_topic_id ?? null
+                ] : null,
                 'status' => $user->status,
                 'img' => $user->img ?? null
             ]
@@ -95,19 +101,6 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $classInfo = null;
-        if ($user->classes_id) {
-            $class = \App\Models\Classes::find($user->classes_id);
-            if ($class) {
-                $classInfo = [
-                    'id' => $class->id,
-                    'name' => $class->name,
-                    'telegram_chat_id' => $class->telegram_chat_id ?? null,
-                    'telegram_topic_id' => $class->telegram_topic_id ?? null
-                ];
-            }
-        }
-
         return response()->json([
             'success' => true,
             'user' => [
@@ -119,9 +112,93 @@ class AuthController extends Controller
                 'phone' => $user->phone ?? null,
                 'user_type' => $user->user_type,
                 'classes_id' => $user->classes_id,
-                'class' => $classInfo,
+                'class' => $user->classRelation ? [ // ← classRelation ishlatish
+                    'id' => $user->classRelation->id,
+                    'name' => $user->classRelation->name,
+                    'telegram_chat_id' => $user->classRelation->telegram_chat_id ?? null,
+                    'telegram_topic_id' => $user->classRelation->telegram_topic_id ?? null
+                ] : null,
                 'status' => $user->status,
                 'img' => $user->img ?? null
+            ]
+        ]);
+    }
+
+
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:users,name,' . $user->id,
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'img' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'current_password' => 'nullable|string',
+            'new_password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        // Parol o'zgartirish
+        if ($request->filled('new_password')) {
+            if (!$request->filled('current_password')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Joriy parolni kiriting!'
+                ], 422);
+            }
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Joriy parol noto\'g\'ri!'
+                ], 422);
+            }
+
+            $user->password = Hash::make($request->new_password);
+        }
+
+        // Rasm yuklash
+        if ($request->hasFile('img')) {
+            // Eski rasmni o'chirish
+            if ($user->img && Storage::disk('public')->exists($user->img)) {
+                Storage::disk('public')->delete($user->img);
+            }
+
+            $path = $request->file('img')->store('avatars', 'public');
+            $user->img = $path;
+        }
+
+        // Ma'lumotlarni yangilash
+        $user->name = $validated['name'];
+        $user->first_name = $validated['first_name'] ?? null;
+        $user->last_name = $validated['last_name'] ?? null;
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil muvaffaqiyatli yangilandi!',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'user_type' => $user->user_type,
+                'classes_id' => $user->classes_id,
+                'class' => $user->classRelation ? [ // ← classRelation ishlatish
+                    'id' => $user->classRelation->id,
+                    'name' => $user->classRelation->name,
+                    'telegram_chat_id' => $user->classRelation->telegram_chat_id ?? null,
+                    'telegram_topic_id' => $user->classRelation->telegram_topic_id ?? null
+                ] : null,
+                'status' => $user->status,
+                'img' => $user->img
             ]
         ]);
     }
