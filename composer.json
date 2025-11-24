@@ -61,6 +61,13 @@
             "livewire/livewire"
         ]
     },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "mrdebug/crudgen"
+            ]
+        }
+    },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
