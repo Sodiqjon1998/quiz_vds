@@ -22,7 +22,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-    <title>Tizimga kirish</title>
+    <title>O'qituvchi tizimiga kirish</title>
 
     
     <meta name="description" content="Materialize – is the most developer friendly &amp; highly customizable Admin Dashboard Template.">
@@ -91,10 +91,6 @@
 
   <!-- / Content -->
 
-  
-  <div class="buy-now">
-    <a href="https://1.envato.market/materialize_admin" target="_blank" class="btn btn-danger btn-buy-now">Buy Now</a>
-  </div>
   
 
   

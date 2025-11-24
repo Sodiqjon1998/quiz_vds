@@ -72,7 +72,7 @@
 
         <li class="menu-item {{ Route::is('teacher.quiz.index') ? 'active' : '' }}">
             <a href="{{ route('teacher.quiz.index') }}" class="menu-link">
-                <i class="ri-list-radio"></i> &nbsp;
+                <i class="ri-survey-fill"></i> &nbsp;
                 <div data-i18n="Quiz">Quiz</div>
             </a>
         </li>
@@ -82,12 +82,12 @@
                 <div data-i18n="Savollar">Savollar</div>
             </a>
         </li> --}}
-        <li class="menu-item {{ Route::is('teacher.attachment.index') ? 'active' : '' }}">
+        <!-- <li class="menu-item {{ Route::is('teacher.attachment.index') ? 'active' : '' }}">
             <a href="{{ route('teacher.attachment.index') }}" class="menu-link">
                 <i class="ri-attachment-fill"></i> &nbsp;
                 <div data-i18n="Urinishlar">Urinishlar</div>
             </a>
-        </li>
+        </li> -->
 
         <li class="menu-item {{ Route::is('teacher.exam.index') ? 'active' : '' }}">
             <a href="{{ route('teacher.exam.index') }}" class="menu-link">
@@ -112,7 +112,7 @@
 
          <li class="menu-item {{ Route::is('chat') ? 'active' : '' }}">
             <a href="{{route('chat')}}" class="menu-link">
-                <i class="ri-chat-cap-fill"></i> &nbsp;
+                <i class="ri-message-3-fill"></i> &nbsp;
                 <div data-i18n="Chat">Chat</div>
             </a>
         </li>

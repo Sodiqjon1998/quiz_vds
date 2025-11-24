@@ -92,9 +92,9 @@
   <!-- / Content -->
 
   
-  <div class="buy-now">
+  <!-- <div class="buy-now">
     <a href="https://1.envato.market/materialize_admin" target="_blank" class="btn btn-danger btn-buy-now">Buy Now</a>
-  </div>
+  </div> -->
   
 
   
