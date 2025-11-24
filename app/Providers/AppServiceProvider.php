@@ -14,6 +14,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Paginator::useBootstrapFive();
+        if($this->app->environment('production')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 
 
