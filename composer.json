@@ -14,6 +14,7 @@
         "intervention/image": "2.7",
         "james-heinrich/getid3": "^1.9",
         "laravel/framework": "^10.10",
+        "nunomaduro/collision": "^7.0",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "laravelcollective/html": "^6.4",
@@ -34,7 +35,6 @@
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",
         "mrdebug/crudgen": "^1.10",
-        "nunomaduro/collision": "^7.0",
         "pestphp/pest": "^2.0",
         "pestphp/pest-plugin-laravel": "^2.0",
         "spatie/laravel-ignition": "^2.0"
