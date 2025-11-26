@@ -3,95 +3,242 @@
 @section('content')
 
 <style>
+    :root {
+        --yuksalish-orange: #F58025;
+        --yuksalish-dark: #212529;
+        --yuksalish-light: #fffbf8;
+    }
+
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     .authentication-wrapper {
         min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f5f5f9;
+        background: linear-gradient(135deg, #fffbf8 0%, #fff 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Orqa fon bezaklari */
+    .auth-bg-shape {
+        position: absolute;
+        border-radius: 50%;
+        background: var(--yuksalish-orange);
+        opacity: 0.05;
+        z-index: 0;
+    }
+
+    .shape-1 {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        right: -50px;
+    }
+
+    .shape-2 {
+        width: 200px;
+        height: 200px;
+        bottom: -50px;
+        left: -50px;
     }
 
     .login-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        padding: 3rem 2.5rem;
         width: 100%;
-        max-width: 450px;
+        max-width: 420px;
+        position: relative;
+        z-index: 1;
+        border-top: 5px solid var(--yuksalish-orange);
     }
 
     .auth-brand {
-        text-align: center;
-        margin-bottom: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+        text-decoration: none;
+    }
+
+    .brand-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--yuksalish-orange);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .brand-text {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--yuksalish-dark);
+        letter-spacing: -0.5px;
+    }
+
+    /* Form Elements */
+    .form-floating>.form-control:focus~label,
+    .form-floating>.form-control:not(:placeholder-shown)~label {
+        color: var(--yuksalish-orange);
+    }
+
+    .form-control {
+        border: 2px solid #eee;
+        border-radius: 10px;
+        padding-left: 15px;
+    }
+
+    .form-control:focus {
+        border-color: var(--yuksalish-orange);
+        box-shadow: 0 0 0 4px rgba(245, 128, 37, 0.1);
+    }
+
+    .input-group-text {
+        border: 2px solid #eee;
+        border-left: none;
+        background: white;
+        border-radius: 0 10px 10px 0;
+    }
+
+    .form-control:focus+.input-group-text {
+        border-color: var(--yuksalish-orange);
+    }
+
+    /* Checkbox */
+    .form-check-input:checked {
+        background-color: var(--yuksalish-orange);
+        border-color: var(--yuksalish-orange);
+    }
+
+    /* Button */
+    .btn-yuksalish {
+        background-color: var(--yuksalish-orange);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 12px;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .btn-yuksalish:hover {
+        background-color: #d96d1b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 128, 37, 0.3);
+        color: white;
+    }
+
+    /* Social Buttons */
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid #eee;
+        color: #6c757d;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-icon:hover {
+        border-color: var(--yuksalish-orange);
+        color: var(--yuksalish-orange);
+        background: #fffbf8;
     }
 </style>
 
 <div class="authentication-wrapper">
+    <!-- Background Shapes -->
+    <div class="auth-bg-shape shape-1"></div>
+    <div class="auth-bg-shape shape-2"></div>
+
     <div class="login-card">
         <!-- Logo -->
-        <div class="auth-brand">
-            <a href="index.html" class="d-flex align-items-center justify-content-center gap-2">
-                <span class="app-brand-logo demo">
-                    <span style="color:var(--bs-primary);">
-                    </span>
-                </span>
-                <span class="app-brand-text demo text-heading fw-semibold fs-3">AYM</span>
-            </a>
-        </div>
+        <a href="index.html" class="auth-brand">
+            <div class="brand-icon">
+                <i class="ri-graduation-cap-fill"></i>
+            </div>
+            <span class="brand-text">Yuksalish</span>
+        </a>
         <!-- /Logo -->
 
-        <h4 class="mb-1 text-center">Xush kelibsiz! 👋</h4>
-        <p class="mb-5 text-center text-muted">Tizimga kirish uchun ma'lumotlaringizni kiriting</p>
+        <div class="text-center mb-4">
+            <h4 class="mb-1 fw-bold text-dark">Xush kelibsiz! 👋</h4>
+            <p class="text-muted small">Tizimga kirish uchun ma'lumotlaringizni kiriting</p>
+        </div>
 
         <form id="formAuthentication" action="{{route('backend.login')}}" method="POST">
             @csrf
-            <div class="form-floating form-floating-outline mb-4">
-                <input type="text" class="form-control" id="email" name="name" placeholder="Username kiriting" autofocus="">
+
+            <div class="form-floating form-floating-outline mb-3">
+                <input type="text" class="form-control" id="email" name="name" placeholder="Username" autofocus>
                 <label for="email">Username</label>
             </div>
 
-            <div class="mb-4">
-                <div class="form-password-toggle">
-                    <div class="input-group input-group-merge">
-                        <div class="form-floating form-floating-outline">
-                            <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password">
-                            <label for="password">Password</label>
-                        </div>
-                        <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
+            <div class="mb-3">
+                <div class="input-group input-group-merge">
+                    <div class="form-floating form-floating-outline">
+                        <input type="password" id="password" class="form-control" name="password"
+                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                            aria-describedby="password" style="border-right: none; border-radius: 10px 0 0 10px;">
+                        <label for="password">Parol</label>
                     </div>
+                    <span class="input-group-text cursor-pointer"><i class="ri-eye-off-line"></i></span>
                 </div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="remember-me">
-                    <label class="form-check-label" for="remember-me">
-                        Eslab qol
+                    <label class="form-check-label text-muted" for="remember-me">
+                        Eslab qolish
                     </label>
                 </div>
+                {{-- <a href="#" class="small text-warning text-decoration-none">Parolni unutdingizmi?</a> --}}
             </div>
 
-            <button type="submit" class="btn btn-primary d-grid w-100 mb-4">
+            <button type="submit" class="btn btn-yuksalish d-grid w-100 mb-4">
                 Tizimga kirish
             </button>
         </form>
 
-        <div class="d-flex justify-content-center gap-2">
-            <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-facebook">
-                <i class="tf-icons ri-facebook-fill"></i>
+        {{-- <div class="divider d-flex align-items-center my-4">
+            <span class="text-muted fw-light mx-auto small">Yoki boshqa usul bilan kiring</span>
+        </div> --}}
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a href="javascript:;" class="btn-icon" title="Facebook">
+                <i class="ri-facebook-fill fs-5"></i>
             </a>
 
-            <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-twitter">
-                <i class="tf-icons ri-twitter-fill"></i>
+            <a href="javascript:;" class="btn-icon" title="Twitter">
+                <i class="ri-twitter-fill fs-5"></i>
             </a>
 
-            <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-github">
-                <i class="tf-icons ri-github-fill"></i>
+            <a href="javascript:;" class="btn-icon" title="GitHub">
+                <i class="ri-github-fill fs-5"></i>
             </a>
 
-            <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-google-plus">
-                <i class="tf-icons ri-google-fill"></i>
+            <a href="javascript:;" class="btn-icon" title="Google">
+                <i class="ri-google-fill fs-5"></i>
             </a>
+        </div>
+
+        <div class="text-center mt-4 text-muted small">
+            &copy; {{ date('Y') }} Andijon Yuksalish Maktabi
         </div>
     </div>
 </div>
