@@ -2,250 +2,272 @@
     <style>
         :root {
             --yuksalish-orange: #F58025;
-            /* Logo rangi */
             --yuksalish-dark: #212529;
-            --yuksalish-gray: #f8f9fa;
         }
 
-        /* Asosiy knopkalar */
+        /* Knopka */
         .btn-yuksalish {
             background-color: var(--yuksalish-orange);
             color: white;
             border: none;
             font-weight: 500;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            white-space: nowrap;
         }
-
         .btn-yuksalish:hover {
             background-color: #d96d1b;
             color: white;
         }
 
-        /* Jadval Headeri */
+        /* SEARCH BOX (Yangi dizayn) */
+        .search-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            height: 45px;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--yuksalish-orange);
+            box-shadow: 0 0 0 4px rgba(245, 128, 37, 0.1);
+        }
+
+        .search-box i {
+            color: #999;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Sarlavha */
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--yuksalish-dark);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        /* Jadval */
         .table-yuksalish thead th {
             background-color: var(--yuksalish-dark);
             color: white;
-            border: none;
+            padding: 15px;
             font-weight: 500;
-        }
-
-        /* Search input */
-        .search-input:focus {
-            border-color: var(--yuksalish-orange);
-            box-shadow: 0 0 0 0.2rem rgba(245, 128, 37, 0.25);
-        }
-
-        /* Mobile Card Design */
-        .mobile-card {
-            border-left: 5px solid var(--yuksalish-orange);
-            background: white;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
+            border: none;
         }
 
         /* Badges */
-        .badge-teacher {
-            background-color: #17a2b8;
-            color: white;
-        }
+        .badge-teacher { background-color: #17a2b8; color: white; }
+        .badge-koordinator { background-color: #ffc107; color: #212529; }
 
-        .badge-koordinator {
-            background-color: #ffc107;
-            color: #212529;
+        /* Mobile Card */
+        .mobile-card {
+            border-left: 5px solid var(--yuksalish-orange);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
         }
-
-        /* Pagination rangini o'zgartirish */
+        
+        /* Pagination */
         .page-item.active .page-link {
             background-color: var(--yuksalish-orange);
             border-color: var(--yuksalish-orange);
         }
-
-        .page-link {
-            color: var(--yuksalish-orange);
-        }
+        .page-link { color: var(--yuksalish-orange); }
     </style>
 
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                        <h4 class="card-title mb-0 fw-bold text-dark">
-                            <i class="ri-team-line" style="color: var(--yuksalish-orange);"></i> Hodimlar ro'yxati
-                        </h4>
+                <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                    
+                    <div class="card-header bg-white py-4">
+                        <div class="row align-items-center g-3">
+                            
+                            <div class="col-12 col-md-auto">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-2 me-2 d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
+                                        <i class="ri-team-line" style="color: var(--yuksalish-orange); font-size: 1.2rem;"></i>
+                                    </div>
+                                    <h4 class="page-title">Hodimlar ro'yxati</h4>
+                                </div>
+                            </div>
 
-                        <div class="d-flex gap-2 w-100 w-md-auto">
-                            <button wire:click="createUsers" class="btn btn-yuksalish w-100 w-md-auto">
-                                <i class="fas fa-plus me-1"></i> Yangi hodim
-                            </button>
+                            <div class="col-12 col-md">
+                                <div class="search-box">
+                                    <i class="ri-search-line"></i>
+                                    <input wire:model.live.debounce.300ms="search" 
+                                           type="text" 
+                                           class="form-control border-0 shadow-none bg-transparent p-0" 
+                                           placeholder="Qidirish (Ism, Fan, Sinf)...">
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-auto">
+                                <button wire:click="createUsers" class="btn btn-yuksalish w-100">
+                                    <i class="fas fa-plus me-2"></i> Yangi hodim
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="card-body">
+                    <div class="card-body p-0">
                         @if (session()->has('message'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('message') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        @endif
-
-                        <div class="row mb-4">
-                            <div class="col-md-6 col-lg-4">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="ri-search-line"></i>
-                                    </span>
-                                    <input wire:model.live.debounce.300ms="search"
-                                        type="text"
-                                        class="form-control border-start-0 ps-0 search-input"
-                                        placeholder="Qidirish (Ism, Fan, Sinf)...">
+                            <div class="p-3">
+                                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
+                                    <i class="ri-checkbox-circle-line me-2"></i> {{ session('message') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                 </div>
                             </div>
-                        </div>
+                        @endif
 
                         <div class="table-responsive d-none d-md-block">
-                            <table class="table table-hover align-middle table-yuksalish">
+                            <table class="table table-hover align-middle table-yuksalish mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="rounded-start">#</th>
+                                        <th class="text-center" style="width: 50px;">#</th>
                                         <th>Ism Familya</th>
                                         <th>Kontakt</th>
                                         <th>Lavozim</th>
                                         <th>Fan / Sinflar</th>
                                         <th>Status</th>
-                                        <th class="text-end rounded-end">Amallar</th>
+                                        <th class="text-end pe-4">Amallar</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($users as $user)
+                                @forelse($users as $user)
                                     <tr>
-                                        <td>{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
+                                        <td class="text-center fw-bold text-secondary">{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <span class="fw-bold">{{ $user->first_name }} {{ $user->last_name }}</span>
-                                                <span class="small text-muted">@ {{ $user->name }}</span>
+                                                <span class="fw-bold text-dark">{{ $user->first_name }} {{ $user->last_name }}</span>
+                                                <small class="text-muted">@ {{ $user->name }}</small>
                                             </div>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <span>{{ $user->phone ?? '-' }}</span>
+                                                <span class="text-dark">{{ $user->phone ?? '-' }}</span>
                                                 <small class="text-muted">{{ $user->email }}</small>
                                             </div>
                                         </td>
                                         <td>
                                             @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
-                                            <span class="badge badge-teacher">O'qituvchi</span>
+                                                <span class="badge badge-teacher">O'qituvchi</span>
                                             @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR)
-                                            <span class="badge badge-koordinator">Koordinator</span>
+                                                <span class="badge badge-koordinator">Koordinator</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
-                                            <span class="fw-medium text-dark">{{ $user->subject->name ?? '---' }}</span>
+                                                <span class="fw-medium text-dark">{{ $user->subject->name ?? '---' }}</span>
                                             @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR && $user->classes_id)
-                                            @php
-                                            $classIds = json_decode($user->classes_id, true);
-                                            $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
-                                            @endphp
-                                            <small class="text-wrap" style="max-width: 200px; display:block;">
-                                                {{ implode(', ', $classes) }}
-                                            </small>
+                                                @php
+                                                    $classIds = json_decode($user->classes_id, true);
+                                                    $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
+                                                @endphp
+                                                <small class="text-wrap" style="max-width: 200px; display:block;">
+                                                    {{ implode(', ', $classes) }}
+                                                </small>
                                             @else
-                                            <span class="text-muted">-</span>
+                                                <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($user->status == \App\Models\Users::STATUS_ACTIVE)
-                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Faol</span>
+                                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Faol</span>
                                             @else
-                                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Nofaol</span>
+                                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Nofaol</span>
                                             @endif
                                         </td>
-                                        <td class="text-end">
-                                            <button wire:click="viewUsers({{ $user->id }})" class="btn btn-sm btn-light text-primary"><i class="ri-eye-line"></i></button>
-                                            <button wire:click="editUsers({{ $user->id }})" class="btn btn-sm btn-light text-warning"><i class="ri-pencil-line"></i></button>
-                                            <button wire:click="deleteUsers({{ $user->id }})" onclick="return confirm('O\'chirilsinmi?')" class="btn btn-sm btn-light text-danger"><i class="ri-delete-bin-line"></i></button>
+                                        <td class="text-end pe-4">
+                                            <button wire:click="viewUsers({{ $user->id }})" class="btn btn-sm btn-light text-primary shadow-sm border me-1"><i class="ri-eye-line"></i></button>
+                                            <button wire:click="editUsers({{ $user->id }})" class="btn btn-sm btn-light text-warning shadow-sm border me-1"><i class="ri-pencil-line"></i></button>
+                                            <button wire:click="deleteUsers({{ $user->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-sm btn-light text-danger shadow-sm border"><i class="ri-delete-bin-line"></i></button>
                                         </td>
                                     </tr>
-                                    @empty
+                                @empty
                                     <tr>
                                         <td colspan="7" class="text-center py-5 text-muted">Ma'lumot topilmadi</td>
                                     </tr>
-                                    @endforelse
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="d-md-none">
+                        <div class="d-md-none p-3 bg-light">
                             @forelse($users as $user)
-                            <div class="mobile-card p-3">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <h6 class="fw-bold mb-0 text-dark">{{ $user->first_name }} {{ $user->last_name }}</h6>
-                                        <small class="text-muted">@ {{ $user->name }}</small>
-                                    </div>
-                                    @if($user->status == \App\Models\Users::STATUS_ACTIVE)
-                                    <span class="badge bg-success bg-opacity-10 text-success">Faol</span>
-                                    @else
-                                    <span class="badge bg-danger bg-opacity-10 text-danger">Nofaol</span>
-                                    @endif
-                                </div>
-
-                                <div class="mb-3">
-                                    <div class="mb-1">
-                                        @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
-                                        <span class="badge badge-teacher">O'qituvchi</span>
-                                        @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR)
-                                        <span class="badge badge-koordinator">Koordinator</span>
+                                <div class="mobile-card p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">{{ $user->first_name }} {{ $user->last_name }}</h6>
+                                            <small class="text-muted">@ {{ $user->name }}</small>
+                                        </div>
+                                        @if($user->status == \App\Models\Users::STATUS_ACTIVE)
+                                            <span class="badge bg-success bg-opacity-10 text-success">Faol</span>
+                                        @else
+                                            <span class="badge bg-danger bg-opacity-10 text-danger">Nofaol</span>
                                         @endif
                                     </div>
 
-                                    <div class="small text-dark mt-2">
-                                        <i class="ri-book-mark-line me-1 text-muted"></i>
-                                        @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
-                                        <b>Fan:</b> {{ $user->subject->name ?? '---' }}
-                                        @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR && $user->classes_id)
-                                        @php
-                                        $classIds = json_decode($user->classes_id, true);
-                                        $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
-                                        @endphp
-                                        <b>Sinflar:</b> {{ implode(', ', $classes) }}
-                                        @endif
+                                    <div class="mb-3">
+                                        <div class="mb-1">
+                                            @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
+                                                <span class="badge badge-teacher">O'qituvchi</span>
+                                            @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR)
+                                                <span class="badge badge-koordinator">Koordinator</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="small text-dark mt-2">
+                                            <i class="ri-book-mark-line me-1 text-muted"></i>
+                                            @if($user->user_type == \App\Models\Users::TYPE_TEACHER)
+                                                <b>Fan:</b> {{ $user->subject->name ?? '---' }}
+                                            @elseif($user->user_type == \App\Models\Users::TYPE_KOORDINATOR && $user->classes_id)
+                                                @php
+                                                    $classIds = json_decode($user->classes_id, true);
+                                                    $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
+                                                @endphp
+                                                <b>Sinflar:</b> {{ implode(', ', $classes) }}
+                                            @endif
+                                        </div>
+
+                                        <div class="small text-dark mt-1">
+                                            <i class="ri-phone-line me-1 text-muted"></i> {{ $user->phone ?? '---' }}
+                                        </div>
                                     </div>
 
-                                    <div class="small text-dark mt-1">
-                                        <i class="ri-phone-line me-1 text-muted"></i> {{ $user->phone ?? '---' }}
+                                    <div class="d-flex gap-2 border-top pt-2">
+                                        <button wire:click="viewUsers({{ $user->id }})" class="btn btn-light border flex-fill text-primary fw-bold">
+                                            <i class="ri-eye-line"></i> Ko'rish
+                                        </button>
+                                        <button wire:click="editUsers({{ $user->id }})" class="btn btn-light border flex-fill text-warning fw-bold">
+                                            <i class="ri-pencil-line"></i>
+                                        </button>
+                                        <button wire:click="deleteUsers({{ $user->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-light border flex-fill text-danger fw-bold">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div class="d-flex gap-2 border-top pt-2">
-                                    <button wire:click="viewUsers({{ $user->id }})" class="btn btn-sm btn-light flex-fill text-primary">
-                                        <i class="ri-eye-line"></i> Ko'rish
-                                    </button>
-                                    <button wire:click="editUsers({{ $user->id }})" class="btn btn-sm btn-light flex-fill text-warning">
-                                        <i class="ri-pencil-line"></i>
-                                    </button>
-                                    <button wire:click="deleteUsers({{ $user->id }})" onclick="return confirm('O\'chirilsinmi?')" class="btn btn-sm btn-light flex-fill text-danger">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
-                            </div>
                             @empty
-                            <div class="text-center py-5 text-muted">Ma'lumot topilmadi</div>
+                                <div class="text-center py-5 text-muted">Ma'lumot topilmadi</div>
                             @endforelse
                         </div>
 
-                        <div class="mt-4">
+                        <div class="mt-4 px-3 pb-3">
                             {{ $users->links() }}
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Create/Edit Modal -->
     @if($showModal)
     <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -253,9 +275,9 @@
                 <div class="modal-header bg-white border-bottom-0 pb-0">
                     <h5 class="modal-title fw-bold text-dark">
                         @if($isEdit)
-                        <i class="ri-pencil-line text-warning me-2"></i>Hodimni tahrirlash
+                            <i class="ri-pencil-line text-warning me-2"></i>Hodimni tahrirlash
                         @else
-                        <i class="ri-user-add-line" style="color: var(--yuksalish-orange);"></i> Yangi hodim
+                            <i class="ri-user-add-line" style="color: var(--yuksalish-orange);"></i> Yangi hodim
                         @endif
                     </h5>
                     <button type="button" wire:click="closeModal" class="btn-close"></button>
@@ -281,8 +303,8 @@
                                 <div class="input-group">
                                     <span class="input-group-text bg-light border-end-0"><i class="ri-at-line"></i></span>
                                     <input type="text" wire:model="name" @if(!$isEdit) readonly @endif
-                                        class="form-control bg-light border-start-0 @error('name') is-invalid @enderror"
-                                        placeholder="Username avtomatik yoziladi">
+                                           class="form-control bg-light border-start-0 @error('name') is-invalid @enderror"
+                                           placeholder="Username avtomatik yoziladi">
                                 </div>
                                 @error('name') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
