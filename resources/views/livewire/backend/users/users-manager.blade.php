@@ -247,181 +247,104 @@
 
     <!-- Create/Edit Modal -->
     @if($showModal)
-    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ $isEdit ? 'Hodimni tahrirlash' : 'Yangi hodim qo\'shish' }}</h5>
-                    <button type="button" wire:click="closeModal" class="close btn btn-danger">
-                        <span>&times;</span>
-                    </button>
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark">
+                        @if($isEdit)
+                        <i class="ri-pencil-line text-warning me-2"></i>Hodimni tahrirlash
+                        @else
+                        <i class="ri-user-add-line" style="color: var(--yuksalish-orange);"></i> Yangi hodim
+                        @endif
+                    </h5>
+                    <button type="button" wire:click="closeModal" class="btn-close"></button>
                 </div>
+
                 <form wire:submit.prevent="saveUsers" autocomplete="off">
                     <div class="modal-body">
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Ism <span class="text-danger">*</span></label>
-                                    <input type="text"
-                                        wire:model.live="first_name"
-                                        autocomplete="off"
-                                        class="form-control @error('first_name') is-invalid @enderror">
-                                    @error('first_name') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                                <label class="form-label small fw-bold text-muted">Ism <span class="text-danger">*</span></label>
+                                <input type="text" wire:model.live="first_name" class="form-control search-input @error('first_name') is-invalid @enderror" placeholder="Ismni kiriting">
+                                @error('first_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Familya <span class="text-danger">*</span></label>
-                                    <input type="text"
-                                        wire:model.live="last_name"
-                                        autocomplete="off"
-                                        class="form-control @error('last_name') is-invalid @enderror">
-                                    @error('last_name') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                                <label class="form-label small fw-bold text-muted">Familya <span class="text-danger">*</span></label>
+                                <input type="text" wire:model.live="last_name" class="form-control search-input @error('last_name') is-invalid @enderror" placeholder="Familyani kiriting">
+                                @error('last_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Username <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <input type="text"
-                                            wire:model="name"
-                                            autocomplete="off"
-                                            @if(!$isEdit) readonly @endif
-                                            class="form-control @error('name') is-invalid @enderror"
-                                            style="@if(!$isEdit) background-color: #f8f9fa; @endif">
-                                        @if(!$isEdit)
-                                        <div class="input-group-append">
-                                            <span class="input-group-text bg-primary text-white">
-                                                <i class="ri-lock-line"></i>
-                                            </span>
-                                        </div>
-                                        @endif
-                                    </div>
-                                    @error('name') <span class="text-danger">{{ $message }}</span> @enderror
-                                    @if(!$isEdit)
-                                    <small class="form-text text-muted">
-                                        <i class="ri-information-line"></i> Username avtomatik generatsiya
-                                        qilinadi
-                                    </small>
-                                    @endif
+                                <label class="form-label small fw-bold text-muted">Username <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="ri-at-line"></i></span>
+                                    <input type="text" wire:model="name" @if(!$isEdit) readonly @endif
+                                        class="form-control bg-light border-start-0 @error('name') is-invalid @enderror"
+                                        placeholder="Username avtomatik yoziladi">
                                 </div>
+                                @error('name') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Email <span class="text-danger">*</span></label>
-                                    <input type="email"
-                                        wire:model="email"
-                                        autocomplete="off"
-                                        class="form-control @error('email') is-invalid @enderror">
-                                    @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                                <label class="form-label small fw-bold text-muted">Email <span class="text-danger">*</span></label>
+                                <input type="email" wire:model="email" class="form-control search-input @error('email') is-invalid @enderror" placeholder="email@example.com">
+                                @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Hodim turi <span class="text-danger">*</span></label>
-                                    <select wire:model.live="user_type"
-                                        class="form-control @error('user_type') is-invalid @enderror">
-                                        <option value="">Tanlang</option>
-                                        <option value="{{ \App\Models\Users::TYPE_TEACHER }}">O'qituvchi</option>
-                                        <option value="{{ \App\Models\Users::TYPE_KOORDINATOR }}">Koordinator
-                                        </option>
-                                    </select>
-                                    @error('user_type') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                                <label class="form-label small fw-bold text-muted">Hodim turi <span class="text-danger">*</span></label>
+                                <select wire:model.live="user_type" class="form-select search-input @error('user_type') is-invalid @enderror">
+                                    <option value="">Tanlang</option>
+                                    <option value="{{ \App\Models\Users::TYPE_TEACHER }}">O'qituvchi</option>
+                                    <option value="{{ \App\Models\Users::TYPE_KOORDINATOR }}">Koordinator</option>
+                                </select>
+                                @error('user_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Telefon</label>
-                                    <input type="text"
-                                        wire:model="phone"
-                                        autocomplete="off"
-                                        class="form-control @error('phone') is-invalid @enderror">
-                                    @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
-                                </div>
+                                <label class="form-label small fw-bold text-muted">Telefon</label>
+                                <input type="text" wire:model="phone" class="form-control search-input @error('phone') is-invalid @enderror" placeholder="+998 90 123 45 67">
+                                @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
-                            {{-- O'qituvchi tanlansa - Fan --}}
                             @if($user_type == \App\Models\Users::TYPE_TEACHER)
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Fan nomi <span class="text-danger">*</span></label>
-                                    <select wire:model="subject_id"
-                                        class="form-control @error('subject_id') is-invalid @enderror">
-                                        <option value="">Tanlang</option>
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded border">
+                                    <label class="form-label small fw-bold text-primary">Fan biriktirish <span class="text-danger">*</span></label>
+                                    <select wire:model="subject_id" class="form-select search-input @error('subject_id') is-invalid @enderror">
+                                        <option value="">Fanni tanlang</option>
                                         @foreach(\App\Models\Subjects::all() as $subject)
                                         <option value="{{ $subject->id }}">{{ $subject->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('subject_id') <span
-                                        class="text-danger">{{ $message }}</span> @enderror
+                                    @error('subject_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                             @endif
 
-                            {{-- Koordinator tanlansa - Sinflar (ko'p tanlov) --}}
                             @if($user_type == \App\Models\Users::TYPE_KOORDINATOR)
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Sinflar <span class="text-danger">*</span></label>
-                                    <select wire:model="classes_id"
-                                        multiple
-                                        class="form-control @error('classes_id') is-invalid @enderror"
-                                        style="height: 120px;">
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded border">
+                                    <label class="form-label small fw-bold text-warning">Sinflarni biriktirish <span class="text-danger">*</span></label>
+                                    <select wire:model="classes_id" multiple class="form-select search-input @error('classes_id') is-invalid @enderror" style="height: 120px;">
                                         @foreach(\App\Models\Classes::all() as $class)
                                         <option value="{{ $class->id }}">{{ $class->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('classes_id') <span
-                                        class="text-danger">{{ $message }}</span> @enderror
-                                    <small class="form-text text-muted">
-                                        <i class="ri-information-line"></i> Bir nechta sinfni tanlash uchun Ctrl
-                                        tugmasini bosib turing
-                                    </small>
+                                    <small class="text-muted d-block mt-1"><i class="ri-information-line"></i> Ctrl tugmasini bosib bir nechta tanlash mumkin</small>
+                                    @error('classes_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                             @endif
-
-                            @if(!$user_type || ($user_type != \App\Models\Users::TYPE_TEACHER && $user_type != \App\Models\Users::TYPE_KOORDINATOR))
-                            <div class="col-md-6"></div> {{-- Bo'sh joy --}}
-                            @endif
-
-
-                            {{-- @if(!$isEdit)--}}
-                            {{-- <div class="col-md-6">--}}
-                            {{-- <div class="form-group">--}}
-                            {{-- <label>Parol <span class="text-danger">*</span></label>--}}
-                            {{-- <input type="password"--}}
-                            {{-- wire:model="password"--}}
-                            {{-- autocomplete="new-password"--}}
-                            {{-- class="form-control @error('password') is-invalid @enderror">--}}
-                            {{-- @error('password') <span class="text-danger">{{ $message }}</span> @enderror--}}
-                            {{-- </div>--}}
-                            {{-- </div>--}}
-                            {{-- @else--}}
-                            {{-- <div class="col-md-6">--}}
-                            {{-- <div class="form-group">--}}
-                            {{-- <label>Yangi parol (bo'sh qoldiring, agar o'zgartirmoqchi--}}
-                            {{-- bo'lmasangiz)</label>--}}
-                            {{-- <input type="password"--}}
-                            {{-- wire:model="password"--}}
-                            {{-- autocomplete="new-password"--}}
-                            {{-- class="form-control @error('password') is-invalid @enderror">--}}
-                            {{-- @error('password') <span class="text-danger">{{ $message }}</span> @enderror--}}
-                            {{-- </div>--}}
-                            {{-- </div>--}}
-                            {{-- @endif--}}
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" wire:click="closeModal" class="btn btn-secondary">Bekor qilish
+                    <div class="modal-footer border-top-0 pt-0 pb-4 pe-4">
+                        <button type="button" wire:click="closeModal" class="btn btn-light px-4">Bekor qilish</button>
+                        <button type="submit" class="btn btn-yuksalish px-4 shadow-sm">
+                            <i class="ri-save-line me-1"></i> {{ $isEdit ? 'Yangilash' : 'Saqlash' }}
                         </button>
-                        <button type="submit"
-                            class="btn btn-primary">{{ $isEdit ? 'Yangilash' : 'Saqlash' }}</button>
                     </div>
                 </form>
             </div>
@@ -429,62 +352,76 @@
     </div>
     @endif
 
-    <!-- View Modal -->
     @if($showViewModal && $viewingUsrs)
-    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Hodim ma'lumotlari</h5>
-                    <button type="button" wire:click="closeViewModal" class="close">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Username:</strong> {{ $viewingUsrs->name }}</p>
-                            <p><strong>Ism:</strong> {{ $viewingUsrs->first_name }}</p>
-                            <p><strong>Familya:</strong> {{ $viewingUsrs->last_name }}</p>
-                            <p><strong>Email:</strong> {{ $viewingUsrs->email }}</p>
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-0">
+                    <div class="p-4 text-center text-white" style="background-color: var(--yuksalish-orange); border-radius: 8px 8px 0 0;">
+                        <div class="avatar bg-white text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
+                            {{ substr($viewingUsrs->first_name, 0, 1) }}
                         </div>
-                        <div class="col-md-6">
-                            <p><strong>Telefon:</strong> {{ $viewingUsrs->phone ?? 'N/A' }}</p>
-                            <p><strong>Fan:</strong> {{ $viewingUsrs->subject->name ?? 'N/A' }}</p>
-                            <p><strong>Status:</strong>
-                                @if($viewingUsrs->status == \App\Models\Users::STATUS_ACTIVE)
-                                <span class="badge badge-success">Faol</span>
-                                @else
-                                <span class="badge badge-danger">Nofaol</span>
-                                @endif
-                            </p>
-                            <p><strong>Ro'yxatdan o'tgan
-                                    sana:</strong> {{ $viewingUsrs->created_at->format('d.m.Y H:i') }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Hodim turi:</strong>
+                        <h5 class="fw-bold mb-1">{{ $viewingUsrs->first_name }} {{ $viewingUsrs->last_name }}</h5>
+                        <p class="mb-0 opacity-75">@ {{ $viewingUsrs->name }}</p>
+                    </div>
+
+                    <div class="p-4">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Lavozim</small>
                                 @if($viewingUsrs->user_type == \App\Models\Users::TYPE_TEACHER)
-                                <span class="badge badge-info">O'qituvchi</span>
+                                <span class="badge badge-teacher">O'qituvchi</span>
                                 @elseif($viewingUsrs->user_type == \App\Models\Users::TYPE_KOORDINATOR)
-                                <span class="badge badge-warning">Koordinator</span>
+                                <span class="badge badge-koordinator">Koordinator</span>
                                 @endif
-                            </p>
-                        </div>
-                        <div class="col-md-6">
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted d-block">Status</small>
+                                @if($viewingUsrs->status == \App\Models\Users::STATUS_ACTIVE)
+                                <span class="text-success fw-bold"><i class="ri-checkbox-circle-fill"></i> Faol</span>
+                                @else
+                                <span class="text-danger fw-bold"><i class="ri-close-circle-fill"></i> Nofaol</span>
+                                @endif
+                            </div>
+
+                            <div class="col-12 border-bottom pb-2 my-2"></div>
+
+                            <div class="col-12">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="ri-mail-line text-muted me-2"></i>
+                                    <span>{{ $viewingUsrs->email }}</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="ri-phone-line text-muted me-2"></i>
+                                    <span>{{ $viewingUsrs->phone ?? 'Kiritilmagan' }}</span>
+                                </div>
+                            </div>
+
                             @if($viewingUsrs->user_type == \App\Models\Users::TYPE_TEACHER)
-                            <p><strong>Fan:</strong> {{ $viewingUsrs->subject->name ?? 'N/A' }}</p>
-                            @elseif($viewingUsrs->user_type == \App\Models\Users::TYPE_KOORDINATOR && $viewingUsrs->classes_id)
-                            @php
-                            $classIds = json_decode($viewingUsrs->classes_id, true);
-                            $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
-                            @endphp
-                            <p><strong>Sinflar:</strong> {{ implode(', ', $classes) }}</p>
+                            <div class="col-12 bg-light p-3 rounded">
+                                <small class="text-muted d-block mb-1">Biriktirilgan fan:</small>
+                                <span class="fw-bold text-dark">{{ $viewingUsrs->subject->name ?? 'Mavjud emas' }}</span>
+                            </div>
+                            @elseif($viewingUsrs->user_type == \App\Models\Users::TYPE_KOORDINATOR)
+                            <div class="col-12 bg-light p-3 rounded">
+                                <small class="text-muted d-block mb-1">Biriktirilgan sinflar:</small>
+                                @if($viewingUsrs->classes_id)
+                                @php
+                                $classIds = json_decode($viewingUsrs->classes_id, true);
+                                $classes = \App\Models\Classes::whereIn('id', $classIds)->pluck('name')->toArray();
+                                @endphp
+                                <span class="fw-bold text-dark">{{ implode(', ', $classes) }}</span>
+                                @else
+                                <span class="text-muted">Sinflar yo'q</span>
+                                @endif
+                            </div>
                             @endif
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" wire:click="closeViewModal" class="btn btn-secondary">Yopish</button>
+
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" wire:click="closeViewModal" class="btn btn-light w-100">Yopish</button>
+                    </div>
                 </div>
             </div>
         </div>
