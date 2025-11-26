@@ -1,54 +1,80 @@
 <div>
-    <!-- Custom CSS for Yuksalish Brand -->
     <style>
         :root {
-            --yuksalish-orange: #F58025; /* Logo rangi */
+            --yuksalish-orange: #F58025;
             --yuksalish-dark: #212529;
-            --yuksalish-gray: #f8f9fa;
         }
 
-        /* Buttons */
+        /* Knopka */
         .btn-yuksalish {
             background-color: var(--yuksalish-orange);
             color: white;
             border: none;
             font-weight: 500;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            white-space: nowrap;
         }
         .btn-yuksalish:hover {
             background-color: #d96d1b;
             color: white;
         }
 
-        /* Jadval Headeri */
+        /* SEARCH BOX (Yangi dizayn) */
+        .search-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            height: 45px;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--yuksalish-orange);
+            box-shadow: 0 0 0 4px rgba(245, 128, 37, 0.1);
+        }
+
+        .search-box i {
+            color: #999;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Sarlavha */
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--yuksalish-dark);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        /* Jadval */
         .table-yuksalish thead th {
             background-color: var(--yuksalish-dark);
             color: white;
-            border: none;
+            padding: 15px;
             font-weight: 500;
-            padding-top: 15px;
-            padding-bottom: 15px;
+            border: none;
         }
 
-        /* Search input */
-        .search-input:focus {
-            border-color: var(--yuksalish-orange);
-            box-shadow: 0 0 0 0.2rem rgba(245, 128, 37, 0.25);
+        /* Badge */
+        .badge-class {
+            background-color: var(--yuksalish-orange);
+            color: white;
+            font-size: 0.85rem;
         }
 
-        /* Mobile Card Design */
+        /* Mobile Card */
         .mobile-card {
             border-left: 5px solid var(--yuksalish-orange);
             background: white;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border-radius: 8px;
-        }
-
-        /* Sinf uchun badge */
-        .badge-class {
-            background-color: #F58025; /* Orange */
-            color: white;
-            font-size: 0.85rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
         }
         
         /* Pagination */
@@ -62,98 +88,103 @@
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <!-- Header -->
-                    <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-                        <h4 class="card-title mb-0 fw-bold text-dark">
-                            <i class="ri-graduation-cap-line" style="color: var(--yuksalish-orange);"></i> O'quvchilar ro'yxati
-                        </h4>
-                        
-                        <div class="d-flex gap-2 w-100 w-md-auto">
-                           <button wire:click="createStudent" class="btn btn-yuksalish w-100 w-md-auto">
-                                <i class="ri-add-line me-1"></i> Yangi O'quvchi
-                           </button>
-                        </div>
-                    </div>
-
-                    <div class="card-body">
-                        <!-- Alert -->
-                        @if (session()->has('message'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('message') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                    
+                    <div class="card-header bg-white py-4">
+                        <div class="row align-items-center g-3">
+                            
+                            <div class="col-12 col-md-auto">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-2 me-2 d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
+                                        <i class="ri-graduation-cap-line" style="color: var(--yuksalish-orange); font-size: 1.2rem;"></i>
+                                    </div>
+                                    <h4 class="page-title">O'quvchilar ro'yxati</h4>
+                                </div>
                             </div>
-                        @endif
 
-                        <!-- Search -->
-                        <div class="row mb-4">
-                            <div class="col-md-6 col-lg-4">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0 text-muted">
-                                        <i class="ri-search-line"></i>
-                                    </span>
+                            <div class="col-12 col-md">
+                                <div class="search-box">
+                                    <i class="ri-search-line"></i>
                                     <input wire:model.live.debounce.300ms="search" 
                                            type="text" 
-                                           class="form-control border-start-0 ps-0 search-input"
+                                           class="form-control border-0 shadow-none bg-transparent p-0" 
                                            placeholder="Qidirish (Ism, Sinf, Email)...">
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- DESKTOP TABLE -->
+                            <div class="col-12 col-md-auto">
+                                <button wire:click="createStudent" class="btn btn-yuksalish w-100">
+                                    <i class="ri-add-line me-2"></i> Yangi O'quvchi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        @if (session()->has('message'))
+                            <div class="p-3">
+                                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
+                                    <i class="ri-checkbox-circle-line me-2"></i> {{ session('message') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="table-responsive d-none d-md-block">
-                            <table class="table table-hover align-middle table-yuksalish">
+                            <table class="table table-hover align-middle table-yuksalish mb-0">
                                 <thead>
                                 <tr>
-                                    <th class="rounded-start text-center" style="width: 50px;">ID</th>
+                                    <th class="text-center" style="width: 60px;">ID</th>
                                     <th>O'quvchi</th>
                                     <th>Sinfi</th>
                                     <th>Kontakt</th>
                                     <th>Status</th>
-                                    <th class="text-end rounded-end">Amallar</th>
+                                    <th class="text-end pe-4">Amallar</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 @forelse($students as $student)
                                     <tr>
-                                        <td class="text-center fw-bold text-muted">{{ $student->id }}</td>
+                                        <td class="text-center fw-bold text-secondary">{{ $student->id }}</td>
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <span class="fw-bold">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                                <span class="fw-bold text-dark">{{ $student->first_name }} {{ $student->last_name }}</span>
                                                 <small class="text-muted">@ {{ $student->name }}</small>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge badge-class">
+                                            <span class="badge badge-class px-3 py-2 rounded-pill">
                                                 {{ $student->classRelation->name ?? 'N/A' }}
                                             </span>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <span>{{ $student->phone ?? '-' }}</span>
+                                                <span class="text-dark">{{ $student->phone ?? '-' }}</span>
                                                 <small class="text-muted">{{ $student->email }}</small>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Faol</span>
+                                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Faol</span>
                                         </td>
-                                        <td class="text-end">
-                                            <button wire:click="viewStudent({{ $student->id }})" class="btn btn-sm btn-light text-primary" title="Ko'rish">
+                                        <td class="text-end pe-4">
+                                            <button wire:click="viewStudent({{ $student->id }})" class="btn btn-sm btn-light text-primary shadow-sm border me-1">
                                                 <i class="ri-eye-line"></i>
                                             </button>
-                                            <button wire:click="editStudent({{ $student->id }})" class="btn btn-sm btn-light text-warning" title="Tahrirlash">
+                                            <button wire:click="editStudent({{ $student->id }})" class="btn btn-sm btn-light text-warning shadow-sm border me-1">
                                                 <i class="ri-pencil-line"></i>
                                             </button>
-                                            <button wire:click="deleteStudent({{ $student->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-sm btn-light text-danger" title="O'chirish">
+                                            <button wire:click="deleteStudent({{ $student->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-sm btn-light text-danger shadow-sm border">
                                                 <i class="ri-delete-bin-line"></i>
                                             </button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <i class="ri-inbox-line display-4 opacity-25"></i>
-                                            <p class="mt-2">Ma'lumot topilmadi</p>
+                                        <td colspan="6" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="ri-inbox-line display-4 d-block mb-3 opacity-25"></i>
+                                                Ma'lumot topilmadi
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -161,8 +192,7 @@
                             </table>
                         </div>
 
-                        <!-- MOBILE CARDS -->
-                        <div class="d-md-none">
+                        <div class="d-md-none p-3 bg-light">
                             @forelse($students as $student)
                                 <div class="mobile-card p-3">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -188,14 +218,14 @@
                                     </div>
 
                                     <div class="d-flex gap-2 border-top pt-2">
-                                        <button wire:click="viewStudent({{ $student->id }})" class="btn btn-sm btn-light flex-fill text-primary">
-                                            <i class="ri-eye-line"></i> Ko'rish
+                                        <button wire:click="viewStudent({{ $student->id }})" class="btn btn-light border flex-fill text-primary fw-bold">
+                                            Ko'rish
                                         </button>
-                                        <button wire:click="editStudent({{ $student->id }})" class="btn btn-sm btn-light flex-fill text-warning">
-                                            <i class="ri-pencil-line"></i>
+                                        <button wire:click="editStudent({{ $student->id }})" class="btn btn-light border flex-fill text-warning fw-bold">
+                                            Tahrirlash
                                         </button>
-                                        <button wire:click="deleteStudent({{ $student->id }})" onclick="return confirm('O\'chirilsinmi?')" class="btn btn-sm btn-light flex-fill text-danger">
-                                            <i class="ri-delete-bin-line"></i>
+                                        <button wire:click="deleteStudent({{ $student->id }})" onclick="return confirm('O\'chirilsinmi?')" class="btn btn-light border flex-fill text-danger fw-bold">
+                                            O'chirish
                                         </button>
                                     </div>
                                 </div>
@@ -204,8 +234,7 @@
                             @endforelse
                         </div>
 
-                        <!-- Pagination -->
-                        <div class="mt-4">
+                        <div class="mt-4 px-3 pb-3">
                             {{ $students->links() }}
                         </div>
                     </div>
@@ -214,7 +243,6 @@
         </div>
     </div>
 
-    <!-- CREATE / EDIT MODAL -->
     @if($showModal)
         <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -233,21 +261,18 @@
                     <form wire:submit.prevent="saveStudent" autocomplete="off">
                         <div class="modal-body">
                             <div class="row g-3">
-                                <!-- Ism -->
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">Ism <span class="text-danger">*</span></label>
                                     <input type="text" wire:model.live="first_name" class="form-control search-input @error('first_name') is-invalid @enderror">
                                     @error('first_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <!-- Familya -->
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">Familya <span class="text-danger">*</span></label>
                                     <input type="text" wire:model.live="last_name" class="form-control search-input @error('last_name') is-invalid @enderror">
                                     @error('last_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <!-- Username -->
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">Username <span class="text-danger">*</span></label>
                                     <div class="input-group">
@@ -259,7 +284,6 @@
                                     @error('name') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                                 </div>
 
-                                <!-- Sinfi -->
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">Sinfi <span class="text-danger">*</span></label>
                                     <select wire:model="classes_id" class="form-select search-input @error('classes_id') is-invalid @enderror">
@@ -271,14 +295,12 @@
                                     @error('classes_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <!-- Email -->
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">Email <span class="text-danger">*</span></label>
                                     <input type="email" wire:model="email" class="form-control search-input @error('email') is-invalid @enderror">
                                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <!-- Telefon -->
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-muted">Telefon</label>
                                     <input type="text" wire:model="phone" class="form-control search-input @error('phone') is-invalid @enderror" placeholder="+998 90 123 45 67">
@@ -309,13 +331,11 @@
         </div>
     @endif
 
-    <!-- VIEW MODAL -->
     @if($showViewModal && $viewingStudent)
         <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg">
                     <div class="modal-body p-0">
-                        <!-- Header -->
                         <div class="p-4 text-center text-white" style="background-color: var(--yuksalish-orange); border-radius: 8px 8px 0 0;">
                             <div class="avatar bg-white text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
                                 {{ substr($viewingStudent->first_name, 0, 1) }}
@@ -324,7 +344,6 @@
                             <p class="mb-0 opacity-75">@ {{ $viewingStudent->name }}</p>
                         </div>
                         
-                        <!-- Body -->
                         <div class="p-4">
                             <div class="row g-3">
                                 <div class="col-6">
