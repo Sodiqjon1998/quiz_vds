@@ -1,277 +1,380 @@
 <div>
-    {{-- Success Message --}}
-    @if (session()->has('message'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-        <i class="ri-checkbox-circle-line me-2 fs-5"></i>
-        <strong>Barakalla!</strong> {{ session('message') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+    {{-- MathJax Script (Formulalar uchun) --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.hook('message.processed', () => {
+                if (typeof MathJax !== 'undefined') {
+                    MathJax.typesetPromise();
+                }
+            });
+        });
+    </script>
 
-    @if (session()->has('error'))
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-        <i class="ri-error-warning-line me-2 fs-5"></i>
-        <strong>Xatolik!</strong> {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+    <style>
+        :root {
+            --yuksalish-orange: #F58025;
+            --yuksalish-dark: #212529;
+            --yuksalish-gray: #f8f9fa;
+        }
 
-    {{-- Header --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-gradient-primary text-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="mb-1 fw-bold">
-                        <i class="ri-file-list-3-line me-2"></i>
-                        Quizlar Ro'yxati
-                    </h4>
-                    <p class="text-white-50 small mb-0">
-                        <i class="ri-information-line me-1"></i>
-                        Barcha quizlarni yaratish va boshqarish
-                    </p>
-                </div>
-                <button wire:click="createQuiz" class="btn btn-light btn-lg shadow-sm" type="button">
-                    <i class="ri-add-circle-line me-2"></i> Yangi Quiz
-                </button>
-            </div>
-        </div>
+        /* Asosiy tugmalar */
+        .btn-yuksalish {
+            background-color: var(--yuksalish-orange);
+            color: white;
+            border: none;
+            font-weight: 500;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
 
-        <div class="card-body p-4">
-            {{-- Search --}}
-            <div class="row mb-4">
-                <div class="col-md-8">
-                    <div class="input-group shadow-sm">
-                        <span class="input-group-text bg-white border-end-0">
-                            <i class="ri-search-line text-primary"></i>
-                        </span>
-                        <input type="text" wire:model.live="search"
-                            class="form-control border-start-0 ps-0"
-                            placeholder="Quiz nomini qidiring...">
-                    </div>
-                </div>
-                <div class="col-md-4 text-end">
-                    <div class="badge bg-primary-subtle text-primary fs-6 p-3">
-                        <i class="ri-database-2-line me-2"></i>
-                        Jami: <strong>{{ $quizzes->total() }}</strong> ta quiz
-                    </div>
-                </div>
-            </div>
+        .btn-yuksalish:hover {
+            background-color: #d96d1b;
+            color: white;
+        }
 
-            {{-- Table --}}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center" style="width: 5%">ID</th>
-                            <th style="width: 20%">Quiz nomi</th>
-                            <th class="text-center" style="width: 10%">Fan</th>
-                            <th class="text-center" style="width: 10%">Sinf</th>
-                            <th class="text-center" style="width: 12%">Savollar</th>
-                            <th class="text-center" style="width: 12%">Attachments</th>
-                            <th style="width: 10%">Yaratuvchi</th>
-                            <th class="text-center" style="width: 8%">Holat</th>
-                            <th class="text-center" style="width: 13%">Amallar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($quizzes as $quiz)
-                        <tr>
-                            <td class="text-center fw-bold text-muted">#{{ $quiz->id }}</td>
-                            <td>
+        /* Action Buttons (Kichik) */
+        .btn-action-edit {
+            color: #ffc107;
+            background: #fff3cd;
+            border: none;
+        }
+
+        .btn-action-delete {
+            color: #dc3545;
+            background: #f8d7da;
+            border: none;
+        }
+
+        .btn-action-view {
+            color: #0dcaf0;
+            background: #cff4fc;
+            border: none;
+        }
+
+        .btn-action-primary {
+            color: var(--yuksalish-orange);
+            background: #fff0e6;
+            border: none;
+        }
+
+        .btn-action-edit:hover,
+        .btn-action-delete:hover,
+        .btn-action-view:hover,
+        .btn-action-primary:hover {
+            filter: brightness(0.95);
+        }
+
+        /* SEARCH BOX (Yangi dizayn) */
+        .search-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            height: 45px;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--yuksalish-orange);
+            box-shadow: 0 0 0 4px rgba(245, 128, 37, 0.1);
+        }
+
+        .search-box i {
+            color: #999;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Input ramkasiz */
+        .form-control-plaintext {
+            border: none;
+            outline: none;
+            width: 100%;
+        }
+
+        /* Sarlavha */
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--yuksalish-dark);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        /* Jadval */
+        .table-yuksalish thead th {
+            background-color: var(--yuksalish-dark);
+            color: white;
+            padding: 15px;
+            font-weight: 500;
+            border: none;
+        }
+
+        /* Mobile Card */
+        .mobile-card {
+            border-left: 5px solid var(--yuksalish-orange);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        /* Badges */
+        .badge-subject {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .badge-class {
+            background-color: var(--yuksalish-orange);
+            color: white;
+        }
+
+        /* Pagination */
+        .page-item.active .page-link {
+            background-color: var(--yuksalish-orange);
+            border-color: var(--yuksalish-orange);
+        }
+
+        .page-link {
+            color: var(--yuksalish-orange);
+        }
+
+        /* Modal Header Fix */
+        .modal-header {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .modal-footer {
+            border-top: none;
+        }
+
+        /* File Upload Area */
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: var(--yuksalish-orange);
+            background: #fffbf8;
+        }
+    </style>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+
+                    <div class="card-header bg-white py-4">
+                        <div class="row align-items-center g-3">
+                            <div class="col-12 col-md-auto">
                                 <div class="d-flex align-items-center">
-                                    <div
-                                        class="avatar avatar-sm bg-primary-subtle rounded-circle me-3 d-flex align-items-center justify-content-center"
-                                        style="width: 40px; height: 40px;">
-                                        <i class="ri-file-list-3-line text-primary fs-5"></i>
+                                    <div class="bg-light rounded-circle p-2 me-2 d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
+                                        <i class="ri-file-list-3-line" style="color: var(--yuksalish-orange); font-size: 1.2rem;"></i>
                                     </div>
-                                    <div>
-                                        <strong class="d-block">{{ $quiz->name }}</strong>
-                                        <small class="text-muted">{{ $quiz->created_at->format('d.m.Y H:i') }}</small>
-                                    </div>
+                                    <h4 class="page-title">Quizlar Ro'yxati</h4>
                                 </div>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-info-subtle text-info px-3 py-2">
-                                    <i class="ri-book-line me-1"></i>
-                                    {{ $quiz->subject->name ?? 'N/A' }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-success-subtle text-success px-3 py-2">
-                                    <i class="ri-graduation-cap-line me-1"></i>
-                                    {{ $quiz->class->name ?? 'N/A' }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <button wire:click="manageQuestions({{ $quiz->id }})"
-                                    class="btn btn-sm btn-primary shadow-sm">
-                                    <i class="ri-question-line me-1"></i>
-                                    {{ $quiz->questions_count }} ta
-                                </button>
-                            </td>
-                            <td class="text-center">
-                                <button wire:click="manageAttachments({{ $quiz->id }})"
-                                    class="btn btn-sm btn-warning shadow-sm">
-                                    <i class="ri-attachment-2 me-1"></i>
-                                    Fayllar
-                                </button>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar avatar-xs bg-secondary-subtle rounded-circle me-2">
-                                        <i class="ri-user-line text-secondary"></i>
-                                    </div>
-                                    <small>{{ $quiz->creator->name ?? 'N/A' }}</small>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                @if($quiz->status == \App\Models\Teacher\Quiz::STATUS_ACTIVE)
-                                <span class="badge bg-success px-3 py-2">
-                                    <i class="ri-checkbox-circle-line me-1"></i>Faol
-                                </span>
-                                @else
-                                <span class="badge bg-secondary px-3 py-2">
-                                    <i class="ri-close-circle-line me-1"></i>Nofaol
-                                </span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <button wire:click="viewQuiz({{ $quiz->id }})"
-                                        class="btn btn-sm btn-info"
-                                        title="Ko'rish">
-                                        <i class="ri-eye-line"></i>
-                                    </button>
-                                    <button wire:click="editQuiz({{ $quiz->id }})"
-                                        class="btn btn-sm btn-warning"
-                                        title="Tahrirlash">
-                                        <i class="ri-pencil-line"></i>
-                                    </button>
-                                    <button wire:click="deleteQuiz({{ $quiz->id }})"
-                                        onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')"
-                                        class="btn btn-sm btn-danger"
-                                        title="O'chirish">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" class="text-center py-5">
-                                <div class="text-center py-5">
-                                    <i class="ri-inbox-line text-muted" style="font-size: 80px; opacity: 0.2;"></i>
-                                    <h5 class="text-muted mt-3 mb-2">Hozircha quizlar mavjud emas</h5>
-                                    <p class="text-muted mb-3">Yangi quiz qo'shish uchun yuqoridagi tugmani bosing</p>
-                                    <button wire:click="createQuiz" class="btn btn-primary">
-                                        <i class="ri-add-line me-1"></i> Birinchi Quizni Yaratish
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Pagination --}}
-            <div class="mt-4">
-                {{ $quizzes->links() }}
-            </div>
-        </div>
-    </div>
-
-    {{-- Create/Edit Quiz Modal --}}
-    @if($showModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-gradient-primary text-white border-0">
-                    <h5 class="modal-title fw-bold">
-                        <i class="ri-file-list-3-line me-2"></i>
-                        {{ $isEdit ? 'Quiz tahrirlash' : 'Yangi Quiz qo\'shish' }}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" wire:click="closeModal"></button>
-                </div>
-                <form wire:submit.prevent="saveQuiz" autocomplete="off">
-                    <div class="modal-body p-4">
-                        <div class="row g-3">
-                            {{-- Quiz nomi --}}
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">
-                                    <i class="ri-file-text-line me-1"></i>
-                                    Quiz nomi <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" wire:model.live="name" autocomplete="off"
-                                    class="form-control form-control-lg @error('name') is-invalid @enderror"
-                                    placeholder="Masalan: Matematika Test 1">
-                                @error('name')
-                                <div class="invalid-feedback">
-                                    <i class="ri-error-warning-line me-1"></i>{{ $message }}
-                                </div>
-                                @enderror
                             </div>
 
-                            {{-- ✅ FAN AVTOMATIK - Faqat ko'rsatish uchun --}}
-                            <div class="col-12">
-                                <div class="alert alert-info border-0 shadow-sm">
-                                    <div class="d-flex align-items-center">
-                                        <i class="ri-book-line fs-3 me-3"></i>
-                                        <div>
-                                            <strong>Fan:</strong>
-                                            <span class="badge bg-primary ms-2 fs-6 px-3 py-2">
-                                                {{ Auth::user()->subject->name ?? 'Noma\'lum' }}
-                                            </span>
+                            <div class="col-12 col-md">
+                                <div class="search-box">
+                                    <i class="ri-search-line"></i>
+                                    <input wire:model.live.debounce.300ms="search"
+                                        type="text"
+                                        class="form-control border-0 shadow-none bg-transparent p-0"
+                                        placeholder="Quiz nomini qidiring...">
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-auto">
+                                <button wire:click="createQuiz" class="btn btn-yuksalish w-100">
+                                    <i class="ri-add-circle-line me-2"></i> Yangi Quiz
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        @if (session()->has('message'))
+                        <div class="p-3">
+                            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
+                                <i class="ri-checkbox-circle-line me-2"></i> {{ session('message') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="table-responsive d-none d-md-block">
+                            <table class="table table-hover align-middle table-yuksalish mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 50px;">ID</th>
+                                        <th>Quiz nomi</th>
+                                        <th class="text-center">Fan / Sinf</th>
+                                        <th class="text-center">Tarkib</th>
+                                        <th class="text-center">Holat</th>
+                                        <th class="text-center" style="width: 180px;">Amallar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($quizzes as $quiz)
+                                    <tr>
+                                        <td class="text-center fw-bold text-secondary">#{{ $quiz->id }}</td>
+                                        <td>
+                                            <div class="fw-bold text-dark">{{ $quiz->name }}</div>
+                                            <small class="text-muted">{{ $quiz->created_at->format('d.m.Y H:i') }}</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge badge-subject mb-1">{{ $quiz->subject->name ?? 'N/A' }}</span>
                                             <br>
-                                            <small class="text-muted">Bu quiz sizning faningiz uchun yaratiladi</small>
-                                        </div>
+                                            <span class="badge badge-class">{{ $quiz->class->name ?? 'N/A' }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <button wire:click="manageQuestions({{ $quiz->id }})" class="btn btn-sm btn-action-primary mb-1 w-100 text-start px-3">
+                                                <i class="ri-question-line me-1"></i> {{ $quiz->questions_count }} Savol
+                                            </button>
+                                            <button wire:click="manageAttachments({{ $quiz->id }})" class="btn btn-sm btn-action-edit w-100 text-start px-3">
+                                                <i class="ri-attachment-2 me-1"></i> Fayllar
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($quiz->status == \App\Models\Teacher\Quiz::STATUS_ACTIVE)
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Faol</span>
+                                            @else
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">Nofaol</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button wire:click="viewQuiz({{ $quiz->id }})" class="btn btn-sm btn-light text-primary border shadow-sm" title="Ko'rish">
+                                                    <i class="ri-eye-line"></i>
+                                                </button>
+                                                <button wire:click="editQuiz({{ $quiz->id }})" class="btn btn-sm btn-light text-warning border shadow-sm" title="Tahrirlash">
+                                                    <i class="ri-pencil-line"></i>
+                                                </button>
+                                                <button wire:click="deleteQuiz({{ $quiz->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-sm btn-light text-danger border shadow-sm" title="O'chirish">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">Ma'lumot topilmadi</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-md-none p-3 bg-light">
+                            @forelse($quizzes as $quiz)
+                            <div class="mobile-card p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="fw-bold mb-0 text-dark">{{ $quiz->name }}</h6>
+                                        <small class="text-muted">#{{ $quiz->id }} | {{ $quiz->created_at->format('d.m.Y') }}</small>
+                                    </div>
+                                    @if($quiz->status == \App\Models\Teacher\Quiz::STATUS_ACTIVE)
+                                    <span class="badge bg-success bg-opacity-10 text-success">Faol</span>
+                                    @else
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">Nofaol</span>
+                                    @endif
+                                </div>
+
+                                <div class="mb-3 d-flex gap-2">
+                                    <span class="badge badge-subject flex-fill">{{ $quiz->subject->name ?? 'N/A' }}</span>
+                                    <span class="badge badge-class flex-fill">{{ $quiz->class->name ?? 'N/A' }}</span>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <button wire:click="manageQuestions({{ $quiz->id }})" class="btn btn-sm btn-light border w-100 text-primary">
+                                            <i class="ri-question-line"></i> {{ $quiz->questions_count }} Savol
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button wire:click="manageAttachments({{ $quiz->id }})" class="btn btn-sm btn-light border w-100 text-warning">
+                                            <i class="ri-attachment-2"></i> Fayllar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2 border-top pt-2">
+                                    <button wire:click="viewQuiz({{ $quiz->id }})" class="btn btn-light border flex-fill text-primary"><i class="ri-eye-line"></i></button>
+                                    <button wire:click="editQuiz({{ $quiz->id }})" class="btn btn-light border flex-fill text-warning"><i class="ri-pencil-line"></i></button>
+                                    <button wire:click="deleteQuiz({{ $quiz->id }})" onclick="return confirm('O\'chirish?')" class="btn btn-light border flex-fill text-danger"><i class="ri-delete-bin-line"></i></button>
+                                </div>
+                            </div>
+                            @empty
+                            <div class="text-center py-5 text-muted">Ma'lumot topilmadi</div>
+                            @endforelse
+                        </div>
+
+                        <div class="mt-4 px-3 pb-3">
+                            {{ $quizzes->links() }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 1. CREATE/EDIT QUIZ MODAL --}}
+    @if($showModal)
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-dark">
+                        @if($isEdit) <i class="ri-pencil-line text-warning me-2"></i>Quizni Tahrirlash
+                        @else <i class="ri-add-circle-line" style="color: var(--yuksalish-orange);"></i> Yangi Quiz
+                        @endif
+                    </h5>
+                    <button type="button" wire:click="closeModal" class="btn-close"></button>
+                </div>
+                <form wire:submit.prevent="saveQuiz">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted">Quiz nomi <span class="text-danger">*</span></label>
+                                <input type="text" wire:model.live="name" class="form-control search-input @error('name') is-invalid @enderror" placeholder="Masalan: Matematika 1-chorak">
+                                @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <div class="alert alert-light border d-flex align-items-center">
+                                    <i class="ri-book-line text-primary me-3 fs-4"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Sizning Faningiz:</small>
+                                        <strong>{{ Auth::user()->subject->name ?? 'Aniqlanmadi' }}</strong>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- Sinf --}}
                             <div class="col-12">
-                                <label class="form-label fw-semibold">
-                                    <i class="ri-graduation-cap-line me-1"></i>
-                                    Sinf <span class="text-danger">*</span>
-                                </label>
-                                <select wire:model="classes_id"
-                                    class="form-select form-select-lg @error('classes_id') is-invalid @enderror">
-                                    <option value="">Sinfni tanlang</option>
+                                <label class="form-label small fw-bold text-muted">Sinf <span class="text-danger">*</span></label>
+                                <select wire:model="classes_id" class="form-select search-input @error('classes_id') is-invalid @enderror">
+                                    <option value="">Tanlang</option>
                                     @foreach($classes as $class)
                                     <option value="{{ $class->id }}">{{ $class->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('classes_id')
-                                <div class="invalid-feedback">
-                                    <i class="ri-error-warning-line me-1"></i>{{ $message }}
-                                </div>
-                                @enderror
+                                @error('classes_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-
-                            @if(!$isEdit)
-                            <div class="col-12">
-                                <div class="alert alert-success border-0 shadow-sm">
-                                    <div class="d-flex align-items-start">
-                                        <i class="ri-lightbulb-line fs-4 me-3 mt-1"></i>
-                                        <div>
-                                            <strong>Eslatma:</strong> Quiz yaratilgandan so'ng unga savollar
-                                            qo'shishingiz mumkin.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
                         </div>
                     </div>
-                    <div class="modal-footer border-0 bg-light">
-                        <button type="button" wire:click="closeModal" class="btn btn-secondary btn-lg">
-                            <i class="ri-close-line me-1"></i> Bekor qilish
-                        </button>
-                        <button type="submit" class="btn btn-primary btn-lg shadow">
-                            <i class="ri-save-line me-1"></i>
-                            {{ $isEdit ? 'Yangilash' : 'Saqlash' }}
-                        </button>
+                    <div class="modal-footer">
+                        <button type="button" wire:click="closeModal" class="btn btn-light">Bekor qilish</button>
+                        <button type="submit" class="btn btn-yuksalish">{{ $isEdit ? 'Yangilash' : 'Saqlash' }}</button>
                     </div>
                 </form>
             </div>
@@ -279,198 +382,246 @@
     </div>
     @endif
 
-    {{-- Attachment Modal (YANGI) --}}
-    @if($showAttachmentModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); z-index: 1070;">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-gradient-warning text-white border-0">
-                    <h5 class="modal-title fw-bold">
-                        <i class="ri-attachment-2 me-2"></i>
-                        Attachments - Fayllar Boshqaruvi
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white"
-                        wire:click="closeAttachmentModal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    {{-- Yangi Attachment qo'shish formi --}}
-                    <div class="card border-warning mb-4">
-                        <div class="card-header bg-warning-subtle">
-                            <h6 class="mb-0 fw-bold">
-                                <i class="ri-add-circle-line me-2"></i>
-                                Yangi Fayl Yuklash
-                            </h6>
+    {{-- 2. QUESTIONS MANAGER MODAL --}}
+    @if($showQuestionsModal && $currentQuiz)
+    {{-- Z-INDEX 2000 ga o'zgartirildi --}}
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.6); z-index: 2000; backdrop-filter: blur(3px);" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" style="margin-top: 20px;"> {{-- margin-top qo'shildi --}}
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+
+                <div class="modal-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column">
+                        <h5 class="modal-title fw-bold text-dark mb-1 d-flex align-items-center">
+                            <i class="ri-question-answer-line me-2" style="color: var(--yuksalish-orange);"></i>
+                            {{ $currentQuiz->name }}
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <span class="badge badge-subject d-flex align-items-center">
+                                <i class="ri-book-line me-1"></i> {{ $currentQuiz->subject->name }}
+                            </span>
+                            <span class="badge badge-class d-flex align-items-center">
+                                <i class="ri-graduation-cap-line me-1"></i> {{ $currentQuiz->class->name }}
+                            </span>
                         </div>
-                        <div class="card-body">
-                            <form wire:submit.prevent="saveAttachment">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold">
-                                            <i class="ri-calendar-line me-1"></i>
-                                            Sana <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="date" wire:model="attachmentDate"
-                                            class="form-control @error('attachmentDate') is-invalid @enderror">
-                                        @error('attachmentDate')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                    </div>
+                    <button type="button" class="btn-close bg-light p-2 rounded-circle" wire:click="closeQuestionsModal"></button>
+                </div>
+
+                {{-- Modal Body qismi (o'zgarishsiz) --}}
+                <div class="modal-body bg-light px-4 pb-4">
+                    {{-- ... bu yerda search va list kodlari turadi ... --}}
+                    {{-- SEARCH & ADD BUTTON --}}
+                    <div class="card border-0 shadow-sm mb-4 mt-3" style="border-radius: 10px;">
+                        <div class="card-body p-3">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md">
+                                    <div class="search-box">
+                                        <i class="ri-search-line"></i>
+                                        <input wire:model.live="questionSearch"
+                                            type="text"
+                                            class="form-control border-0 shadow-none bg-transparent p-0"
+                                            placeholder="Savol matnini qidirish...">
                                     </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold">
-                                            <i class="ri-calendar-line me-1"></i>
-                                            Sana <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="number" wire:model="attachmentNumber"
-                                            class="form-control @error('attachmentNumber') is-invalid @enderror">
-                                        @error('attachmentNumber')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-semibold">
-                                            <i class="ri-time-line me-1"></i>
-                                            Vaqt <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="time" wire:model="attachmentTime"
-                                            class="form-control @error('attachmentTime') is-invalid @enderror">
-                                        @error('attachmentTime')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    {{-- <div class="col-12">--}}
-                                    {{-- <label class="form-label fw-semibold">--}}
-                                    {{-- <i class="ri-hashtag me-1"></i>--}}
-                                    {{-- Raqam / ID <small class="text-muted">(ixtiyoriy)</small>--}}
-                                    {{-- </label>--}}
-                                    {{-- <input type="text" wire:model="attachmentNumber"--}}
-                                    {{-- class="form-control @error('attachmentNumber') is-invalid @enderror"--}}
-                                    {{-- placeholder="Masalan: DOC-2024-001">--}}
-                                    {{-- @error('attachmentNumber')--}}
-                                    {{-- <div class="invalid-feedback">{{ $message }}
-                                </div>--}}
-                                {{-- @enderror--}}
-                                {{-- </div>--}}
-
-                                {{-- <div class="col-12">--}}
-                                {{-- <label class="form-label fw-semibold">--}}
-                                {{-- <i class="ri-file-upload-line me-1"></i>--}}
-                                {{-- Fayl <span class="text-danger">*</span>--}}
-                                {{-- </label>--}}
-                                {{-- <div class="card border-dashed border-2 border-warning">--}}
-                                {{-- <div class="card-body text-center py-4">--}}
-                                {{-- <input type="file" wire:model="attachmentFile"--}}
-                                {{-- class="d-none"--}}
-                                {{-- id="attachmentFileInput"--}}
-                                {{-- accept=".pdf,.doc,.docx,.xls,.xlsx,.zip">--}}
-                                {{-- <label for="attachmentFileInput"--}}
-                                {{-- class="btn btn-outline-warning btn-lg w-100">--}}
-                                {{-- <i class="ri-upload-cloud-line fs-3 d-block mb-2"></i>--}}
-                                {{-- <span>Fayl tanlash</span>--}}
-                                {{-- <small class="d-block text-muted mt-1">PDF, Word, Excel, ZIP--}}
-                                {{-- (Max: 10MB)</small>--}}
-                                {{-- </label>--}}
-                                {{-- </div>--}}
-                                {{-- </div>--}}
-
-                                {{-- @if($attachmentFile)--}}
-                                {{-- <div class="alert alert-success border-0 shadow-sm mt-3">--}}
-                                {{-- <i class="ri-checkbox-circle-line me-2"></i>--}}
-                                {{-- <strong>Fayl--}}
-                                {{-- tanlandi:</strong> {{ $attachmentFile->getClientOriginalName() }}--}}
-                                {{-- </div>--}}
-                                {{-- @endif--}}
-
-                                {{-- @error('attachmentFile')--}}
-                                {{-- <div class="alert alert-danger border-0 mt-2">--}}
-                                {{-- <i class="ri-error-warning-line me-1"></i>{{ $message }}--}}
-                                {{-- </div>--}}
-                                {{-- @enderror--}}
-                                {{-- </div>--}}
-
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-warning btn-lg shadow w-100">
-                                        <span wire:loading.remove wire:target="saveAttachment">
-                                            <i class="ri-save-line me-1"></i>Attachment Saqlash
-                                        </span>
-                                        <span wire:loading wire:target="saveAttachment">
-                                            <span class="spinner-border spinner-border-sm me-2"></span>
-                                            Yuklanmoqda...
-                                        </span>
+                                </div>
+                                <div class="col-md-auto">
+                                    <button wire:click="createQuestion" class="btn btn-yuksalish w-100">
+                                        <i class="ri-add-line me-1"></i> Yangi Savol
                                     </button>
                                 </div>
+                            </div>
                         </div>
-                        </form>
+                    </div>
+
+                    {{-- QUESTIONS LIST --}}
+                    <div class="row g-3">
+                        @forelse($this->questions as $index => $question)
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm position-relative" style="border-radius: 10px; overflow: hidden;">
+                                <div class="position-absolute top-0 start-0 bottom-0 bg-warning" style="width: 4px;"></div>
+                                <div class="card-body ps-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="w-100 me-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-light text-dark border me-2">#{{ $index + 1 }}</span>
+                                                <h6 class="fw-bold text-dark mb-0 text-break">{!! $question->name !!}</h6>
+                                            </div>
+                                            @if($question->image)
+                                            <img src="{{ asset('storage/' . $question->image) }}" class="img-thumbnail mb-3 rounded" style="max-height: 120px;">
+                                            @endif
+                                            @php
+                                            $letters = ['A', 'B', 'C', 'D'];
+                                            $correctIndex = $question->options->search(fn($o) => $o->is_correct);
+                                            @endphp
+                                            @if($correctIndex !== false)
+                                            <div class="d-inline-flex align-items-center px-3 py-2 rounded bg-success-subtle text-success border border-success-subtle mt-2">
+                                                <span class="fw-bold me-2 bg-success text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; font-size: 12px;">
+                                                    {{ $letters[$correctIndex] }}
+                                                </span>
+                                                <span class="fw-medium">{!! $question->options[$correctIndex]->name !!}</span>
+                                            </div>
+                                            @else
+                                            <div class="text-danger small mt-2"><i class="ri-error-warning-line"></i> To'g'ri javob belgilanmagan!</div>
+                                            @endif
+                                        </div>
+                                        <div class="d-flex flex-column gap-2">
+                                            <button wire:click="editQuestion({{ $question->id }})" class="btn btn-sm btn-light text-warning border shadow-sm" title="Tahrirlash"><i class="ri-pencil-line fs-5"></i></button>
+                                            <button wire:click="deleteQuestion({{ $question->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-sm btn-light text-danger border shadow-sm" title="O'chirish"><i class="ri-delete-bin-line fs-5"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="col-12 text-center py-5">
+                            <div class="text-muted opacity-50"><i class="ri-question-answer-line" style="font-size: 60px;"></i></div>
+                            <h6 class="text-muted mt-3">Bu quizda hali savollar yo'q</h6>
+                            <p class="text-muted small">Yangi savol qo'shish uchun yuqoridagi tugmani bosing</p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
-                {{-- Mavjud Attachmentlar ro'yxati --}}
-                <div class="card border-info">
-                    <div class="card-header bg-info-subtle">
-                        <h6 class="mb-0 fw-bold">
-                            <i class="ri-folder-open-line me-2"></i>
-                            Yuklangan Fayllar
-                        </h6>
+    {{-- 3. SAVOL FORM MODALI --}}
+    @if($showQuestionFormModal)
+    {{-- Z-INDEX 2050 (Eng tepada) --}}
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.7); z-index: 2050;" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom">
+                    <h5 class="modal-title fw-bold text-dark">
+                        @if($isEditQuestion)
+                        <i class="ri-pencil-line text-warning me-2"></i>Savolni Tahrirlash
+                        @else
+                        <i class="ri-add-circle-line text-success me-2"></i>Yangi Savol
+                        @endif
+                    </h5>
+                    <button type="button" class="btn-close" wire:click="closeQuestionFormModal"></button>
+                </div>
+                <div class="modal-body px-4 py-4">
+                    <form wire:submit.prevent="saveQuestion">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Savol matni <span class="text-danger">*</span></label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-white text-muted"><i class="ri-text"></i></span>
+                                <textarea wire:model="questionText" class="form-control border-start-0" rows="3" placeholder="LaTeX formulalar: \( x^2 \)"></textarea>
+                            </div>
+                            @error('questionText') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            @if($questionText)
+                            <div class="mt-2 p-3 bg-light rounded border"><small class="text-muted d-block mb-1">Ko'rinishi:</small>
+                                <div>{!! $questionText !!}</div>
+                            </div>
+                            @endif
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Rasm <small class="text-muted fw-normal">(ixtiyoriy)</small></label>
+                            @if($existingImage)
+                            <div class="d-flex align-items-center gap-3 mb-2 p-2 border rounded bg-light">
+                                <img src="{{ asset('storage/' . $existingImage) }}" style="height: 60px; border-radius: 5px;">
+                                <button type="button" wire:click="removeImage" class="btn btn-sm btn-danger">Rasmni o'chirish</button>
+                            </div>
+                            @endif
+                            <input type="file" wire:model="questionImage" class="form-control">
+                            @error('questionImage') <span class="text-danger small">{{ $message }}</span> @enderror
+                        </div>
+
+                        <label class="form-label fw-bold mb-3 text-dark">Javob variantlari <span class="text-danger">*</span></label>
+                        <div class="row g-3">
+                            @foreach(['A', 'B', 'C', 'D'] as $index => $letter)
+                            <div class="col-md-6">
+                                <div class="card h-100 {{ $correctOption == $index ? 'border-success bg-success-subtle' : 'border-light bg-light' }} shadow-sm"
+                                    style="transition: all 0.2s; cursor: pointer;"
+                                    onclick="document.getElementById('opt_{{$index}}').click()">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="form-check">
+                                                <input type="radio" id="opt_{{$index}}" wire:model="correctOption" value="{{ $index }}" class="form-check-input me-2" style="transform: scale(1.2);">
+                                                <label class="form-check-label fw-bold" for="opt_{{$index}}">{{ $letter }} varianti</label>
+                                            </div>
+                                        </div>
+                                        <textarea wire:model="options.{{ $index }}" class="form-control form-control-sm border-0 bg-white" rows="2" placeholder="Variantni yozing..."></textarea>
+                                        @error('options.'.$index) <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @error('correctOption') <div class="alert alert-danger mt-3 py-2"><i class="ri-error-warning-line me-1"></i> {{ $message }}</div> @enderror
+                    </form>
+                </div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" wire:click="closeQuestionFormModal" class="btn btn-light border">Bekor qilish</button>
+                    <button type="button" wire:click="saveQuestion" class="btn btn-success text-white shadow-sm px-4">Saqlash</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- 4. ATTACHMENT MODAL --}}
+    @if($showAttachmentModal)
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.6); z-index: 1070;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="ri-attachment-2 me-2 text-warning"></i>Fayllar</h5>
+                    <button type="button" class="btn-close" wire:click="closeAttachmentModal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">Yangi fayl ma'lumotlari</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="small text-muted">Sana</label>
+                                    <input type="date" wire:model="attachmentDate" class="form-control search-input">
+                                    @error('attachmentDate') <span class="text-danger small">{{ $message }}</span> @enderror
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="small text-muted">Vaqt</label>
+                                    <input type="time" wire:model="attachmentTime" class="form-control search-input">
+                                    @error('attachmentTime') <span class="text-danger small">{{ $message }}</span> @enderror
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="small text-muted">Raqam</label>
+                                    <input type="number" wire:model="attachmentNumber" class="form-control search-input">
+                                    @error('attachmentNumber') <span class="text-danger small">{{ $message }}</span> @enderror
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button wire:click="saveAttachment" class="btn btn-warning text-white shadow-sm">Qo'shish</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
                                     <tr>
-                                        <th>№</th>
-                                        <th>Sana</th>
-                                        <th>Vaqt</th>
+                                        <th class="ps-3">#</th>
+                                        <th>Sana / Vaqt</th>
                                         <th>Raqam</th>
-                                        <th>Holat</th>
-                                        <th class="text-end">Amallar</th>
+                                        <th class="text-end pe-3">Amal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($this->attachments as $index => $attachment)
+                                    @forelse($this->attachments as $att)
                                     <tr>
-                                        <td class="fw-bold">{{ $index + 1 }}</td>
-                                        <td>
-                                            <i class="ri-calendar-line text-primary me-1"></i>
-                                            {{ \Carbon\Carbon::parse($attachment->date)->format('d.m.Y') }}
-                                        </td>
-                                        <td>
-                                            <i class="ri-time-line text-info me-1"></i>
-                                            {{ $attachment->time }}
-                                        </td>
-                                        <td>
-                                            @if($attachment->number)
-                                            <span
-                                                class="badge bg-secondary">{{ $attachment->number }}</span>
-                                            @else
-                                            <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($attachment->status == 1)
-                                            <span class="badge bg-success">
-                                                <i class="ri-check-line me-1"></i>Faol
-                                            </span>
-                                            @else
-                                            <span class="badge bg-secondary">Nofaol</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-end">
-                                            <button wire:click="deleteAttachment({{ $attachment->id }})"
-                                                onclick="return confirm('O\'chirmoqchimisiz?')"
-                                                class="btn btn-sm btn-danger">
-                                                <i class="ri-delete-bin-line"></i>
-                                            </button>
+                                        <td class="ps-3">{{ $loop->iteration }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($att->date)->format('d.m.Y') }} <small class="text-muted">{{ $att->time }}</small></td>
+                                        <td><span class="badge bg-secondary">{{ $att->number }}</span></td>
+                                        <td class="text-end pe-3">
+                                            <button wire:click="deleteAttachment({{ $att->id }})" class="btn btn-sm btn-light text-danger border"><i class="ri-delete-bin-line"></i></button>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4">
-                                            <i class="ri-inbox-line text-muted"
-                                                style="font-size: 60px; opacity: 0.2;"></i>
-                                            <p class="text-muted mt-3">Hozircha attachmentlar yo'q</p>
-                                        </td>
+                                        <td colspan="4" class="text-center py-3 text-muted">Fayllar yo'q</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -479,700 +630,75 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light">
-                <button wire:click="closeAttachmentModal" class="btn btn-secondary btn-lg">
-                    <i class="ri-close-line me-1"></i> Yopish
-                </button>
-            </div>
         </div>
     </div>
-</div>
-@endif
+    @endif
 
-{{-- Question Create/Edit Modal --}}
-@if($showQuestionFormModal)
-<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.7); z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-gradient-success text-white border-0">
-                <h5 class="modal-title fw-bold">
-                    <i class="ri-question-line me-2"></i>
-                    {{ $isEditQuestion ? 'Savolni tahrirlash' : 'Yangi savol qo\'shish' }}
-                </h5>
-                <button type="button" class="btn-close btn-close-white"
-                    wire:click="closeQuestionFormModal"></button>
-            </div>
-            <form wire:submit.prevent="saveQuestion" autocomplete="off">
-                <div class="modal-body p-4" style="max-height: 70vh;">
+    {{-- 5. VIEW MODAL --}}
+    @if($showViewModal && $viewingQuiz)
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-0">
+                    <div class="p-4 text-center text-white" style="background-color: var(--yuksalish-orange); border-radius: 8px 8px 0 0;">
+                        <div class="avatar bg-white text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
+                            <i class="ri-file-text-line"></i>
+                        </div>
+                        <h5 class="fw-bold mb-1">{{ $viewingQuiz->name }}</h5>
+                        <p class="mb-0 opacity-75">{{ $viewingQuiz->created_at->format('d.m.Y') }}</p>
+                    </div>
 
-                    {{-- Error Messages --}}
-                    @if ($errors->any())
-                    <div class="alert alert-danger border-0 shadow-sm">
-                        <div class="d-flex align-items-start">
-                            <i class="ri-error-warning-line fs-4 me-3"></i>
-                            <div>
-                                <strong>Xatolar:</strong>
-                                <ul class="mb-0 mt-2">
-                                    @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+                    <div class="p-4">
+                        <div class="row g-3 text-center">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Fan</small>
+                                <span class="fw-bold text-dark">{{ $viewingQuiz->subject->name }}</span>
+                            </div>
+                            <div class="col-4 border-start border-end">
+                                <small class="text-muted d-block">Sinf</small>
+                                <span class="fw-bold text-dark">{{ $viewingQuiz->class->name }}</span>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Savollar</small>
+                                <span class="fw-bold text-primary">{{ $viewingQuiz->questions->count() }} ta</span>
                             </div>
                         </div>
-                    </div>
-                    @endif
 
-                    {{-- Savol matni --}}
-                    <div class="mb-4">
-                        <label class="form-label fw-bold fs-5">
-                            <i class="ri-file-text-line me-2 text-primary"></i>
-                            Savol matni <span class="text-danger">*</span>
-                            <small class="text-muted fw-normal">(LaTeX: \( x^2 \))</small>
-                        </label>
-                        <textarea wire:model="questionText"
-                            class="form-control form-control-lg @error('questionText') is-invalid @enderror"
-                            rows="3"
-                            placeholder="Masalan: \( a^2 + b^2 = c^2 \) formulasi qaysi teoremaga tegishli?"></textarea>
-                        @error('questionText')
-                        <div class="invalid-feedback d-block">
-                            <i class="ri-error-warning-line me-1"></i>{{ $message }}
-                        </div>
-                        @enderror
+                        <hr>
 
-                        @if($questionText)
-                        <div class="alert alert-info border-0 shadow-sm mt-3">
-                            <strong><i class="ri-eye-line me-1"></i>Ko'rinishi:</strong>
-                            <div
-                                class="mt-2 p-3 bg-white rounded question-preview">{!! $questionText !!}</div>
-                        </div>
-                        @endif
-                    </div>
-
-                    {{-- Rasm yuklash --}}
-                    <div class="mb-4">
-                        <label class="form-label fw-bold fs-5">
-                            <i class="ri-image-line me-2 text-info"></i>
-                            Rasm yuklash <small class="text-muted fw-normal">(ixtiyoriy)</small>
-                        </label>
-
-                        @if($existingImage)
-                        <div class="card border shadow-sm mb-3">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center">
-                                        <img src="{{ asset('storage/' . $existingImage) }}"
-                                            alt="Savol rasmi"
-                                            class="rounded shadow-sm me-3"
-                                            style="max-width: 150px; max-height: 150px; object-fit: cover;">
-                                        <div>
-                                            <span class="badge bg-success-subtle text-success">
-                                                <i class="ri-check-line me-1"></i>Mavjud rasm
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <button type="button" wire:click="removeImage"
-                                        class="btn btn-danger btn-sm">
-                                        <i class="ri-delete-bin-line me-1"></i>O'chirish
+                        <h6 class="fw-bold mb-3">Savollar ro'yxati:</h6>
+                        <div class="accordion" id="viewQuizAccordion">
+                            @foreach($viewingQuiz->questions as $index => $q)
+                            <div class="accordion-item border-0 mb-2 shadow-sm">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#viewQ{{ $q->id }}">
+                                        <span class="fw-bold me-2 text-primary">#{{ $index + 1 }}</span> {!! Str::limit(strip_tags($q->name), 50) !!}
                                     </button>
+                                </h2>
+                                <div id="viewQ{{ $q->id }}" class="accordion-collapse collapse" data-bs-parent="#viewQuizAccordion">
+                                    <div class="accordion-body">
+                                        <div class="mb-2">{!! $q->name !!}</div>
+                                        @if($q->image) <img src="{{ asset('storage/' . $q->image) }}" class="img-thumbnail mb-2" style="max-height: 100px;"> @endif
+                                        <ul class="list-group list-group-flush">
+                                            @foreach($q->options as $opt)
+                                            <li class="list-group-item {{ $opt->is_correct ? 'bg-success-subtle text-success fw-bold' : '' }}">
+                                                {{ $loop->iteration }}) {!! $opt->name !!}
+                                                @if($opt->is_correct) <i class="ri-check-line float-end"></i> @endif
+                                            </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        @endif
-
-                        <div class="card border-dashed border-2 border-secondary">
-                            <div class="card-body text-center py-4">
-                                <input type="file" wire:model="questionImage"
-                                    class="d-none"
-                                    id="questionImageInput"
-                                    accept="image/*">
-                                <label for="questionImageInput" class="btn btn-outline-primary btn-lg w-100">
-                                    <i class="ri-upload-cloud-line fs-3 d-block mb-2"></i>
-                                    <span>Rasm tanlash</span>
-                                    <small class="d-block text-muted mt-1">PNG, JPG (Max: 2MB)</small>
-                                </label>
-                            </div>
-                        </div>
-
-                        @if($questionImage)
-                        <div class="alert alert-success border-0 shadow-sm mt-3">
-                            <i class="ri-checkbox-circle-line me-2"></i>
-                            <strong>Yangi rasm tanlandi</strong>
-                        </div>
-                        @endif
-
-                        @error('questionImage')
-                        <div class="alert alert-danger border-0 mt-2">
-                            <i class="ri-error-warning-line me-1"></i>{{ $message }}
-                        </div>
-                        @enderror
-                    </div>
-
-                    {{-- Variantlar --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-bold fs-5">
-                            <i class="ri-list-check me-2 text-warning"></i>
-                            Javob variantlari <span class="text-danger">*</span>
-                        </label>
-                    </div>
-
-                    <div class="row g-3">
-                        @foreach(['A', 'B', 'C', 'D'] as $index => $letter)
-                        <div class="col-md-6">
-                            <div
-                                class="card h-100 {{ $correctOption == $index ? 'border-success border-3 shadow' : 'border' }}">
-                                <div class="card-body">
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input"
-                                            type="radio"
-                                            wire:model="correctOption"
-                                            value="{{ $index }}"
-                                            id="correct{{ $index }}"
-                                            name="correctOption">
-                                        <label class="form-check-label fw-bold fs-5"
-                                            for="correct{{ $index }}">
-                                            <span class="badge bg-primary me-2">{{ $letter }}</span>
-                                            {{ $letter }} varianti
-                                            @if($correctOption == $index)
-                                            <span class="badge bg-success ms-2">
-                                                <i class="ri-check-line me-1"></i>To'g'ri javob
-                                            </span>
-                                            @endif
-                                        </label>
-                                    </div>
-                                    <textarea wire:model="options.{{ $index }}"
-                                        class="form-control @error('options.'.$index) is-invalid @enderror"
-                                        rows="2"
-                                        placeholder="{{ $letter }} variantini kiriting..."></textarea>
-                                    @error('options.'.$index)
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-
-                                    @if($options[$index])
-                                    <div class="mt-2 p-2 bg-light rounded">
-                                        <small class="text-muted">Ko'rinishi:</small>
-                                        <div
-                                            class="option-preview-{{ $index }}">{!! $options[$index] !!}</div>
-                                    </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-
-                    @error('correctOption')
-                    <div class="alert alert-danger border-0 shadow-sm mt-3">
-                        <i class="ri-error-warning-line me-2"></i>{{ $message }}
-                    </div>
-                    @enderror
-
-                    <div class="alert alert-info border-0 shadow-sm mt-4">
-                        <strong><i class="ri-information-line me-2"></i>LaTeX misollar:</strong>
-                        <div class="d-flex flex-wrap gap-2 mt-2">
-                            <code class="px-2 py-1 bg-white rounded">\(\frac{a}{b}\)</code>
-                            <code class="px-2 py-1 bg-white rounded">\(\sqrt{x}\)</code>
-                            <code class="px-2 py-1 bg-white rounded">\(x^2\)</code>
-                            <code class="px-2 py-1 bg-white rounded">\(x_1\)</code>
+                            @endforeach
                         </div>
                     </div>
-                </div>
-
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" wire:click="closeQuestionFormModal" class="btn btn-secondary btn-lg">
-                        <i class="ri-close-line me-1"></i>Bekor qilish
-                    </button>
-                    <button type="submit" class="btn btn-success btn-lg shadow">
-                        <span wire:loading.remove wire:target="saveQuestion">
-                            <i class="ri-save-line me-1"></i>Saqlash
-                        </span>
-                        <span wire:loading wire:target="saveQuestion">
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                            Saqlanmoqda...
-                        </span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endif
-
-{{-- Questions Management Modal --}}
-@if($showQuestionsModal && $currentQuiz)
-<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); z-index: 1055;">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-gradient-primary text-white border-0">
-                <div>
-                    <h5 class="modal-title fw-bold mb-1">
-                        <i class="ri-question-line me-2"></i>
-                        {{ $currentQuiz->name }}
-                    </h5>
-                    <div class="d-flex gap-2">
-                        <span class="badge bg-white text-primary">{{ $currentQuiz->subject->name }}</span>
-                        <span class="badge bg-white text-primary">{{ $currentQuiz->class->name }}</span>
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" wire:click="closeViewModal" class="btn btn-light w-100">Yopish</button>
                     </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white"
-                    wire:click="closeQuestionsModal"></button>
-            </div>
-            <div class="modal-body p-4">
-                @if (session()->has('question_message'))
-                <div class="alert alert-success border-0 shadow-sm">
-                    <i class="ri-checkbox-circle-line me-2"></i>
-                    {{ session('question_message') }}
-                </div>
-                @endif
-
-                @if (session()->has('question_error'))
-                <div class="alert alert-danger border-0 shadow-sm">
-                    <i class="ri-error-warning-line me-2"></i>
-                    {{ session('question_error') }}
-                </div>
-                @endif
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="input-group shadow-sm" style="max-width: 400px;">
-                        <span class="input-group-text bg-white">
-                            <i class="ri-search-line text-primary"></i>
-                        </span>
-                        <input type="text" wire:model.live="questionSearch"
-                            class="form-control" placeholder="Savol qidirish...">
-                    </div>
-                    <button wire:click="createQuestion" class="btn btn-success btn-lg shadow">
-                        <i class="ri-add-line me-1"></i> Yangi Savol
-                    </button>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 5%">№</th>
-                                <th style="width: 50%">Savol</th>
-                                <th style="width: 30%">To'g'ri javob</th>
-                                <th style="width: 15%" class="text-end">Amallar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($this->questions as $index => $question)
-                            <tr>
-                                <td class="text-center fw-bold">{{ $index + 1 }}</td>
-                                <td>
-                                    <div class="question-text">{!! $question->name !!}</div>
-                                    @if($question->image)
-                                    <img src="{{ asset('storage/' . $question->image) }}"
-                                        alt="Savol rasmi"
-                                        class="img-thumbnail mt-2"
-                                        style="max-width: 100px; max-height: 100px;">
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                    $letters = ['A', 'B', 'C', 'D'];
-                                    $correctIndex = $question->options->search(fn($opt) => $opt->is_correct == 1);
-                                    @endphp
-                                    @if($correctIndex !== false && isset($question->options[$correctIndex]))
-                                    <span class="badge bg-success fs-6 p-2">
-                                        {{ $letters[$correctIndex] }}: {{ Str::limit($question->options[$correctIndex]->name, 30) }}
-                                    </span>
-                                    @else
-                                    <span class="badge bg-secondary">Belgilanmagan</span>
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    <div class="btn-group">
-                                        <button wire:click="editQuestion({{ $question->id }})"
-                                            class="btn btn-sm btn-warning">
-                                            <i class="ri-pencil-line"></i>
-                                        </button>
-                                        <button wire:click="deleteQuestion({{ $question->id }})"
-                                            onclick="return confirm('O\'chirmoqchimisiz?')"
-                                            class="btn btn-sm btn-danger">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-5">
-                                    <i class="ri-question-line text-muted"
-                                        style="font-size: 80px; opacity: 0.2;"></i>
-                                    <p class="text-muted mt-3">Hozircha savollar yo'q. Yangi savol qo'shing.</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer border-0 bg-light">
-                <button wire:click="closeQuestionsModal" class="btn btn-secondary btn-lg">
-                    <i class="ri-close-line me-1"></i> Yopish
-                </button>
             </div>
         </div>
     </div>
+    @endif
 </div>
-@endif
-
-{{-- View Quiz Modal --}}
-@if($showViewModal && $viewingQuiz)
-<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6); z-index: 1065;">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-gradient-info text-white border-0">
-                <h5 class="modal-title fw-bold">
-                    <i class="ri-eye-line me-2"></i>
-                    {{ $viewingQuiz->name }} - Ko'rish
-                </h5>
-                <button type="button" class="btn-close btn-close-white"
-                    wire:click="closeViewModal"></button>
-            </div>
-            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card border-0 bg-info-subtle">
-                            <div class="card-body">
-                                <strong class="d-block mb-2">
-                                    <i class="ri-book-line me-1"></i>Fan:
-                                </strong>
-                                <span class="badge bg-info fs-6 px-3 py-2">
-                                    {{ $viewingQuiz->subject->name }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card border-0 bg-success-subtle">
-                            <div class="card-body">
-                                <strong class="d-block mb-2">
-                                    <i class="ri-graduation-cap-line me-1"></i>Sinf:
-                                </strong>
-                                <span class="badge bg-success fs-6 px-3 py-2">
-                                    {{ $viewingQuiz->class->name }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="my-4">
-
-                @if($viewingQuiz->questions->count() > 0)
-                <h6 class="fw-bold mb-4">
-                    <i class="ri-question-line me-2 text-primary"></i>
-                    Savollar ({{ $viewingQuiz->questions->count() }} ta)
-                </h6>
-                <div class="accordion" id="questionsAccordion">
-                    @foreach($viewingQuiz->questions as $index => $question)
-                    <div class="accordion-item border shadow-sm mb-3">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed fw-bold" type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#question{{ $question->id }}">
-                                <span class="badge bg-primary me-3">{{ $index + 1 }}</span>
-                                Savol {{ $index + 1 }}
-                            </button>
-                        </h2>
-                        <div id="question{{ $question->id }}" class="accordion-collapse collapse"
-                            data-bs-parent="#questionsAccordion">
-                            <div class="accordion-body bg-light">
-                                <div class="card border-0 mb-3">
-                                    <div class="card-body">
-                                        <strong class="text-primary">
-                                            <i class="ri-chat-quote-line me-1"></i>Savol:
-                                        </strong>
-                                        <div class="mt-2 p-3 bg-white rounded">
-                                            {!! $question->name !!}
-                                        </div>
-
-                                        @if($question->image)
-                                        <div class="mt-3">
-                                            <img src="{{ asset('storage/' . $question->image) }}"
-                                                alt="Savol rasmi"
-                                                class="img-fluid rounded shadow-sm"
-                                                style="max-width: 500px;">
-                                        </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <strong class="text-success d-block mb-3">
-                                    <i class="ri-list-check me-1"></i>Javob variantlari:
-                                </strong>
-
-                                <div class="row g-3">
-                                    @foreach($question->options as $optIndex => $option)
-                                    @php
-                                    $letters = ['A', 'B', 'C', 'D'];
-                                    @endphp
-                                    <div class="col-md-6">
-                                        <div
-                                            class="card h-100 {{ $option->is_correct ? 'border-success border-3 bg-success-subtle' : 'border' }}">
-                                            <div class="card-body">
-                                                <div class="d-flex align-items-center mb-2">
-                                                    <span
-                                                        class="badge {{ $option->is_correct ? 'bg-success' : 'bg-secondary' }} me-2">
-                                                        {{ $letters[$optIndex] }}
-                                                    </span>
-                                                    @if($option->is_correct)
-                                                    <span class="badge bg-success">
-                                                        <i class="ri-check-line me-1"></i>To'g'ri javob
-                                                    </span>
-                                                    @endif
-                                                </div>
-                                                <div class="mt-2">
-                                                    {!! $option->name !!}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <div class="text-center py-5">
-                    <i class="ri-inbox-line text-muted" style="font-size: 80px; opacity: 0.2;"></i>
-                    <h5 class="text-muted mt-3">Hozircha savollar yo'q</h5>
-                </div>
-                @endif
-            </div>
-            <div class="modal-footer border-0 bg-light">
-                <button wire:click="closeViewModal" class="btn btn-secondary btn-lg">
-                    <i class="ri-close-line me-1"></i>Yopish
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-</div>
-
-{{-- MathJax --}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('message.processed', () => {
-            if (typeof MathJax !== 'undefined') {
-                MathJax.typesetPromise();
-            }
-        });
-    });
-</script>
-
-{{-- Custom Styles - MINIMAL & PROFESSIONAL --}}
-<style>
-    /* === PROFESSIONAL COLORS - NO GRADIENTS === */
-    :root {
-        --primary: #4F46E5;
-        /* Indigo */
-        --primary-light: #EEF2FF;
-        --primary-dark: #4338CA;
-        --success: #10B981;
-        /* Green */
-        --success-light: #D1FAE5;
-        --info: #06B6D4;
-        /* Cyan */
-        --info-light: #CFFAFE;
-        --warning: #F59E0B;
-        /* Amber */
-        --danger: #EF4444;
-        /* Red */
-        --gray: #6B7280;
-        --gray-light: #F3F4F6;
-    }
-
-    /* === HEADER BG - Gradient o'rniga oddiy rang === */
-    .bg-gradient-primary,
-    .bg-primary {
-        background: var(--primary) !important;
-    }
-
-    .bg-gradient-info,
-    .bg-info {
-        background: var(--info) !important;
-    }
-
-    .bg-gradient-success,
-    .bg-success {
-        background: var(--success) !important;
-    }
-
-    /* === BADGES - Sodda === */
-    .badge {
-        font-weight: 500;
-        padding: 6px 12px;
-        border-radius: 6px;
-    }
-
-    .badge.bg-primary {
-        background: var(--primary) !important;
-        color: white;
-    }
-
-    .badge.bg-success {
-        background: var(--success) !important;
-        color: white;
-    }
-
-    .badge.bg-info {
-        background: var(--info) !important;
-        color: white;
-    }
-
-    .bg-primary-subtle {
-        background: var(--primary-light) !important;
-        color: var(--primary) !important;
-    }
-
-    .bg-success-subtle {
-        background: var(--success-light) !important;
-        color: #065F46 !important;
-    }
-
-    .bg-info-subtle {
-        background: var(--info-light) !important;
-        color: #164E63 !important;
-    }
-
-    /* === BUTTONS - Gradient YO'Q === */
-    .btn-primary {
-        background: var(--primary) !important;
-        border: none;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: var(--primary-dark) !important;
-        transform: translateY(-1px);
-    }
-
-    .btn-success {
-        background: var(--success) !important;
-        border: none;
-        color: white;
-    }
-
-    .btn-success:hover {
-        background: #059669 !important;
-    }
-
-    .btn-info {
-        background: var(--info) !important;
-        border: none;
-        color: white;
-    }
-
-    .btn-info:hover {
-        background: #0891B2 !important;
-    }
-
-    .btn-warning {
-        background: var(--warning) !important;
-        border: none;
-        color: white;
-    }
-
-    .btn-warning:hover {
-        background: #D97706 !important;
-    }
-
-    .btn-danger {
-        background: var(--danger) !important;
-        border: none;
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background: #DC2626 !important;
-    }
-
-    /* === CARDS === */
-    .card {
-        border-radius: 8px;
-        border: 1px solid #E5E7EB;
-        transition: all 0.2s;
-    }
-
-    .card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    /* === ALERTS === */
-    .alert-primary {
-        background: var(--primary-light);
-        border-left: 4px solid var(--primary);
-        color: var(--primary-dark);
-    }
-
-    .alert-success {
-        background: var(--success-light);
-        border-left: 4px solid var(--success);
-        color: #065F46;
-    }
-
-    .alert-info {
-        background: var(--info-light);
-        border-left: 4px solid var(--info);
-        color: #164E63;
-    }
-
-    .alert-warning {
-        background: #FEF3C7;
-        border-left: 4px solid var(--warning);
-        color: #92400E;
-    }
-
-    .alert-danger {
-        background: #FEE2E2;
-        border-left: 4px solid var(--danger);
-        color: #991B1B;
-    }
-
-    /* === TABLE === */
-    .table-hover tbody tr:hover {
-        background: var(--gray-light);
-    }
-
-    /* === INPUT FOCUS === */
-    .form-control:focus,
-    .form-select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-
-    /* === MISC === */
-    .text-primary {
-        color: var(--primary) !important;
-    }
-
-    .text-success {
-        color: var(--success) !important;
-    }
-
-    .text-info {
-        color: var(--info) !important;
-    }
-
-    .border-primary {
-        border-color: var(--primary) !important;
-    }
-
-    .border-success {
-        border-color: var(--success) !important;
-    }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 768px) {
-        .badge {
-            font-size: 11px;
-            padding: 4px 8px;
-        }
-    }
-</style>
