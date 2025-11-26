@@ -16,13 +16,17 @@ class StudentManager extends Component
     public $name, $email, $phone, $first_name, $last_name, $classes_id, $status;
     public $isEdit = false;
     public $showModal = false;
+    
+    // View Modal
+    public $showViewModal = false;
+    public $viewingStudent = null;
 
     protected $paginationTheme = 'bootstrap';
 
     // Validation rules
     protected function rules()
     {
-        $rules = [
+        return [
             'name' => 'required|min:3|unique:users,name,' . $this->studentId,
             'email' => 'required|email|unique:users,email,' . $this->studentId,
             'phone' => 'nullable|string',
@@ -30,8 +34,6 @@ class StudentManager extends Component
             'last_name' => 'required|min:3',
             'classes_id' => 'required|exists:classes,id',
         ];
-
-        return $rules;
     }
 
     protected $messages = [
@@ -45,24 +47,21 @@ class StudentManager extends Component
         'classes_id.required' => 'Sinfni tanlash majburiy',
     ];
 
-    // Real-time validation
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName);
 
-        // Ism va familya o'zgarganda username generatsiya qilish (faqat yangi student uchun)
+        // Yangi student uchun username generatsiya
         if (in_array($propertyName, ['first_name', 'last_name']) && !$this->isEdit) {
             $this->generateUsername();
         }
     }
 
-    // Qidiruv bo'yicha pagination reset
     public function updatingSearch()
     {
         $this->resetPage();
     }
 
-    // Username avtomatik generatsiya qilish
     public function generateUsername()
     {
         if (!empty($this->first_name) && !empty($this->last_name)) {
@@ -72,7 +71,6 @@ class StudentManager extends Component
 
             $baseUsername = $firstName . $lastName . $randomNum;
 
-            // Agar username band bo'lsa, yangi raqam qo'shish
             $username = $baseUsername;
             $counter = 1;
             while (Users::where('name', $username)->exists()) {
@@ -84,7 +82,6 @@ class StudentManager extends Component
         }
     }
 
-    // Kirill harflarini lotin harflariga o'girish
     private function transliterate($text)
     {
         $cyrillic = [
@@ -106,26 +103,23 @@ class StudentManager extends Component
         return str_replace($cyrillic, $latin, $text);
     }
 
-    // Create/Update Student
     public function saveStudent()
     {
         $this->validate();
 
         if ($this->isEdit) {
-            // Update
             $student = Users::find($this->studentId);
-            $student->name = $this->name;
-            $student->first_name = $this->first_name;
-            $student->last_name = $this->last_name;
-            $student->classes_id = $this->classes_id;
-            $student->email = $this->email;
-            $student->phone = $this->phone;
-            $student->status = Users::STATUS_ACTIVE;
-            $student->save();
-
-            session()->flash('message', 'Student muvaffaqiyatli yangilandi!');
+            $student->update([
+                'name' => $this->name,
+                'first_name' => $this->first_name,
+                'last_name' => $this->last_name,
+                'classes_id' => $this->classes_id,
+                'email' => $this->email,
+                'phone' => $this->phone,
+                'status' => Users::STATUS_ACTIVE,
+            ]);
+            session()->flash('message', 'Student yangilandi!');
         } else {
-            // Create (parol avtomatik 12345678)
             Users::create([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -134,18 +128,16 @@ class StudentManager extends Component
                 'classes_id' => $this->classes_id,
                 'status' => Users::STATUS_ACTIVE,
                 'phone' => $this->phone,
-                'password' => \Hash::make('12345678'), // Default parol
+                'password' => \Hash::make('12345678'),
                 'user_type' => Users::TYPE_STUDENT
             ]);
-
-            session()->flash('message', 'Yangi student qo\'shildi! (Parol: 12345678)');
+            session()->flash('message', 'Yangi student qo\'shildi!');
         }
 
         $this->resetInputFields();
         $this->showModal = false;
     }
 
-    // Edit Student
     public function editStudent($id)
     {
         $student = Users::findOrFail($id);
@@ -160,45 +152,36 @@ class StudentManager extends Component
         $this->showModal = true;
     }
 
-    // Delete Student
     public function deleteStudent($id)
     {
         Users::find($id)->delete();
         session()->flash('message', 'Student o\'chirildi!');
     }
 
-    // Open Create Modal
     public function createStudent()
     {
         $this->resetInputFields();
         $this->showModal = true;
     }
 
-    // Close Modal
     public function closeModal()
     {
         $this->showModal = false;
         $this->resetInputFields();
     }
 
-    public $showViewModal = false;
-    public $viewingStudent = null;
-
-    // View Student
     public function viewStudent($id)
     {
         $this->viewingStudent = Users::with('classRelation')->findOrFail($id);
         $this->showViewModal = true;
     }
 
-    // Close View Modal
     public function closeViewModal()
     {
         $this->showViewModal = false;
         $this->viewingStudent = null;
     }
 
-    // Reset Input Fields
     private function resetInputFields()
     {
         $this->studentId = null;
@@ -211,16 +194,23 @@ class StudentManager extends Component
         $this->isEdit = false;
     }
 
-    // Render
     public function render()
     {
+        $term = '%' . $this->search . '%';
+
         $students = Users::with('classRelation')
             ->where('user_type', Users::TYPE_STUDENT)
-            ->where(function($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhere('first_name', 'like', '%' . $this->search . '%')
-                    ->orWhere('last_name', 'like', '%' . $this->search . '%');
+            ->where(function($query) use ($term) {
+                // Ism, Familiya, Username, Email, Telefon bo'yicha
+                $query->where('name', 'like', $term)
+                      ->orWhere('first_name', 'like', $term)
+                      ->orWhere('last_name', 'like', $term)
+                      ->orWhere('email', 'like', $term)
+                      ->orWhere('phone', 'like', $term)
+                // QO'SHILDI: Sinf nomi bo'yicha qidiruv (Relation orqali)
+                      ->orWhereHas('classRelation', function($q) use ($term) {
+                          $q->where('name', 'like', $term);
+                      });
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
