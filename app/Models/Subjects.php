@@ -37,6 +37,13 @@ class Subjects extends Model
 
     protected $table = 'subjects';
 
+    protected $fillable = [
+        'name',
+        'status',
+        'created_by',
+        'updated_by'
+    ];
+
 
     public static function getStatus($id = null)
     {
@@ -54,7 +61,8 @@ class Subjects extends Model
         return $teacher;
     }
 
-    public static function getSubjectById($id){
+    public static function getSubjectById($id)
+    {
         $model = Subjects::where('id', '=', $id)->first();
         return $model;
     }

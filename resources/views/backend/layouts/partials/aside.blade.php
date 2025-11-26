@@ -41,7 +41,7 @@
         <li class="menu-item {{ Route::is('dashboard') ? 'active' : '' }}">
             <a href="{{route('dashboard')}}" class="menu-link">
                 <i class="menu-icon tf-icons ri-home-smile-line"></i> &nbsp;
-                <div data-i18n="Sinflar">Bosh Sahifa</div>
+                <div data-i18n="Bosh sahifa">Bosh Sahifa</div>
             </a>
         </li>
         <!-- Dashboards -->
