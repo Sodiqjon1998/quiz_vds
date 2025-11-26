@@ -8,6 +8,7 @@
   'koordinator.report.class-performance' => 'App\\Http\\Livewire\\Koordinator\\Report\\ClassPerformance',
   'koordinator.report.non-readers-report' => 'App\\Http\\Livewire\\Koordinator\\Report\\NonReadersReport',
   'koordinator.report.reading-records' => 'App\\Http\\Livewire\\Koordinator\\Report\\ReadingRecords',
+  'teacher.classes.classes-manager' => 'App\\Http\\Livewire\\Teacher\\Classes\\ClassesManager',
   'teacher.exam.exam-result' => 'App\\Http\\Livewire\\Teacher\\Exam\\ExamResult',
   'teacher.exam.student-monitoring' => 'App\\Http\\Livewire\\Teacher\\Exam\\StudentMonitoring',
   'teacher.quiz.question-manager' => 'App\\Http\\Livewire\\Teacher\\Quiz\\QuestionManager',

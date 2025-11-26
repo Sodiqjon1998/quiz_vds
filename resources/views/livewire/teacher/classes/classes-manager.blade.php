@@ -6,7 +6,7 @@
             --yuksalish-gray: #f8f9fa;
         }
 
-        /* Asosiy tugmalar */
+        /* Tugmalar */
         .btn-yuksalish {
             background-color: var(--yuksalish-orange);
             color: white;
@@ -16,7 +16,6 @@
             border-radius: 8px;
             white-space: nowrap;
         }
-
         .btn-yuksalish:hover {
             background-color: #d96d1b;
             color: white;
@@ -33,19 +32,13 @@
             transition: all 0.3s ease;
             height: 45px;
         }
-
         .search-box:focus-within {
             border-color: var(--yuksalish-orange);
             box-shadow: 0 0 0 4px rgba(245, 128, 37, 0.1);
         }
+        .search-box i { color: #999; font-size: 1.2rem; margin-right: 10px; }
 
-        .search-box i {
-            color: #999;
-            font-size: 1.2rem;
-            margin-right: 10px;
-        }
-
-        /* Sarlavha */
+        /* Page Title */
         .page-title {
             font-size: 1.25rem;
             font-weight: 800;
@@ -54,23 +47,13 @@
             white-space: nowrap;
         }
 
-        /* Jadval Header */
+        /* Table */
         .table-yuksalish thead th {
             background-color: var(--yuksalish-dark);
             color: white;
             padding: 15px;
             font-weight: 500;
             border: none;
-        }
-
-        /* Mobile Card */
-        .mobile-card {
-            border-left: 5px solid var(--yuksalish-orange);
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 15px;
-            transition: transform 0.2s;
         }
 
         /* Badges */
@@ -83,38 +66,35 @@
             font-weight: bold;
         }
 
+        /* Mobile Card */
+        .mobile-card {
+            border-left: 5px solid var(--yuksalish-orange);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .mobile-card:active { transform: scale(0.98); }
+
         /* Pagination Button */
         .btn-page {
             border: 1px solid #dee2e6;
             background: white;
             color: var(--yuksalish-dark);
         }
+        .btn-page:hover { border-color: var(--yuksalish-orange); color: var(--yuksalish-orange); }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .btn-page:hover {
-            border-color: var(--yuksalish-orange);
-            color: var(--yuksalish-orange);
-        }
-
-        .btn-page:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Modal Header */
-        .modal-header {
-            border-bottom: none;
-        }
-
-        .modal-footer {
-            border-top: none;
-        }
+        .modal-header { border-bottom: none; }
+        .modal-footer { border-top: none; }
     </style>
 
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
                 <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
-
+                    
                     <!-- HEADER -->
                     <div class="card-header bg-white py-4">
                         <div class="row align-items-center g-3">
@@ -122,7 +102,7 @@
                             <div class="col-12 col-md-auto">
                                 <div class="d-flex align-items-center">
                                     <div class="bg-light rounded-circle p-2 me-2 d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
-                                        <i class="ri-community-line" style="color: var(--yuksalish-orange); font-size: 1.2rem;"></i>
+                                        <i class="ri-school-line" style="color: var(--yuksalish-orange); font-size: 1.2rem;"></i>
                                     </div>
                                     <h4 class="page-title">Sinflar ro'yxati</h4>
                                 </div>
@@ -132,10 +112,10 @@
                             <div class="col-12 col-md">
                                 <div class="search-box">
                                     <i class="ri-search-line"></i>
-                                    <input wire:model.live.debounce.300ms="search"
-                                        type="text"
-                                        class="form-control border-0 shadow-none bg-transparent p-0"
-                                        placeholder="Sinf nomini qidiring (masalan: 10-A)...">
+                                    <input wire:model.live.debounce.300ms="search" 
+                                           type="text" 
+                                           class="form-control border-0 shadow-none bg-transparent p-0" 
+                                           placeholder="Sinf nomini qidiring (masalan: 10-A)...">
                                 </div>
                             </div>
 
@@ -149,14 +129,14 @@
                     </div>
 
                     <div class="card-body p-0">
-                        <!-- Xabar -->
+                        <!-- Alert Messages -->
                         @if (session()->has('message'))
-                        <div class="p-3">
-                            <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
-                                <i class="ri-checkbox-circle-line me-2"></i> {{ session('message') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <div class="p-3">
+                                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
+                                    <i class="ri-checkbox-circle-line me-2"></i> {{ session('message') }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
                             </div>
-                        </div>
                         @endif
 
                         <!-- DESKTOP TABLE -->
@@ -167,7 +147,7 @@
                                         <th class="text-center" style="width: 60px;">ID</th>
                                         <th>Sinf nomi</th>
                                         <th class="text-center">O'quvchilar</th>
-                                        <th>Telegram</th>
+                                        <th class="text-center">Telegram</th> {{-- ✅ YANGI USTUN --}}
                                         <th class="text-center">Status</th>
                                         <th class="text-end pe-4">Amallar</th>
                                     </tr>
@@ -180,25 +160,25 @@
                                             <span class="fw-bold text-dark fs-5">{{ $class->name }}</span>
                                         </td>
                                         <td class="text-center">
-                                            {{-- students_count render() da hisoblanib keladi --}}
                                             <span class="badge-count">
                                                 <i class="ri-user-line me-1"></i> {{ $class->students_count }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="text-center">
+                                            {{-- ✅ TELEGRAM STATUSI --}}
                                             @if($class->telegram_chat_id)
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1">
-                                                <i class="ri-telegram-fill me-1"></i> Ulangan
-                                            </span>
+                                                <span class="badge bg-info bg-opacity-10 text-info border border-info px-3 py-2 rounded-pill">
+                                                    <i class="ri-telegram-fill me-1"></i> Ulangan
+                                                </span>
                                             @else
-                                            <span class="text-muted small opacity-50">-</span>
+                                                <span class="text-muted small opacity-50">-</span>
                                             @endif
                                         </td>
                                         <td class="text-center">
                                             @if($class->status == 1)
-                                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Faol</span>
+                                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Faol</span>
                                             @else
-                                            <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Nofaol</span>
+                                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Nofaol</span>
                                             @endif
                                         </td>
                                         <td class="text-end pe-4">
@@ -232,51 +212,54 @@
                         <!-- MOBILE CARDS -->
                         <div class="d-md-none p-3 bg-light">
                             @forelse($classes as $class)
-                            <div class="mobile-card p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar bg-warning bg-opacity-10 text-warning rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                            <i class="ri-graduation-cap-fill fs-4"></i>
+                                <div class="mobile-card p-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-warning bg-opacity-10 text-warning rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                                <i class="ri-graduation-cap-fill fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold mb-0 text-dark">{{ $class->name }}</h5>
+                                                <small class="text-muted">ID: #{{ $class->id }}</small>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h5 class="fw-bold mb-0 text-dark">{{ $class->name }}</h5>
-                                            <small class="text-muted">ID: #{{ $class->id }}</small>
+                                        @if($class->status == 1)
+                                            <i class="ri-checkbox-circle-fill text-success fs-3"></i>
+                                        @else
+                                            <i class="ri-close-circle-fill text-secondary fs-3"></i>
+                                        @endif
+                                    </div>
+
+                                    <div class="bg-light rounded p-3 mb-3 border">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted small"><i class="ri-group-line me-1"></i> O'quvchilar</span>
+                                            <span class="fw-bold text-dark">{{ $class->students_count }} ta</span>
+                                        </div>
+                                        {{-- ✅ TELEGRAM MOBILE --}}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted small"><i class="ri-telegram-line me-1"></i> Telegram</span>
+                                            @if($class->telegram_chat_id)
+                                                <span class="text-info fw-bold"><i class="ri-check-double-line"></i> Ulangan</span>
+                                            @else
+                                                <span class="text-muted">Yo'q</span>
+                                            @endif
                                         </div>
                                     </div>
-                                    @if($class->status == 1)
-                                    <i class="ri-checkbox-circle-fill text-success fs-3"></i>
-                                    @else
-                                    <i class="ri-close-circle-fill text-secondary fs-3"></i>
-                                    @endif
-                                </div>
 
-                                <div class="bg-light rounded p-3 mb-3 border">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted small"><i class="ri-group-line me-1"></i> O'quvchilar</span>
-                                        <span class="fw-bold text-dark">{{ $class->students_count }} ta</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted small"><i class="ri-telegram-line me-1"></i> Telegram</span>
-                                        <span class="{{ $class->telegram_chat_id ? 'text-success fw-bold' : 'text-muted' }}">
-                                            {{ $class->telegram_chat_id ? 'Ulangan' : 'Yo\'q' }}
-                                        </span>
+                                    <div class="d-flex gap-2 border-top pt-2">
+                                        <button wire:click="viewClass({{ $class->id }})" class="btn btn-light border flex-fill text-primary fw-bold">
+                                            <i class="ri-eye-line"></i> Ko'rish
+                                        </button>
+                                        <button wire:click="editClass({{ $class->id }})" class="btn btn-light border flex-fill text-warning fw-bold">
+                                            <i class="ri-pencil-line"></i>
+                                        </button>
+                                        <button wire:click="deleteClass({{ $class->id }})" onclick="return confirm('O\'chirilsinmi?')" class="btn btn-light border flex-fill text-danger fw-bold">
+                                            <i class="ri-delete-bin-line"></i>
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div class="d-flex gap-2 border-top pt-2">
-                                    <button wire:click="viewClass({{ $class->id }})" class="btn btn-light border flex-fill text-primary fw-bold">
-                                        <i class="ri-eye-line"></i> Ko'rish
-                                    </button>
-                                    <button wire:click="editClass({{ $class->id }})" class="btn btn-light border flex-fill text-warning fw-bold">
-                                        <i class="ri-pencil-line"></i>
-                                    </button>
-                                    <button wire:click="deleteClass({{ $class->id }})" onclick="return confirm('O\'chirilsinmi?')" class="btn btn-light border flex-fill text-danger fw-bold">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                </div>
-                            </div>
                             @empty
-                            <div class="text-center py-5 text-muted">Sinflar topilmadi</div>
+                                <div class="text-center py-5 text-muted">Sinflar topilmadi</div>
                             @endforelse
                         </div>
 
@@ -314,21 +297,6 @@
                             @error('name') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
-                        {{-- Telegram Fields --}}
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <label class="form-label fw-bold text-dark small text-uppercase text-muted mb-1">Telegram Sozlamalari</label>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small text-muted">Chat ID</label>
-                                <input type="text" wire:model="telegram_chat_id" class="form-control" placeholder="-100...">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small text-muted">Topic ID</label>
-                                <input type="text" wire:model="telegram_topic_id" class="form-control" placeholder="123">
-                            </div>
-                        </div>
-
                         <div class="mb-3">
                             <label class="form-label fw-bold text-dark">Status</label>
                             <select wire:model="status" class="form-select">
@@ -336,6 +304,13 @@
                                 <option value="0">Nofaol</option>
                             </select>
                         </div>
+
+                        @if(!$isEdit)
+                        <div class="alert alert-info border-0 d-flex align-items-center">
+                            <i class="ri-information-fill fs-4 me-3 text-info"></i>
+                            <small>Yangi sinf avtomatik ravishda <strong>Faol</strong> statusda yaratiladi.</small>
+                        </div>
+                        @endif
                     </div>
                     <div class="modal-footer bg-light">
                         <button type="button" wire:click="closeModal" class="btn btn-light px-4 border">Bekor qilish</button>
@@ -356,30 +331,34 @@
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-body p-0">
                     <div class="row g-0 h-100">
-                        <!-- Chap tomon: Sinf Info (Orange) -->
-                        <div class="col-lg-4 text-white p-4 d-flex flex-column justify-content-center text-center position-relative"
-                            style="background-color: var(--yuksalish-orange);">
-
+                        <!-- Chap tomon: Sinf Info -->
+                        <div class="col-lg-4 text-white p-4 d-flex flex-column justify-content-center text-center position-relative" 
+                             style="background-color: var(--yuksalish-orange);">
+                             
                             <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 d-lg-none" wire:click="closeViewModal"></button>
-
+                            
                             <div class="avatar bg-white text-warning rounded-circle mx-auto mb-4 d-flex align-items-center justify-content-center shadow" style="width: 100px; height: 100px;">
                                 <i class="ri-graduation-cap-fill" style="font-size: 50px; color: var(--yuksalish-orange);"></i>
                             </div>
-
+                            
                             <h2 class="fw-bold mb-1">{{ $viewingClass->name }}</h2>
                             <p class="text-white-50 mb-4">Sinf haqida ma'lumot</p>
-
+                            
                             <div class="row g-3 text-start mt-2">
-                                <div class="col-12 bg-white bg-opacity-10 p-3 rounded">
-                                    <small class="text-muted-50 d-block mb-1">O'quvchilar soni</small>
-                                    <h4 class="mb-0 fw-bold">{{ $viewingClass->students_count_dynamic ?? 0 }} ta</h4>
+                                <div class="col-12 bg-white p-3 rounded shadow-sm">
+                                    <small class="text-muted d-block mb-1">O'quvchilar soni</small>
+                                    <h4 class="mb-0 fw-bold text-dark">
+                                        {{ $viewingClass->students_count ?? 0 }} ta
+                                    </h4>
                                 </div>
-                                <div class="col-12 bg-white bg-opacity-10 p-3 rounded">
-                                    <small class="text-white-50 d-block mb-1">Telegram Status</small>
+                                
+                                {{-- ✅ TELEGRAM MODALDA --}}
+                                <div class="col-12 bg-white p-3 rounded shadow-sm">
+                                    <small class="text-muted d-block mb-1">Telegram Status</small>
                                     @if($viewingClass->telegram_chat_id)
-                                    <span class="badge bg-success"><i class="ri-check-double-line me-1"></i> Ulangan</span>
+                                        <span class="badge bg-success"><i class="ri-check-double-line me-1"></i> Ulangan</span>
                                     @else
-                                    <span class="badge bg-danger"><i class="ri-close-line me-1"></i> Yo'q</span>
+                                        <span class="badge bg-danger"><i class="ri-close-line me-1"></i> Yo'q</span>
                                     @endif
                                 </div>
                             </div>
@@ -445,10 +424,10 @@
                                 <div class="pt-3 border-top mt-auto d-flex justify-content-between align-items-center">
                                     <small class="text-muted">Sahifa: {{ $studentsPage }} / {{ $this->students->lastPage() }}</small>
                                     <div>
-                                        <button wire:click="previousStudentsPage" class="btn btn-sm btn-page me-1" @if($studentsPage <=1) disabled @endif>
+                                        <button wire:click="previousStudentsPage" class="btn btn-sm btn-page me-1" @if($studentsPage <= 1) disabled @endif>
                                             <i class="ri-arrow-left-s-line"></i>
                                         </button>
-                                        <button wire:click="nextStudentsPage" class="btn btn-sm btn-page" @if($studentsPage>= $this->students->lastPage()) disabled @endif>
+                                        <button wire:click="nextStudentsPage" class="btn btn-sm btn-page" @if($studentsPage >= $this->students->lastPage()) disabled @endif>
                                             <i class="ri-arrow-right-s-line"></i>
                                         </button>
                                     </div>
