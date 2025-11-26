@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Backend\Users;
 
+use App\Models\Classes;
 use App\Models\Users;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -265,16 +266,46 @@ class UsersManager extends Component
 
     public function render()
     {
-        $users = Users::with(['subject'])
+        $query = Users::with(['subject'])
             ->whereNotIn('user_type', [
                 Users::TYPE_STUDENT,
                 Users::TYPE_ADMIN
-            ])->where(function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%');
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ]);
+
+        // Qidiruv logikasi
+        if (!empty($this->search)) {
+            $query->where(function ($q) {
+                $term = '%' . $this->search . '%';
+                
+                // 1. Ism, Familiya, Username, Email, Telefon bo'yicha qidiruv
+                $q->where('name', 'like', $term)
+                  ->orWhere('first_name', 'like', $term)
+                  ->orWhere('last_name', 'like', $term)
+                  ->orWhere('email', 'like', $term)
+                  ->orWhere('phone', 'like', $term);
+
+                // 2. Fan nomi bo'yicha qidiruv (Relation)
+                $q->orWhereHas('subject', function ($subQ) use ($term) {
+                    $subQ->where('name', 'like', $term);
+                });
+
+                // 3. Sinf nomi bo'yicha qidiruv (JSON ichidan)
+                // Avval qidirilayotgan so'zga mos sinf IDlarini topamiz
+                $matchingClassIds = Classes::where('name', 'like', $term)->pluck('id')->toArray();
+                
+                if (!empty($matchingClassIds)) {
+                    foreach ($matchingClassIds as $id) {
+                        // JSON array ichida shu ID bormi tekshiramiz
+                        // Eslatma: Agar bazada IDlar string saqlangan bo'lsa (string)$id, integer bo'lsa $id
+                        $q->orWhereJsonContains('classes_id', (string)$id);
+                        $q->orWhereJsonContains('classes_id', (int)$id); 
+                    }
+                }
+            });
+        }
+
+        $users = $query->orderBy('created_at', 'desc')
+                       ->paginate(10);
 
         return view('livewire.backend.users.users-manager', [
             'users' => $users
