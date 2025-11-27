@@ -167,7 +167,8 @@
                                         <th class="text-center" style="width: 60px;">ID</th>
                                         <th>Sinf nomi</th>
                                         <th class="text-center">O'quvchilar</th>
-                                        <th>Telegram</th>
+                                        <th>Chat ID</th>
+                                        <th>Topic ID</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-end pe-4">Amallar</th>
                                     </tr>
@@ -180,7 +181,6 @@
                                             <span class="fw-bold text-dark fs-5">{{ $class->name }}</span>
                                         </td>
                                         <td class="text-center">
-                                            {{-- students_count render() da hisoblanib keladi --}}
                                             <span class="badge-count">
                                                 <i class="ri-user-line me-1"></i> {{ $class->students_count }}
                                             </span>
@@ -188,7 +188,16 @@
                                         <td>
                                             @if($class->telegram_chat_id)
                                             <span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1">
-                                                <i class="ri-telegram-fill me-1"></i> Ulangan
+                                                <i class="ri-telegram-fill me-1"></i> {{ $class->telegram_chat_id }}
+                                            </span>
+                                            @else
+                                            <span class="text-muted small opacity-50">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($class->telegram_topic_id)
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-2 py-1">
+                                                <i class="ri-message-3-line me-1"></i> {{ $class->telegram_topic_id }}
                                             </span>
                                             @else
                                             <span class="text-muted small opacity-50">-</span>
@@ -217,7 +226,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-5">
+                                        <td colspan="7" class="text-center py-5">
                                             <div class="text-muted">
                                                 <i class="ri-inbox-line display-4 d-block mb-3 opacity-25"></i>
                                                 Sinflar topilmadi
@@ -255,10 +264,16 @@
                                         <span class="text-muted small"><i class="ri-group-line me-1"></i> O'quvchilar</span>
                                         <span class="fw-bold text-dark">{{ $class->students_count }} ta</span>
                                     </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted small"><i class="ri-telegram-line me-1"></i> Chat ID</span>
+                                        <span class="{{ $class->telegram_chat_id ? 'text-info fw-bold' : 'text-muted' }}">
+                                            {{ $class->telegram_chat_id ?? 'Yo\'q' }}
+                                        </span>
+                                    </div>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted small"><i class="ri-telegram-line me-1"></i> Telegram</span>
-                                        <span class="{{ $class->telegram_chat_id ? 'text-success fw-bold' : 'text-muted' }}">
-                                            {{ $class->telegram_chat_id ? 'Ulangan' : 'Yo\'q' }}
+                                        <span class="text-muted small"><i class="ri-message-3-line me-1"></i> Topic ID</span>
+                                        <span class="{{ $class->telegram_topic_id ? 'text-secondary fw-bold' : 'text-muted' }}">
+                                            {{ $class->telegram_topic_id ?? 'Yo\'q' }}
                                         </span>
                                     </div>
                                 </div>
@@ -314,18 +329,19 @@
                             @error('name') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
 
-                        {{-- Telegram Fields --}}
                         <div class="row g-3 mb-4">
                             <div class="col-12">
                                 <label class="form-label fw-bold text-dark small text-uppercase text-muted mb-1">Telegram Sozlamalari</label>
                             </div>
                             <div class="col-md-6">
-                                <label class="small text-muted">Chat ID</label>
-                                <input type="text" wire:model="telegram_chat_id" class="form-control" placeholder="-100...">
+                                <label class="small text-muted">Chat ID <span class="text-danger">*</span></label>
+                                <input type="text" wire:model="telegram_chat_id" class="form-control @error('telegram_chat_id') is-invalid @enderror" placeholder="-100...">
+                                @error('telegram_chat_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-6">
-                                <label class="small text-muted">Topic ID</label>
-                                <input type="text" wire:model="telegram_topic_id" class="form-control" placeholder="123">
+                                <label class="small text-muted">Topic ID <span class="text-danger">*</span></label>
+                                <input type="text" wire:model="telegram_topic_id" class="form-control @error('telegram_topic_id') is-invalid @enderror" placeholder="123">
+                                @error('telegram_topic_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
                         </div>
 
@@ -371,16 +387,20 @@
 
                             <div class="row g-3 text-start mt-2">
                                 <div class="col-12 bg-white bg-opacity-10 p-3 rounded">
-                                    <small class="text-muted-50 d-block mb-1">O'quvchilar soni</small>
-                                    <h4 class="mb-0 fw-bold">{{ $viewingClass->students_count_dynamic ?? 0 }} ta</h4>
+                                    <small class="text-black-50 d-block mb-1">O'quvchilar soni</small>
+                                    <h4 class="mb-0 fw-bold">{{ $viewingClass->students_count ?? 0 }} ta</h4>
                                 </div>
                                 <div class="col-12 bg-white bg-opacity-10 p-3 rounded">
-                                    <small class="text-white-50 d-block mb-1">Telegram Status</small>
-                                    @if($viewingClass->telegram_chat_id)
-                                    <span class="badge bg-success"><i class="ri-check-double-line me-1"></i> Ulangan</span>
-                                    @else
-                                    <span class="badge bg-danger"><i class="ri-close-line me-1"></i> Yo'q</span>
-                                    @endif
+                                    <small class="text-black-50 d-block mb-1">Telegram Chat ID</small>
+                                    <span class="badge bg-info">
+                                        {{ $viewingClass->telegram_chat_id ?? 'Yo\'q' }}
+                                    </span>
+                                </div>
+                                <div class="col-12 bg-white bg-opacity-10 p-3 rounded">
+                                    <small class="text-black-50 d-block mb-1">Telegram Topic ID</small>
+                                    <span class="badge bg-secondary">
+                                        {{ $viewingClass->telegram_topic_id ?? 'Yo\'q' }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
