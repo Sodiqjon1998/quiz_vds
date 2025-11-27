@@ -44,7 +44,7 @@ class ReadingController extends Controller
             $completionRate = $passedDays > 0 ? round(($completedDays / $passedDays) * 100, 2) : 0;
             $todayUploaded = $user->hasTodayReading();
 
-            // ✅ JAMI HAJM HISOBLASH (Barcha vaqt uchun)
+            // Jami hajmni hisoblash
             $totalSize = ReadingRecord::where('users_id', $user->id)
                 ->where('status', ReadingRecord::STATUS_ACTIVE)
                 ->sum('file_size');
@@ -56,7 +56,7 @@ class ReadingController extends Controller
                     'recordings' => $recordings->map(function ($record) {
                         return [
                             'id' => $record->id,
-                            'filename' => $record->filename,
+                            'filename' => $record->filename, // Fayl nomi (kitob nomi shuning ichida bo'ladi)
                             'file_url' => $record->file_url,
                             'duration' => $record->duration,
                             'file_size' => $record->file_size,
@@ -69,7 +69,7 @@ class ReadingController extends Controller
                         'total_duration' => $totalDuration,
                         'completion_rate' => $completionRate,
                         'today_uploaded' => $todayUploaded,
-                        'total_storage_used' => $totalSizeMB . ' MB', // ✅ QO'SHILDI
+                        'total_storage_used' => $totalSizeMB . ' MB',
                     ]
                 ]
             ], 200);
@@ -90,11 +90,10 @@ class ReadingController extends Controller
         try {
             $user = Auth::user();
 
-            // ✅ Foydalanuvchi autentifikatsiya qilinganligini tekshirish
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Autentifikatsiya xatosi. Qaytadan login qiling!'
+                    'message' => 'Autentifikatsiya xatosi.'
                 ], 401);
             }
 
@@ -103,7 +102,6 @@ class ReadingController extends Controller
                 'audio' => 'required|file|mimes:mp3,wav,ogg,m4a,webm|max:51200',
             ]);
 
-            // Bugun allaqachon yuklangan bormi?
             if ($user->hasTodayReading()) {
                 return response()->json([
                     'success' => false,
@@ -112,7 +110,10 @@ class ReadingController extends Controller
             }
 
             $file = $request->file('audio');
+
+            // Frontenddan o'zgartirilgan fayl nomini olamiz (Masalan: KitobNomi_123456.webm)
             $originalName = $file->getClientOriginalName();
+
             $fileSize = $file->getSize();
             $extension = $file->getClientOriginalExtension();
             $duration = $this->getAudioDuration($file);
@@ -121,7 +122,7 @@ class ReadingController extends Controller
             $fileName = time() . '_' . $user->id . '.' . $extension;
             $filePath = $file->storeAs('readings', $fileName, 'public');
 
-            // Audio siqish (agar ffmpeg o'rnatilgan bo'lsa)
+            // Audio siqish (ixtiyoriy, agar ffmpeg bo'lsa)
             $fullPath = storage_path('app/public/' . $filePath);
             $compressedPath = $this->compressAudio($fullPath);
 
@@ -130,10 +131,11 @@ class ReadingController extends Controller
                 $fileSize = filesize($compressedPath);
             }
 
-            // ✅ users_id ni aniq belgilash
+            // Ma'lumotlar bazasiga yozish
+            // Bu yerda 'book_name' shart emas, chunki 'filename' ga kitob nomini yozdik
             $record = ReadingRecord::create([
-                'users_id' => $user->id,  // ← Bu juda muhim!
-                'filename' => $originalName,
+                'users_id' => $user->id,
+                'filename' => $originalName, // Reactdan kelgan nom saqlanadi
                 'file_url' => $filePath,
                 'file_size' => $fileSize,
                 'duration' => $duration,
@@ -152,8 +154,6 @@ class ReadingController extends Controller
             ], 200);
         } catch (\Exception $e) {
             Log::error('Reading Upload Error: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Xatolik: ' . $e->getMessage()
@@ -165,21 +165,24 @@ class ReadingController extends Controller
     {
         try {
             if (!class_exists('\FFMpeg\FFMpeg')) {
-                return null; // FFmpeg o'rnatilmagan
+                return null;
             }
 
             $ffmpeg = FFMpeg::create();
             $audio = $ffmpeg->open($inputPath);
 
             $format = new Mp3();
-            $format->setAudioKiloBitrate(32); // 32kbps - past sifat, kichik hajm
-            // yoki $format->setAudioKiloBitrate(64); // 64kbps - yaxshi sifat
+            $format->setAudioKiloBitrate(32);
 
-            $outputPath = str_replace('.webm', '_compressed.mp3', $inputPath);
+            $outputPath = str_replace(['.webm', '.m4a', '.wav'], '_compressed.mp3', $inputPath);
+            // Agar nom o'zgarmagan bo'lsa majburan qo'shamiz
+            if ($outputPath == $inputPath) {
+                $outputPath .= '.mp3';
+            }
+
             $audio->save($format, $outputPath);
 
-            // Eski faylni o'chirish
-            if (file_exists($inputPath)) {
+            if (file_exists($inputPath) && $inputPath !== $outputPath) {
                 unlink($inputPath);
             }
 
@@ -190,16 +193,11 @@ class ReadingController extends Controller
         }
     }
 
-
-    /**
-     * Audio davomiyligini aniqlash (getID3 bilan)
-     */
     private function getAudioDuration($file)
     {
         try {
-            // getID3 kutubxonasini tekshirish
             if (!class_exists('\getID3')) {
-                return 180; // default 3 daqiqa
+                return 180;
             }
 
             $getID3 = new \getID3;
@@ -209,39 +207,27 @@ class ReadingController extends Controller
                 return (int) $fileInfo['playtime_seconds'];
             }
 
-            return 180; // default 3 daqiqa
+            return 180;
         } catch (\Exception $e) {
-            Log::warning('Could not get audio duration: ' . $e->getMessage());
-            return 180; // default 3 daqiqa
+            return 180;
         }
     }
 
-    /**
-     * Yozuvni o'chirish
-     */
     public function delete($id)
     {
         try {
             $user = Auth::user();
-
             $record = ReadingRecord::where('id', $id)
                 ->where('users_id', $user->id)
                 ->firstOrFail();
 
-            // Model'dagi deleting event fayl o'chirishni avtomatik bajaradi
             $record->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Yozuv muvaffaqiyatli o\'chirildi'
+                'message' => 'Yozuv o\'chirildi'
             ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Yozuv topilmadi'
-            ], 404);
         } catch (\Exception $e) {
-            Log::error('Reading Delete Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Xatolik: ' . $e->getMessage()
