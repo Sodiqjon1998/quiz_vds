@@ -15,6 +15,7 @@ class ReadingRecord extends Model
 
     protected $fillable = [
         'users_id',
+        "book_name",
         'file_url',
         'file_size',
         'filename',
@@ -24,6 +25,7 @@ class ReadingRecord extends Model
 
     protected $casts = [
         'file_size' => 'integer',
+        "book_name" => 'string',
         'duration' => 'integer',
         'status' => 'integer',
         'created_at' => 'datetime',
