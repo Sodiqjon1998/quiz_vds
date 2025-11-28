@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ReadingRecord extends Model
@@ -55,7 +56,7 @@ class ReadingRecord extends Model
     public function scopeMonth($query, $month, $year)
     {
         return $query->whereYear('created_at', $year)
-                     ->whereMonth('created_at', $month);
+            ->whereMonth('created_at', $month);
     }
 
     /**
@@ -64,20 +65,23 @@ class ReadingRecord extends Model
     protected static function booted()
     {
         static::deleting(function ($record) {
-            // Agar file_path bor bo'lsa (B2 path), B2 dan o'chirish
-            if ($record->file_path) {
+            if ($record->file_url) {
                 try {
-                    Storage::disk('b2')->delete($record->file_path);
-                    \Log::info('File deleted from B2: ' . $record->file_path);
+                    // URL dan path ajratib olamiz
+                    // Misol: https://s3.us-west-001.backblazeb2.com/.../readings/file.mp3
+                    $parsedUrl = parse_url($record->file_url);
+                    $path = ltrim($parsedUrl['path'], '/');
+
+                    // Bucket nomini olib tashlash (agar URL da bo'lsa)
+                    $bucketName = config('filesystems.disks.b2.bucket');
+                    $path = str_replace($bucketName . '/', '', $path);
+
+                    if (Storage::disk('b2')->exists($path)) {
+                        Storage::disk('b2')->delete($path);
+                        Log::info("File deleted from B2: " . $path);
+                    }
                 } catch (\Exception $e) {
-                    \Log::error('B2 deletion failed: ' . $e->getMessage());
-                }
-            }
-            // Agar eski local file bo'lsa
-            elseif ($record->file_url && !str_starts_with($record->file_url, 'http')) {
-                if (Storage::disk('public')->exists($record->file_url)) {
-                    Storage::disk('public')->delete($record->file_url);
-                    \Log::info('File deleted from local storage: ' . $record->file_url);
+                    Log::error('B2 file deletion failed: ' . $e->getMessage());
                 }
             }
         });
@@ -92,12 +96,12 @@ class ReadingRecord extends Model
     public function getFileUrlAttribute($value)
     {
         if (!$value) return null;
-        
+
         // Agar to'liq URL bo'lsa (B2 URL), o'shani qaytarish
         if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
             return $value;
         }
-        
+
         // Agar nisbiy path bo'lsa, local storage URL yasash
         return Storage::disk('public')->url($value);
     }

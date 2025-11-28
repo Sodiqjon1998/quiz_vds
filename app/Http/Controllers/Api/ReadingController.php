@@ -145,8 +145,6 @@ class ReadingController extends Controller
                 $fileContent = file_get_contents($fileToUpload);
                 Storage::disk('b2')->put($b2Path, $fileContent, 'public');
                 $publicUrl = Storage::disk('b2')->url($b2Path);
-
-                Log::info('File uploaded to B2: ' . $publicUrl);
             } catch (\Exception $e) {
                 Log::error('B2 Upload Failed: ' . $e->getMessage());
                 throw new \Exception('Faylni B2 ga yuklashda xatolik: ' . $e->getMessage());
@@ -158,13 +156,13 @@ class ReadingController extends Controller
                 @unlink($compressedPath);
             }
 
-            // 5. Database ga saqlash
+            // 5. Database ga saqlash - file_path ni olib tashlaymiz
             $record = ReadingRecord::create([
                 'users_id' => $user->id,
                 'book_name' => $bookName,
                 'filename' => $originalName,
-                'file_url' => $publicUrl,  // To'liq URL yoki nisbiy path
-                'file_path' => $b2Path,    // B2 path (o'chirish uchun)
+                'file_url' => $publicUrl,  // To'liq URL
+                // 'file_path' => $b2Path,  // ❌ Olib tashlandi
                 'file_size' => $fileSize,
                 'duration' => $duration,
                 'status' => ReadingRecord::STATUS_ACTIVE,
@@ -177,7 +175,7 @@ class ReadingController extends Controller
                     'id' => $record->id,
                     'book_name' => $record->book_name,
                     'filename' => $record->filename,
-                    'file_url' => $record->file_url, // Model accessor ishlaydi
+                    'file_url' => $record->file_url,
                     'duration' => $record->duration,
                     'file_size' => round($record->file_size / 1024, 2) . ' KB',
                 ]
