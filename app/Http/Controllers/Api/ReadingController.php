@@ -49,38 +49,16 @@ class ReadingController extends Controller
                 ->sum('file_size');
             $totalSizeMB = round($totalSize / (1024 * 1024), 2);
 
-            // DEBUG: URL to'g'ri shakllanayotganini tekshirish uchun log
-            Log::info('--- Generating URLs for Index ---');
-            
+            // Model accessor avtomatik ishlaydi, qo'shimcha kod kerak emas
             $formattedRecordings = $recordings->map(function ($record) {
-                // 1. Bazadagi "toza" qiymatni olamiz (Model accessorlaridan qochish uchun)
-                // Bu getRawOriginal() funksiyasi modeldagi o'zgarishlarni chetlab o'tadi
-                $rawFileUrl = $record->getRawOriginal('file_url');
-
-                // 2. Agar bazaning o'zida to'liq URL (http...) yozilgan bo'lsa, o'shani o'zini olamiz
-                if (str_starts_with($rawFileUrl, 'http')) {
-                    $url = $rawFileUrl;
-                } else {
-                    // 3. Aks holda, storage linkini qo'shamiz (normal holat)
-                    $url = asset('storage/' . $rawFileUrl);
-                }
-
-                if (app()->environment('production')) {
-                    $url = str_replace('http://', 'https://', $url);
-                }
-
-                // Birinchi yozuvning URLini logga yozamiz (tekshirish uchun)
-                Log::info("ID: {$record->id} | Generated URL: {$url}");
-
                 return [
                     'id' => $record->id,
-                    'book_name' => $record->book_name ?? $record->filename, 
-                    'filename' => $record->filename, 
-                    'file_url' => $record->file_url,
-                    'audio_url' => $url, 
+                    'book_name' => $record->book_name ?? $record->filename,
+                    'filename' => $record->filename,
+                    'file_url' => $record->file_url, // Model accessor ishlatadi
                     'duration' => $record->duration,
-                    'file_size' => $record->file_size,
-                    'created_at' => $record->created_at,
+                    'file_size' => round($record->file_size / 1024, 2) . ' KB',
+                    'created_at' => $record->created_at->format('Y-m-d H:i'),
                 ];
             });
 
@@ -108,12 +86,11 @@ class ReadingController extends Controller
     }
 
     /**
-     * Audio fayl yuklash
+     * Audio fayl yuklash - Backblaze B2 versiyasi
      */
     public function upload(Request $request)
     {
-        Log::info('--- Audio Upload Started ---');
-        Log::info('User ID: ' . (Auth::id() ?? 'Guest'));
+        Log::info('--- Audio Upload Started (B2) ---');
 
         try {
             $user = Auth::user();
@@ -129,15 +106,6 @@ class ReadingController extends Controller
                 'audio' => 'required|file|mimes:mp3,wav,ogg,m4a,webm|max:51200',
             ]);
 
-            if ($request->hasFile('audio')) {
-                $file = $request->file('audio');
-                Log::info('Audio File Info:', [
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime_type' => $file->getMimeType(),
-                    'size_bytes' => $file->getSize(),
-                ]);
-            }
-
             if ($user->hasTodayReading()) {
                 return response()->json([
                     'success' => false,
@@ -148,38 +116,59 @@ class ReadingController extends Controller
             $file = $request->file('audio');
             $originalName = $file->getClientOriginalName();
             $bookName = $request->input('book_name', $originalName);
-
             $fileSize = $file->getSize();
             $extension = $file->getClientOriginalExtension();
-            
-            Log::info('Calculating audio duration...');
+
             $duration = $this->getAudioDuration($file);
-            Log::info('Calculated Duration: ' . $duration . ' seconds');
 
+            // 1. Temp folder ga saqlash
             $fileName = time() . '_' . $user->id . '.' . $extension;
-            $filePath = $file->storeAs('readings', $fileName, 'public');
-            Log::info('File stored at: ' . $filePath);
+            $localPath = $file->storeAs('temp_readings', $fileName, 'local');
+            $fullPath = storage_path('app/' . $localPath);
 
-            $fullPath = storage_path('app/public/' . $filePath);
+            // 2. Compression
             $compressedPath = $this->compressAudio($fullPath);
 
-            if ($compressedPath) {
-                $filePath = 'readings/' . basename($compressedPath);
+            if ($compressedPath && file_exists($compressedPath)) {
+                $fileToUpload = $compressedPath;
                 $fileSize = filesize($compressedPath);
-                Log::info('File compressed. New size: ' . $fileSize);
+                $finalFileName = basename($compressedPath);
+            } else {
+                $fileToUpload = $fullPath;
+                $finalFileName = $fileName;
             }
 
+            // 3. B2 ga yuklash
+            $b2Path = 'readings/' . $finalFileName;
+
+            try {
+                $fileContent = file_get_contents($fileToUpload);
+                Storage::disk('b2')->put($b2Path, $fileContent, 'public');
+                $publicUrl = Storage::disk('b2')->url($b2Path);
+
+                Log::info('File uploaded to B2: ' . $publicUrl);
+            } catch (\Exception $e) {
+                Log::error('B2 Upload Failed: ' . $e->getMessage());
+                throw new \Exception('Faylni B2 ga yuklashda xatolik: ' . $e->getMessage());
+            }
+
+            // 4. Temp fayllarni o'chirish
+            @unlink($fullPath);
+            if ($compressedPath && $compressedPath !== $fullPath) {
+                @unlink($compressedPath);
+            }
+
+            // 5. Database ga saqlash
             $record = ReadingRecord::create([
                 'users_id' => $user->id,
                 'book_name' => $bookName,
-                'filename' => $originalName, 
-                'file_url' => $filePath,
+                'filename' => $originalName,
+                'file_url' => $publicUrl,  // To'liq URL yoki nisbiy path
+                'file_path' => $b2Path,    // B2 path (o'chirish uchun)
                 'file_size' => $fileSize,
                 'duration' => $duration,
                 'status' => ReadingRecord::STATUS_ACTIVE,
             ]);
-
-            Log::info('Database record created with ID: ' . $record->id);
 
             return response()->json([
                 'success' => true,
@@ -188,13 +177,13 @@ class ReadingController extends Controller
                     'id' => $record->id,
                     'book_name' => $record->book_name,
                     'filename' => $record->filename,
+                    'file_url' => $record->file_url, // Model accessor ishlaydi
                     'duration' => $record->duration,
-                    'file_size' => $record->file_size,
+                    'file_size' => round($record->file_size / 1024, 2) . ' KB',
                 ]
             ], 200);
         } catch (\Exception $e) {
             Log::error('Reading Upload Error: ' . $e->getMessage());
-            Log::error('Stack Trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Xatolik: ' . $e->getMessage()
@@ -206,7 +195,7 @@ class ReadingController extends Controller
     {
         try {
             if (!class_exists('\FFMpeg\FFMpeg')) {
-                Log::warning('FFMpeg class not found. Skipping compression.');
+                Log::warning('FFMpeg not found. Skipping compression.');
                 return null;
             }
 
@@ -214,22 +203,14 @@ class ReadingController extends Controller
             $audio = $ffmpeg->open($inputPath);
 
             $format = new Mp3();
-            $format->setAudioKiloBitrate(32); 
+            $format->setAudioKiloBitrate(32);
 
-            $outputPath = str_replace(['.webm', '.m4a', '.wav'], '_compressed.mp3', $inputPath);
-            if ($outputPath == $inputPath) {
-                $outputPath .= '.mp3';
-            }
-            
+            $outputPath = preg_replace('/\.(webm|m4a|wav|mp3)$/', '_compressed.mp3', $inputPath);
+
             $audio->save($format, $outputPath);
-
-            if (file_exists($inputPath) && $inputPath !== $outputPath) {
-                unlink($inputPath);
-            }
-
             return $outputPath;
         } catch (\Exception $e) {
-            Log::error('Audio compression failed: ' . $e->getMessage());
+            Log::error('Compression failed: ' . $e->getMessage());
             return null;
         }
     }
@@ -238,25 +219,18 @@ class ReadingController extends Controller
     {
         try {
             if (!class_exists('\getID3')) {
-                Log::warning('getID3 library not found. Returning default duration.');
-                return 180; 
+                return 180;
             }
 
             $getID3 = new \getID3;
             $fileInfo = $getID3->analyze($file->getRealPath());
 
-            if (isset($fileInfo['playtime_seconds'])) {
-                return (int) $fileInfo['playtime_seconds'];
-            }
-            
-            if (isset($fileInfo['error'])) {
-                Log::warning('getID3 Error: ' . json_encode($fileInfo['error']));
-            }
-
-            return 180; 
+            return isset($fileInfo['playtime_seconds'])
+                ? (int) $fileInfo['playtime_seconds']
+                : 180;
         } catch (\Exception $e) {
-            Log::error('getAudioDuration Exception: ' . $e->getMessage());
-            return 180; 
+            Log::error('Duration calculation failed: ' . $e->getMessage());
+            return 180;
         }
     }
 
@@ -268,6 +242,7 @@ class ReadingController extends Controller
                 ->where('users_id', $user->id)
                 ->firstOrFail();
 
+            // Model booted() da avtomatik o'chiriladi
             $record->delete();
 
             return response()->json([
