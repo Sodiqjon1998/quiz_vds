@@ -15,7 +15,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
@@ -32,16 +32,15 @@ return [
             'throw' => false,
         ],
 
-        // Backblaze B2 Configuration
         'b2' => [
             'driver' => 's3',
-            'key' => env('B2_ACCOUNT_ID'),
+            'key' => env('B2_APPLICATION_KEY_ID'), // ✅ Bu
             'secret' => env('B2_APPLICATION_KEY'),
             'region' => env('B2_BUCKET_REGION', 'us-west-001'),
             'bucket' => env('B2_BUCKET_NAME'),
             'endpoint' => env('B2_ENDPOINT'),
             'use_path_style_endpoint' => true,
-            'throw' => false,
+            'visibility' => 'public',
         ],
 
     ],
