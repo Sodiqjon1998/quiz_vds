@@ -34,15 +34,15 @@ return [
 
         'b2' => [
             'driver' => 's3',
-            'key' => env('B2_APPLICATION_KEY_ID'), // ✅ Bu
+            'key' => env('B2_APPLICATION_KEY_ID'),
             'secret' => env('B2_APPLICATION_KEY'),
             'region' => env('B2_BUCKET_REGION', 'us-west-001'),
             'bucket' => env('B2_BUCKET_NAME'),
-            'endpoint' => env('B2_ENDPOINT'),
-            'use_path_style_endpoint' => true,
+            'endpoint' => env('B2_ENDPOINT'), // ✅ Bu qator muhim!
+            'url' => env('B2_ENDPOINT') . '/' . env('B2_BUCKET_NAME'), // ✅ To'liq URL
+            'use_path_style_endpoint' => false, // ✅ B2 uchun false bo'lishi kerak
             'visibility' => 'public',
-
-            'throw' => true, // Xatolarni ko'rsatish
+            'throw' => true, // ✅ Xatolarni ko'rsatish
         ],
 
     ],

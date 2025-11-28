@@ -49,13 +49,12 @@ class ReadingController extends Controller
                 ->sum('file_size');
             $totalSizeMB = round($totalSize / (1024 * 1024), 2);
 
-            // Model accessor avtomatik ishlaydi, qo'shimcha kod kerak emas
             $formattedRecordings = $recordings->map(function ($record) {
                 return [
                     'id' => $record->id,
                     'book_name' => $record->book_name ?? $record->filename,
                     'filename' => $record->filename,
-                    'file_url' => $record->file_url, // Model accessor ishlatadi
+                    'file_url' => $record->file_url,
                     'duration' => $record->duration,
                     'file_size' => round($record->file_size / 1024, 2) . ' KB',
                     'created_at' => $record->created_at->format('Y-m-d H:i'),
@@ -86,7 +85,7 @@ class ReadingController extends Controller
     }
 
     /**
-     * Audio fayl yuklash - Backblaze B2 versiyasi
+     * Audio fayl yuklash - Backblaze B2 versiyasi (TO'G'RILANGAN)
      */
     public function upload(Request $request)
     {
@@ -126,6 +125,8 @@ class ReadingController extends Controller
             $localPath = $file->storeAs('temp_readings', $fileName, 'local');
             $fullPath = storage_path('app/' . $localPath);
 
+            Log::info("Temp file created: " . $fullPath);
+
             // 2. Compression
             $compressedPath = $this->compressAudio($fullPath);
 
@@ -133,20 +134,48 @@ class ReadingController extends Controller
                 $fileToUpload = $compressedPath;
                 $fileSize = filesize($compressedPath);
                 $finalFileName = basename($compressedPath);
+                Log::info("Compressed file: " . $finalFileName . " (" . $fileSize . " bytes)");
             } else {
                 $fileToUpload = $fullPath;
                 $finalFileName = $fileName;
+                Log::info("Using original file (compression skipped)");
             }
 
-            // 3. B2 ga yuklash
+            // 3. B2 ga yuklash (TO'G'RILANGAN)
             $b2Path = 'readings/' . $finalFileName;
 
             try {
+                // ✅ 1-usul: file_get_contents (oddiy)
                 $fileContent = file_get_contents($fileToUpload);
-                Storage::disk('b2')->put($b2Path, $fileContent, 'public');
+
+                Log::info("Uploading to B2: " . $b2Path);
+
+                $uploaded = Storage::disk('b2')->put($b2Path, $fileContent, 'public');
+
+                // ✅ Tekshirish: Fayl haqiqatan ham yuklandi mi?
+                if (!$uploaded) {
+                    throw new \Exception('B2 ga yuklash muvaffaqiyatsiz tugadi (Storage::put qaytmadi)');
+                }
+
+                // ✅ Mavjudligini tekshirish
+                if (!Storage::disk('b2')->exists($b2Path)) {
+                    throw new \Exception('Fayl B2 da topilmadi: ' . $b2Path);
+                }
+
+                // ✅ To'liq URL yaratish
                 $publicUrl = Storage::disk('b2')->url($b2Path);
+
+                Log::info("✅ File successfully uploaded to B2: " . $publicUrl);
             } catch (\Exception $e) {
-                Log::error('B2 Upload Failed: ' . $e->getMessage());
+                Log::error('❌ B2 Upload Failed: ' . $e->getMessage());
+                Log::error('Stack trace: ' . $e->getTraceAsString());
+
+                // Temp fayllarni tozalash
+                @unlink($fullPath);
+                if ($compressedPath && $compressedPath !== $fullPath) {
+                    @unlink($compressedPath);
+                }
+
                 throw new \Exception('Faylni B2 ga yuklashda xatolik: ' . $e->getMessage());
             }
 
@@ -156,17 +185,18 @@ class ReadingController extends Controller
                 @unlink($compressedPath);
             }
 
-            // 5. Database ga saqlash - file_path ni olib tashlaymiz
+            // 5. Database ga saqlash
             $record = ReadingRecord::create([
                 'users_id' => $user->id,
                 'book_name' => $bookName,
                 'filename' => $originalName,
-                'file_url' => $publicUrl,  // To'liq URL
-                // 'file_path' => $b2Path,  // ❌ Olib tashlandi
+                'file_url' => $publicUrl,  // To'liq B2 URL
                 'file_size' => $fileSize,
                 'duration' => $duration,
                 'status' => ReadingRecord::STATUS_ACTIVE,
             ]);
+
+            Log::info("✅ Record saved to database: ID " . $record->id);
 
             return response()->json([
                 'success' => true,
@@ -181,7 +211,7 @@ class ReadingController extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
-            Log::error('Reading Upload Error: ' . $e->getMessage());
+            Log::error('❌ Reading Upload Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Xatolik: ' . $e->getMessage()
@@ -206,6 +236,9 @@ class ReadingController extends Controller
             $outputPath = preg_replace('/\.(webm|m4a|wav|mp3)$/', '_compressed.mp3', $inputPath);
 
             $audio->save($format, $outputPath);
+
+            Log::info("Audio compressed: " . $outputPath);
+
             return $outputPath;
         } catch (\Exception $e) {
             Log::error('Compression failed: ' . $e->getMessage());
