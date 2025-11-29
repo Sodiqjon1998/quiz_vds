@@ -32,7 +32,7 @@ return [
             'throw' => false,
         ],
 
-        'b2' => [
+         'b2' => [
             'driver' => 's3',
             'key' => env('BACKBLAZE_KEY_ID'),
             'secret' => env('BACKBLAZE_APPLICATION_KEY'),
@@ -40,8 +40,7 @@ return [
             'bucket' => env('BACKBLAZE_BUCKET_NAME'),
             'endpoint' => env('BACKBLAZE_ENDPOINT', 'https://s3.us-east-005.backblazeb2.com'),
             'use_path_style_endpoint' => false,
-            'throw' => true, // Bu xatolarni ko'rsatadi
-            'visibility' => 'public', // Default visibility
+            'throw' => true,
         ],
 
     ],
