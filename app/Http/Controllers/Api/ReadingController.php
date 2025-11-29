@@ -85,27 +85,35 @@ class ReadingController extends Controller
     }
 
     /**
-     * Audio fayl yuklash - Backblaze B2 versiyasi (TO'G'RILANGAN)
+     * Audio fayl yuklash - Backblaze B2 versiyasi
      */
     public function upload(Request $request)
     {
-        Log::info('--- Audio Upload Started (B2) ---');
+        Log::info('=== Audio Upload Started ===');
 
         try {
             $user = Auth::user();
 
             if (!$user) {
+                Log::error('User not authenticated');
                 return response()->json([
                     'success' => false,
                     'message' => 'Autentifikatsiya xatosi.'
                 ], 401);
             }
 
+            Log::info('User authenticated', ['user_id' => $user->id]);
+
+            // Validatsiya
             $request->validate([
                 'audio' => 'required|file|mimes:mp3,wav,ogg,m4a,webm|max:51200',
             ]);
 
+            Log::info('Validation passed');
+
+            // Bugun yuklanganini tekshirish
             if ($user->hasTodayReading()) {
+                Log::warning('User already uploaded today', ['user_id' => $user->id]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Siz bugun allaqachon audio yuklagansiz!'
@@ -118,57 +126,108 @@ class ReadingController extends Controller
             $fileSize = $file->getSize();
             $extension = $file->getClientOriginalExtension();
 
-            $duration = $this->getAudioDuration($file);
+            Log::info('File info', [
+                'original_name' => $originalName,
+                'size' => $fileSize,
+                'extension' => $extension
+            ]);
 
-            // 1. Temp folder ga saqlash
+            // Audio davomiyligini olish
+            $duration = $this->getAudioDuration($file);
+            Log::info('Audio duration: ' . $duration . ' seconds');
+
+            // 1. Temp folder'ga saqlash
             $fileName = time() . '_' . $user->id . '.' . $extension;
             $localPath = $file->storeAs('temp_readings', $fileName, 'local');
             $fullPath = storage_path('app/' . $localPath);
 
-            Log::info("Temp file created: " . $fullPath);
+            Log::info('Temp file created', ['path' => $fullPath]);
 
-            // 2. Compression
+            if (!file_exists($fullPath)) {
+                throw new \Exception('Temp fayl yaratilmadi: ' . $fullPath);
+            }
+
+            // 2. Compression (ixtiyoriy)
             $compressedPath = $this->compressAudio($fullPath);
 
             if ($compressedPath && file_exists($compressedPath)) {
                 $fileToUpload = $compressedPath;
                 $fileSize = filesize($compressedPath);
                 $finalFileName = basename($compressedPath);
-                Log::info("Compressed file: " . $finalFileName . " (" . $fileSize . " bytes)");
+                Log::info('Using compressed file', [
+                    'path' => $finalFileName,
+                    'size' => $fileSize
+                ]);
             } else {
                 $fileToUpload = $fullPath;
                 $finalFileName = $fileName;
-                Log::info("Using original file (compression skipped)");
+                Log::info('Using original file (compression skipped)');
             }
 
-            // 3. B2 ga yuklash (TO'G'RILANGAN)
+            // 3. Backblaze B2 ga yuklash
             $b2Path = 'readings/' . $finalFileName;
 
             try {
-                // ✅ 1-usul: file_get_contents (oddiy)
+                Log::info('Starting B2 upload', [
+                    'local_path' => $fileToUpload,
+                    'b2_path' => $b2Path,
+                    'size' => $fileSize,
+                    'file_exists' => file_exists($fileToUpload)
+                ]);
+
+                // Faylni o'qish
                 $fileContent = file_get_contents($fileToUpload);
+                
+                if ($fileContent === false) {
+                    throw new \Exception('Faylni o\'qib bo\'lmadi: ' . $fileToUpload);
+                }
 
-                Log::info("Uploading to B2: " . $b2Path);
+                Log::info('File content read', ['bytes' => strlen($fileContent)]);
 
-                $uploaded = Storage::disk('b2')->put($b2Path, $fileContent, 'public');
+                // B2 konfiguratsiyasini tekshirish
+                Log::info('B2 Config', [
+                    'bucket' => config('filesystems.disks.b2.bucket'),
+                    'region' => config('filesystems.disks.b2.region'),
+                    'endpoint' => config('filesystems.disks.b2.endpoint'),
+                    'has_key' => !empty(config('filesystems.disks.b2.key')),
+                    'has_secret' => !empty(config('filesystems.disks.b2.secret')),
+                ]);
 
-                // ✅ Tekshirish: Fayl haqiqatan ham yuklandi mi?
+                // B2 ga yuklash
+                $uploaded = Storage::disk('b2')->put($b2Path, $fileContent, [
+                    'visibility' => 'public',
+                    'CacheControl' => 'max-age=31536000',
+                ]);
+
                 if (!$uploaded) {
-                    throw new \Exception('B2 ga yuklash muvaffaqiyatsiz tugadi (Storage::put qaytmadi)');
+                    throw new \Exception('Storage::put() false qaytardi');
                 }
 
-                // ✅ Mavjudligini tekshirish
-                if (!Storage::disk('b2')->exists($b2Path)) {
-                    throw new \Exception('Fayl B2 da topilmadi: ' . $b2Path);
+                Log::info('Storage::put() successful');
+
+                // Mavjudligini tekshirish
+                $exists = Storage::disk('b2')->exists($b2Path);
+                Log::info('File exists check', ['exists' => $exists]);
+
+                if (!$exists) {
+                    throw new \Exception('Fayl yuklandimi, lekin B2 da topilmadi: ' . $b2Path);
                 }
 
-                // ✅ To'liq URL yaratish
+                // URL olish
                 $publicUrl = Storage::disk('b2')->url($b2Path);
+                
+                Log::info('✅ B2 Upload Successful', [
+                    'path' => $b2Path,
+                    'url' => $publicUrl
+                ]);
 
-                Log::info("✅ File successfully uploaded to B2: " . $publicUrl);
             } catch (\Exception $e) {
-                Log::error('❌ B2 Upload Failed: ' . $e->getMessage());
-                Log::error('Stack trace: ' . $e->getTraceAsString());
+                Log::error('❌ B2 Upload Failed', [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
 
                 // Temp fayllarni tozalash
                 @unlink($fullPath);
@@ -176,7 +235,17 @@ class ReadingController extends Controller
                     @unlink($compressedPath);
                 }
 
-                throw new \Exception('Faylni B2 ga yuklashda xatolik: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Faylni B2 ga yuklashda xatolik',
+                    'error' => $e->getMessage(),
+                    'debug' => [
+                        'bucket' => config('filesystems.disks.b2.bucket'),
+                        'region' => config('filesystems.disks.b2.region'),
+                        'endpoint' => config('filesystems.disks.b2.endpoint'),
+                        'path' => $b2Path
+                    ]
+                ], 500);
             }
 
             // 4. Temp fayllarni o'chirish
@@ -185,18 +254,20 @@ class ReadingController extends Controller
                 @unlink($compressedPath);
             }
 
+            Log::info('Temp files cleaned');
+
             // 5. Database ga saqlash
             $record = ReadingRecord::create([
                 'users_id' => $user->id,
                 'book_name' => $bookName,
                 'filename' => $originalName,
-                'file_url' => $publicUrl,  // To'liq B2 URL
+                'file_url' => $publicUrl,
                 'file_size' => $fileSize,
                 'duration' => $duration,
                 'status' => ReadingRecord::STATUS_ACTIVE,
             ]);
 
-            Log::info("✅ Record saved to database: ID " . $record->id);
+            Log::info('✅ Record saved to database', ['id' => $record->id]);
 
             return response()->json([
                 'success' => true,
@@ -210,15 +281,26 @@ class ReadingController extends Controller
                     'file_size' => round($record->file_size / 1024, 2) . ' KB',
                 ]
             ], 200);
+
         } catch (\Exception $e) {
-            Log::error('❌ Reading Upload Error: ' . $e->getMessage());
+            Log::error('❌ Upload Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Xatolik: ' . $e->getMessage()
+                'message' => 'Xatolik yuz berdi',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Audio ni siqish (compression)
+     */
     private function compressAudio($inputPath)
     {
         try {
@@ -237,34 +319,43 @@ class ReadingController extends Controller
 
             $audio->save($format, $outputPath);
 
-            Log::info("Audio compressed: " . $outputPath);
+            Log::info('Audio compressed', ['output' => $outputPath]);
 
             return $outputPath;
         } catch (\Exception $e) {
-            Log::error('Compression failed: ' . $e->getMessage());
+            Log::error('Compression failed', ['error' => $e->getMessage()]);
             return null;
         }
     }
 
+    /**
+     * Audio davomiyligini olish
+     */
     private function getAudioDuration($file)
     {
         try {
             if (!class_exists('\getID3')) {
+                Log::warning('getID3 not found. Using default duration.');
                 return 180;
             }
 
             $getID3 = new \getID3;
             $fileInfo = $getID3->analyze($file->getRealPath());
 
-            return isset($fileInfo['playtime_seconds'])
+            $duration = isset($fileInfo['playtime_seconds'])
                 ? (int) $fileInfo['playtime_seconds']
                 : 180;
+
+            return $duration;
         } catch (\Exception $e) {
-            Log::error('Duration calculation failed: ' . $e->getMessage());
+            Log::error('Duration calculation failed', ['error' => $e->getMessage()]);
             return 180;
         }
     }
 
+    /**
+     * Yozuvni o'chirish
+     */
     public function delete($id)
     {
         try {
@@ -273,7 +364,23 @@ class ReadingController extends Controller
                 ->where('users_id', $user->id)
                 ->firstOrFail();
 
-            // Model booted() da avtomatik o'chiriladi
+            // B2 dan faylni o'chirish
+            if ($record->file_url) {
+                try {
+                    // URL dan path ni olish
+                    $path = parse_url($record->file_url, PHP_URL_PATH);
+                    $path = ltrim($path, '/');
+                    
+                    if (Storage::disk('b2')->exists($path)) {
+                        Storage::disk('b2')->delete($path);
+                        Log::info('File deleted from B2', ['path' => $path]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to delete from B2', ['error' => $e->getMessage()]);
+                }
+            }
+
+            // Database dan o'chirish
             $record->delete();
 
             return response()->json([
@@ -281,6 +388,7 @@ class ReadingController extends Controller
                 'message' => 'Yozuv o\'chirildi'
             ], 200);
         } catch (\Exception $e) {
+            Log::error('Delete failed', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Xatolik: ' . $e->getMessage()

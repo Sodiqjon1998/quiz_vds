@@ -34,15 +34,14 @@ return [
 
         'b2' => [
             'driver' => 's3',
-            'key' => env('B2_APPLICATION_KEY_ID'),
-            'secret' => env('B2_APPLICATION_KEY'),
-            'region' => env('B2_BUCKET_REGION', 'us-west-001'),
-            'bucket' => env('B2_BUCKET_NAME'),
-            'endpoint' => env('B2_ENDPOINT'), // ✅ Bu qator muhim!
-            'url' => env('B2_ENDPOINT') . '/' . env('B2_BUCKET_NAME'), // ✅ To'liq URL
-            'use_path_style_endpoint' => false, // ✅ B2 uchun false bo'lishi kerak
-            'visibility' => 'public',
-            'throw' => true, // ✅ Xatolarni ko'rsatish
+            'key' => env('BACKBLAZE_KEY_ID'),
+            'secret' => env('BACKBLAZE_APPLICATION_KEY'),
+            'region' => env('BACKBLAZE_REGION', 'us-east-005'),
+            'bucket' => env('BACKBLAZE_BUCKET_NAME'),
+            'endpoint' => env('BACKBLAZE_ENDPOINT', 'https://s3.us-east-005.backblazeb2.com'),
+            'use_path_style_endpoint' => false,
+            'throw' => true, // Bu xatolarni ko'rsatadi
+            'visibility' => 'public', // Default visibility
         ],
 
     ],
