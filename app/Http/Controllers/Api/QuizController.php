@@ -127,52 +127,105 @@ class QuizController extends Controller
 
     // Quiz natijasini yuborish
     public function submitQuiz(Request $request, $subjectId, $quizId)
-    {
-        $validated = $request->validate([
-            'answers' => 'required|array',
-            'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.option_id' => 'nullable|exists:options,id',  // ✅ nullable qo'shildi
-        ]);
+{
+    $validated = $request->validate([
+        'answers' => 'required|array',
+        'answers.*' => 'nullable|integer|exists:options,id',  // ✅ Format o'zgartirildi
+    ]);
 
-        $user = $request->user();
+    $user = $request->user();
 
-        $totalScore = 0;
-        $correctAnswers = 0;
+    // Urinishlarni tekshirish
+    $attachment = Attachment::getAttamptById($quizId);
+    if (!$attachment) {
+        return response()->json([
+            'success' => false,
+            'error' => 'NOT_FOUND',
+            'message' => "Imtihon ma'lumoti topilmadi."
+        ], 404);
+    }
 
-        foreach ($validated['answers'] as $answer) {
-            // ✅ Agar option_id null bo'lsa, skip qilish
-            if (!$answer['option_id']) {
-                continue;
-            }
+    $examAttachmentCount = Exam::where('quiz_id', $quizId)
+        ->where('user_id', $user->id)
+        ->where('subject_id', $subjectId)
+        ->count();
 
-            $question = Question::findOrFail($answer['question_id']);
-            $option = $question->options()->where('id', $answer['option_id'])->first();
+    if ($attachment->number <= $examAttachmentCount) {
+        return response()->json([
+            'success' => false,
+            'error' => 'NO_ATTEMPTS',
+            'message' => "Urunishlar qolmadi"
+        ], 403);
+    }
 
-            if ($option && $option->is_correct) {
-                $totalScore += $question->mark;
-                $correctAnswers++;
-            }
+    $totalScore = 0;
+    $correctAnswers = 0;
+    $detailedResults = [];
+
+    // Quiz savollari
+    $questions = Question::where('quiz_id', $quizId)
+        ->where('status', Question::STATUS_ACTIVE)
+        ->with('options')
+        ->get();
+
+    foreach ($questions as $question) {
+        $selectedOptionId = $validated['answers'][$question->id] ?? null;
+        
+        $correctOption = $question->options()->where('is_correct', true)->first();
+        $isCorrect = false;
+
+        if ($selectedOptionId && $correctOption && $selectedOptionId == $correctOption->id) {
+            $totalScore += $question->mark;
+            $correctAnswers++;
+            $isCorrect = true;
         }
 
-        // Natijani saqlash
-        $exam = Exam::create([
-            'quiz_id' => $quizId,
-            'subject_id' => $subjectId,
-            'user_id' => $user->id,
-            'score' => $totalScore,
-            'total_questions' => count($validated['answers']),
-            'correct_answers' => $correctAnswers,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Quiz muvaffaqiyatli topshirildi!',
-            'result' => [
-                'score' => $totalScore,
-                'total_questions' => count($validated['answers']),
-                'correct_answers' => $correctAnswers,
-                'percentage' => round(($correctAnswers / count($validated['answers'])) * 100, 2)
-            ]
-        ], 200);
+        // Batafsil natijalar
+        $detailedResults[] = [
+            'question_id' => $question->id,
+            'question_text' => $question->question,
+            'question_image' => $question->image,
+            'selected_option_id' => $selectedOptionId,
+            'correct_option_id' => $correctOption ? $correctOption->id : null,
+            'is_correct' => $isCorrect,
+            'mark' => $question->mark,
+        ];
     }
+
+    // Exam_answer jadvaliga saqlash
+    $exam = Exam::create([
+        'quiz_id' => $quizId,
+        'subject_id' => $subjectId,
+        'user_id' => $user->id,
+    ]);
+
+    // Har bir javobni saqlash
+    foreach ($questions as $question) {
+        $selectedOptionId = $validated['answers'][$question->id] ?? null;
+        
+        \DB::table('exam_answer')->insert([
+            'exam_id' => $exam->id,
+            'question_id' => $question->id,
+            'option_id' => $selectedOptionId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $totalQuestions = $questions->count();
+    $percentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 2) : 0;
+    $passed = $percentage >= 70;
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Quiz muvaffaqiyatli topshirildi!',
+        'data' => [
+            'score' => $correctAnswers,
+            'total_questions' => $totalQuestions,
+            'percentage' => $percentage,
+            'passed' => $passed,
+            'detailed_results' => $detailedResults
+        ]
+    ], 200);
+}
 }
