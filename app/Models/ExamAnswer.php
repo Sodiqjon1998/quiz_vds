@@ -51,4 +51,15 @@ class ExamAnswer extends Model
     {
         return $this->belongsTo(Question::class);
     }
+
+
+    public function exam()
+    {
+        return $this->belongsTo(Exam::class);
+    }
+
+    public function option()
+    {
+        return $this->belongsTo(Option::class);
+    }
 }
