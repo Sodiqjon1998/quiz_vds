@@ -131,16 +131,20 @@ class QuizController extends Controller
         $validated = $request->validate([
             'answers' => 'required|array',
             'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.option_id' => 'required|exists:options,id',
+            'answers.*.option_id' => 'nullable|exists:options,id',  // ✅ nullable qo'shildi
         ]);
 
         $user = $request->user();
 
-        // Javoblarni tekshirish va ball hisoblash
         $totalScore = 0;
         $correctAnswers = 0;
 
         foreach ($validated['answers'] as $answer) {
+            // ✅ Agar option_id null bo'lsa, skip qilish
+            if (!$answer['option_id']) {
+                continue;
+            }
+
             $question = Question::findOrFail($answer['question_id']);
             $option = $question->options()->where('id', $answer['option_id'])->first();
 
