@@ -34,17 +34,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // === Quiz Management ===
     Route::prefix('quiz')->name('api.quiz.')->group(function () {
+        // Barcha quizlarni ko'rish (Dashboard uchun)
         Route::get('/', [SiteController::class, 'index'])->name('index');
-
-        // 1️⃣ BIRINCHI - Aniq route (avval tekshiriladi)
-        Route::get('/{subjectId}/{quizId}', [QuizController::class, 'show'])
-            ->where(['subjectId' => '[0-9]+', 'quizId' => '[0-9]+'])
-            ->name('show');
-
-        // 2️⃣ IKKINCHI - Umimiy route (keyin tekshiriladi)  
-        Route::get('/{id}/start', [SiteController::class, 'start'])->name('start');
-
+        
+        // Bitta quizni ko'rish va boshlash (QuizController ishlatiladi)
+        Route::get('/{subjectId}/{quizId}', [QuizController::class, 'show'])->name('show');
+        
+        // Quiz natijasini yuborish
         Route::post('/{subjectId}/{quizId}/submit', [QuizController::class, 'submitQuiz'])->name('submit.quiz');
+        
+        // Eski route'lar (agar kerak bo'lsa)
+        Route::get('/{id}/start', [SiteController::class, 'start'])->name('start');
+        Route::post('/{id}/submit', [SiteController::class, 'submit'])->name('submit');
     });
 
     // === Reading Management ===
