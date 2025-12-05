@@ -1,15 +1,48 @@
 <div>
-    {{-- MathJax Script (Formulalar uchun) --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+    <!-- MathJax 3 - TO'LIQ KONFIGURATSIYA -->
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.hook('message.processed', () => {
-                if (typeof MathJax !== 'undefined') {
-                    MathJax.typesetPromise();
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['\\(', '\\)'],
+                    ['$', '$']
+                ],
+                displayMath: [
+                    ['\\[', '\\]'],
+                    ['$$', '$$']
+                ],
+                processEscapes: true,
+                processEnvironments: true,
+                // Barcha paketlarni yoqish
+                packages: {
+                    '[+]': ['base', 'ams', 'noerrors', 'noundefined', 'autoload']
                 }
-            });
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('✅ MathJax to\'liq yuklandi!');
+                    });
+                }
+            }
+        };
+
+        window.addEventListener('renderMathJax', () => {
+            setTimeout(() => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise().then(() => {
+                        console.log('✅ Formulalar render qilindi!');
+                    });
+                }
+            }, 200);
         });
     </script>
+
+    <!-- MathJax Script - TO'LIQ VERSIYA -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
 
     <style>
         :root {
@@ -194,8 +227,14 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-auto">
-                                <button wire:click="createQuiz" class="btn btn-yuksalish w-100">
+                            <div class="col-12 col-md-auto d-flex gap-2">
+                                {{-- IMPORT BUTTON --}}
+                                <button wire:click="openImportModal" class="btn btn-success text-white">
+                                    <i class="ri-file-excel-2-line me-2"></i> Import
+                                </button>
+
+                                {{-- CREATE BUTTON --}}
+                                <button wire:click="createQuiz" class="btn btn-yuksalish">
                                     <i class="ri-add-circle-line me-2"></i> Yangi Quiz
                                 </button>
                             </div>
@@ -634,68 +673,202 @@
     </div>
     @endif
 
-    {{-- 5. VIEW MODAL --}}
+    {{-- 5. VIEW MODAL (TUZATILGAN FINAL VERSIYA) --}}
     @if($showViewModal && $viewingQuiz)
-    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-body p-0">
-                    <div class="p-4 text-center text-white" style="background-color: var(--yuksalish-orange); border-radius: 8px 8px 0 0;">
-                        <div class="avatar bg-white text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
-                            <i class="ri-file-text-line"></i>
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1090;"
+        tabindex="-1"
+        x-data="{ init() { setTimeout(() => { if (window.MathJax) { MathJax.typesetPromise(); } }, 200); } }">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+
+                {{-- Header --}}
+                <div class="modal-header border-0 text-white p-4" style="background: linear-gradient(135deg, #F58025 0%, #ff9f5a 100%);">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-white text-warning rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px;">
+                                <i class="ri-file-text-line fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ $viewingQuiz->name }}</h5>
+                                <div class="d-flex gap-2 opacity-75 small">
+                                    <span><i class="ri-calendar-line me-1"></i> {{ $viewingQuiz->created_at->format('d.m.Y') }}</span>
+                                    <span>|</span>
+                                    <span><i class="ri-question-line me-1"></i> {{ $viewingQuiz->questions->count() }} ta savol</span>
+                                </div>
+                            </div>
                         </div>
-                        <h5 class="fw-bold mb-1">{{ $viewingQuiz->name }}</h5>
-                        <p class="mb-0 opacity-75">{{ $viewingQuiz->created_at->format('d.m.Y') }}</p>
+                        <button type="button" class="btn-close btn-close-white" wire:click="closeViewModal"></button>
+                    </div>
+                </div>
+
+                {{-- Body --}}
+                <div class="modal-body bg-light p-4" wire:ignore.self>
+
+                    {{-- Info Badges --}}
+                    <div class="d-flex justify-content-center gap-3 mb-4">
+                        <span class="badge bg-white text-primary border px-3 py-2 rounded-pill shadow-sm">
+                            <i class="ri-book-open-line me-1"></i> {{ $viewingQuiz->subject->name ?? 'Fan' }}
+                        </span>
+                        <span class="badge bg-white text-warning border px-3 py-2 rounded-pill shadow-sm">
+                            <i class="ri-group-line me-1"></i> {{ $viewingQuiz->class->name ?? 'Sinf' }}
+                        </span>
                     </div>
 
-                    <div class="p-4">
-                        <div class="row g-3 text-center">
-                            <div class="col-4">
-                                <small class="text-muted d-block">Fan</small>
-                                <span class="fw-bold text-dark">{{ $viewingQuiz->subject->name }}</span>
-                            </div>
-                            <div class="col-4 border-start border-end">
-                                <small class="text-muted d-block">Sinf</small>
-                                <span class="fw-bold text-dark">{{ $viewingQuiz->class->name }}</span>
-                            </div>
-                            <div class="col-4">
-                                <small class="text-muted d-block">Savollar</small>
-                                <span class="fw-bold text-primary">{{ $viewingQuiz->questions->count() }} ta</span>
-                            </div>
-                        </div>
+                    {{-- Savollar Ro'yxati --}}
+                    <div class="d-flex flex-column gap-3">
+                        @foreach($viewingQuiz->questions as $index => $q)
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                            <div class="card-body p-4">
+                                <div class="d-flex gap-3">
 
-                        <hr>
+                                    {{-- 1. SAVOL RAQAMI --}}
+                                    <div class="flex-shrink-0">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary border border-primary bg-white shadow-sm"
+                                            style="width: 40px; height: 40px; font-size: 1.1rem;">
+                                            {{ $index + 1 }}
+                                        </div>
+                                    </div>
 
-                        <h6 class="fw-bold mb-3">Savollar ro'yxati:</h6>
-                        <div class="accordion" id="viewQuizAccordion">
-                            @foreach($viewingQuiz->questions as $index => $q)
-                            <div class="accordion-item border-0 mb-2 shadow-sm">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#viewQ{{ $q->id }}">
-                                        <span class="fw-bold me-2 text-primary">#{{ $index + 1 }}</span> {!! Str::limit(strip_tags($q->name), 50) !!}
-                                    </button>
-                                </h2>
-                                <div id="viewQ{{ $q->id }}" class="accordion-collapse collapse" data-bs-parent="#viewQuizAccordion">
-                                    <div class="accordion-body">
-                                        <div class="mb-2">{!! $q->name !!}</div>
-                                        @if($q->image) <img src="{{ asset('storage/' . $q->image) }}" class="img-thumbnail mb-2" style="max-height: 100px;"> @endif
-                                        <ul class="list-group list-group-flush">
+                                    {{-- 2. SAVOL MATNI VA VARIANTLAR --}}
+                                    <div class="w-100">
+                                        {{-- Savol Matni --}}
+                                        <div class="fw-bold text-dark mb-3" style="font-size: 1.15rem; line-height: 1.6;">
+                                            {!! $this->formatMathForView($q->name) !!}
+                                        </div>
+
+                                        {{-- Rasm --}}
+                                        @if($q->image)
+                                        <div class="mb-3">
+                                            <img src="{{ asset('storage/' . $q->image) }}" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
+                                        </div>
+                                        @endif
+
+                                        {{-- Variantlar --}}
+                                        <div class="row g-3">
                                             @foreach($q->options as $opt)
-                                            <li class="list-group-item {{ $opt->is_correct ? 'bg-success-subtle text-success fw-bold' : '' }}">
-                                                {{ $loop->iteration }}) {!! $opt->name !!}
-                                                @if($opt->is_correct) <i class="ri-check-line float-end"></i> @endif
-                                            </li>
+                                            <div class="col-md-6">
+                                                <div class="p-3 rounded-3 border d-flex align-items-center h-100 position-relative shadow-sm
+                                            {{ $opt->is_correct ? 'bg-success-subtle border-success' : 'bg-white border-light-subtle' }}"
+                                                    style="transition: transform 0.2s;">
+
+                                                    {{-- Harf --}}
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <span class="d-flex align-items-center justify-content-center rounded-circle fw-bold border
+                                                    {{ $opt->is_correct ? 'bg-success text-white border-success' : 'bg-light text-secondary border-secondary-subtle' }}"
+                                                            style="width: 30px; height: 30px; font-size: 0.9rem;">
+                                                            {{ chr(65 + $loop->index) }}
+                                                        </span>
+                                                    </div>
+
+                                                    {{-- Variant Matni --}}
+                                                    <div class="flex-grow-1 {{ $opt->is_correct ? 'text-success-emphasis fw-bold' : 'text-dark' }}">
+                                                        {!! $this->formatMathForView($opt->name) !!}
+                                                    </div>
+
+                                                    {{-- To'g'ri javob belgisi --}}
+                                                    @if($opt->is_correct)
+                                                    <div class="ms-2 text-success">
+                                                        <i class="ri-checkbox-circle-fill fs-4"></i>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
                                             @endforeach
-                                        </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            @endforeach
+                        </div>
+                        @endforeach
+                    </div>
+
+                    @if($viewingQuiz->questions->isEmpty())
+                    <div class="text-center py-5 text-muted">
+                        <i class="ri-inbox-line fs-1 opacity-50"></i>
+                        <p class="mt-2">Bu quizda hali savollar yo'q</p>
+                    </div>
+                    @endif
+
+                </div>
+
+                {{-- Footer --}}
+                <div class="modal-footer border-top bg-white p-3">
+                    <button type="button" wire:click="closeViewModal" class="btn btn-light w-100 py-2 fw-bold text-secondary border shadow-sm">
+                        Yopish
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+
+    {{-- IMPORT MODAL --}}
+    @if($showImportModal)
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); z-index: 1080;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="ri-upload-cloud-2-line text-success me-2"></i> Testlarni Import qilish
+                    </h5>
+                    <button type="button" class="btn-close" wire:click="closeImportModal"></button>
+                </div>
+                <div class="modal-body">
+                    {{-- Alert Info --}}
+                    <div class="alert alert-info d-flex align-items-start small border-0 bg-info-subtle text-info-emphasis">
+                        <i class="ri-information-line fs-5 me-2 mt-1"></i>
+                        <div>
+                            <strong>Excel fayl shabloni:</strong><br>
+                            1-ustun: Savol matni<br>
+                            2-5 ustunlar: Variantlar (A, B, C, D)<br>
+                            6-ustun: To'g'ri javob harfi (A, B, C yoki D)
                         </div>
                     </div>
-                    <div class="modal-footer border-0 p-4 pt-0">
-                        <button type="button" wire:click="closeViewModal" class="btn btn-light w-100">Yopish</button>
-                    </div>
+
+                    @if (session()->has('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
+
+                    <form wire:submit.prevent="importQuiz">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Sinfni tanlang <span class="text-danger">*</span></label>
+                            <select wire:model="importClassId" class="form-select @error('importClassId') is-invalid @enderror">
+                                <option value="">Tanlang...</option>
+                                @foreach($classes as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('importClassId') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fayl yuklash (.xlsx, .pdf)</label>
+                            <div class="upload-area p-4 text-center cursor-pointer position-relative">
+                                <input type="file" wire:model="importFile" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
+                                @if($importFile)
+                                <div class="text-success fw-bold">
+                                    <i class="ri-file-check-line fs-3 d-block mb-1"></i>
+                                    {{ $importFile->getClientOriginalName() }}
+                                </div>
+                                @else
+                                <div class="text-muted">
+                                    <i class="ri-upload-2-line fs-3 d-block mb-1"></i>
+                                    Faylni shu yerga tashlang yoki bosing
+                                </div>
+                                @endif
+                            </div>
+                            @error('importFile') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            <div wire:loading wire:target="importFile" class="text-primary small mt-1">Yuklanmoqda...</div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
+                                <span wire:loading.remove wire:target="importQuiz">Import qilish</span>
+                                <span wire:loading wire:target="importQuiz"><i class="ri-loader-4-line ri-spin"></i> Jarayonda...</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
