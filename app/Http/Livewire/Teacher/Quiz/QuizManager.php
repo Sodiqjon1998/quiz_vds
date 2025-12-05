@@ -78,16 +78,17 @@ class QuizManager extends Component
     public function importQuiz()
     {
         $this->validate([
-            'importFile' => 'required|file|mimes:xlsx,xls,pdf|max:10240', // Max 10MB
+            'importFile' => 'required|file|mimes:xlsx,xls,pdf|max:10240',
             'importClassId' => 'required|exists:classes,id',
         ], [
             'importFile.required' => 'Fayl tanlanmadi',
-            'importFile.mimes' => 'Faqat Excel (.xlsx) yoki PDF fayl yuklang',
             'importClassId.required' => 'Sinfni tanlang',
         ]);
 
         $extension = $this->importFile->getClientOriginalExtension();
         $fileName = pathinfo($this->importFile->getClientOriginalName(), PATHINFO_FILENAME);
+        // Faylning to'liq yo'lini olib olamiz, chunki reset qilinganda yo'qolishi mumkin
+        $realPath = $this->importFile->getRealPath();
 
         DB::beginTransaction();
         try {
@@ -103,9 +104,9 @@ class QuizManager extends Component
 
             // 2. Fayl turiga qarab o'qish
             if (in_array($extension, ['xlsx', 'xls'])) {
-                $this->processExcel($this->importFile->getRealPath(), $quiz->id);
+                $this->processExcel($realPath, $quiz->id);
             } elseif ($extension === 'pdf') {
-                $this->processPdf($this->importFile->getRealPath(), $quiz->id);
+                $this->processPdf($realPath, $quiz->id);
             }
 
             DB::commit();
@@ -114,8 +115,20 @@ class QuizManager extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Import xatoligi: ' . $e->getMessage());
+        } finally {
+            // ✅ TUZATISH: FAYLNI DARHOL O'CHIRISH
+            if ($this->importFile) {
+                // Bu metod livewire-tmp papkasidagi fizik faylni o'chiradi
+                $this->importFile->delete();
+            }
+
+            // O'zgaruvchini tozalash
+            $this->reset(['importFile', 'importClassId']);
         }
     }
+
+
+
 
     // Excel faylni qayta ishlash
     private function processExcel($filePath, $quizId)
