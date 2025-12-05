@@ -332,17 +332,28 @@
 
                                     <td class="text-center">
                                         <div class="d-flex align-items-center justify-content-center gap-2">
+                                            {{-- To'g'ri (Yashil) --}}
                                             <div class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                                style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;" title="To'g'ri">
-                                                <i class="ri-checkbox-circle-line me-1"></i> <span class="fw-bold small">{{ $correct }}</span>
+                                                style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;"
+                                                title="To'g'ri javoblar">
+                                                <i class="ri-checkbox-circle-line me-1"></i>
+                                                <span class="fw-bold small">{{ $correct }}</span>
                                             </div>
+
+                                            {{-- Xato (Qizil) --}}
                                             <div class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                                style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7;" title="Xato">
-                                                <i class="ri-close-circle-line me-1"></i> <span class="fw-bold small">{{ $incorrect }}</span>
+                                                style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7;"
+                                                title="Xato javoblar">
+                                                <i class="ri-close-circle-line me-1"></i>
+                                                <span class="fw-bold small">{{ $incorrect }}</span>
                                             </div>
+
+                                            {{-- Jami (Ko'k - YANGILANGAN STIL) --}}
                                             <div class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                                style="background-color: #cfe2ff; color: #084298; border-color: #b6d4fe;" title="Jami">
-                                                <i class="ri-stack-line me-1"></i> <span class="fw-bold small">{{ $total }}</span>
+                                                style="background-color: #e7f1ff; color: #0c63e4; border-color: #b6d4fe;"
+                                                title="Jami savollar">
+                                                <i class="ri-stack-line me-1"></i>
+                                                <span class="fw-bold small">{{ $total }}</span>
                                             </div>
                                         </div>
                                     </td>
@@ -406,14 +417,23 @@
                                         {{ $percent }}%
                                     </div>
 
+                                    {{-- Statistika (3 ta badge yonma-yon) --}}
                                     <div class="ms-3 d-flex gap-2">
-                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; font-size: 0.8rem;">
+                                        {{-- To'g'ri --}}
+                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border"
+                                            style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; font-size: 0.8rem;">
                                             <i class="ri-check-line me-1"></i> {{ $correct }}
                                         </span>
-                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7; font-size: 0.8rem;">
+
+                                        {{-- Xato --}}
+                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border"
+                                            style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7; font-size: 0.8rem;">
                                             <i class="ri-close-line me-1"></i> {{ $incorrect }}
                                         </span>
-                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #cfe2ff; color: #084298; border-color: #b6d4fe; font-size: 0.8rem;">
+
+                                        {{-- Jami (YANGILANGAN STIL) --}}
+                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border"
+                                            style="background-color: #e7f1ff; color: #0c63e4; border-color: #b6d4fe; font-size: 0.8rem;">
                                             <i class="ri-stack-line me-1"></i> {{ $total }}
                                         </span>
                                     </div>
@@ -468,51 +488,89 @@
                 </div>
 
                 {{-- Scrollable Body --}}
-                <div class="modal-body modal-body-scroll">
-                    {{-- Summary Card --}}
-                    <div class="card border-0 mb-4 rounded-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 10px 20px -5px rgba(118, 75, 162, 0.4);">
-                        <div class="card-body text-white p-4">
-                            <div class="row text-center g-4">
-                                <div class="col-md-4">
+                <div class="modal-body modal-body-scroll bg-light">
+
+                    {{-- 1. RESULT CARD (OQ FON + SARIQ ACCENT) --}}
+                    <div class="card border-0 mb-3 rounded-4 shadow-sm bg-white position-relative overflow-hidden">
+                        {{-- Chap tomondagi sariq chiziq --}}
+                        <div class="position-absolute top-0 start-0 h-100" style="width: 6px; background-color: #F58025;"></div>
+
+                        <div class="card-body p-4">
+                            <div class="row align-items-center text-center">
+
+                                {{-- O'quvchi --}}
+                                <div class="col-4 position-relative">
                                     <div class="d-flex flex-column align-items-center">
-                                        <i class="ri-user-line fs-1 mb-2 opacity-75"></i>
-                                        <small class="text-white-50 text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">O'quvchi</small>
-                                        <span class="fw-bold fs-6">{{ $selectedExam->user->first_name }} {{ $selectedExam->user->last_name }}</span>
+                                        {{-- Ikonka doirasi --}}
+                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
+                                            <i class="ri-user-smile-line fs-3"></i>
+                                        </div>
+                                        <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">O'quvchi</div>
+                                        <div class="fw-bold text-dark text-truncate w-100 px-1" style="font-size: 0.95rem;">
+                                            {{ $selectedExam->user->first_name }}
+                                            <br>
+                                            {{ $selectedExam->user->last_name }}
+                                        </div>
+                                    </div>
+
+                                    {{-- Ajratuvchi chiziq --}}
+                                    <div class="position-absolute top-50 end-0 translate-middle-y bg-light" style="width: 2px; height: 60%;"></div>
+                                </div>
+
+                                {{-- Ball (Markaziy) --}}
+                                <div class="col-4 position-relative">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
+                                            <i class="ri-medal-line fs-3"></i>
+                                        </div>
+                                        <div class="text-uppercase text-muted fw-bold mb-0" style="font-size: 0.65rem; letter-spacing: 0.5px;">Ball</div>
+                                        <div class="fw-bold" style="font-size: 2.2rem; color: #F58025; line-height: 1.2;">
+                                            {{ $examStats['percentage'] }}%
+                                        </div>
+                                    </div>
+
+                                    {{-- Ajratuvchi chiziq --}}
+                                    <div class="position-absolute top-50 end-0 translate-middle-y bg-light" style="width: 2px; height: 60%;"></div>
+                                </div>
+
+                                {{-- Natija --}}
+                                <div class="col-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center"
+                                            style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
+                                            <i class="ri-checkbox-multiple-line fs-3"></i>
+                                        </div>
+                                        <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">Natija</div>
+                                        <div class="fw-bold text-dark fs-5">
+                                            {{ $examStats['correct'] }} <span class="text-muted mx-1">/</span> {{ $examStats['total'] }}
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-4 border-start border-white border-opacity-25">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <i class="ri-medal-line fs-1 mb-2 opacity-75"></i>
-                                        <small class="text-white-50 text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Ball</small>
-                                        <span class="fw-bold" style="font-size: 2rem; line-height: 1;">{{ $examStats['percentage'] }}%</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 border-start border-white border-opacity-25">
-                                    <div class="d-flex flex-column align-items-center">
-                                        <i class="ri-check-double-line fs-1 mb-2 opacity-75"></i>
-                                        <small class="text-white-50 text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 1px;">Natija</small>
-                                        <span class="fw-bold fs-5">{{ $examStats['correct'] }} / {{ $examStats['total'] }}</span>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
                     </div>
 
-                    {{-- Quiz Info --}}
-                    <div class="card border-0 mb-4 bg-light rounded-3">
+                    {{-- 2. QUIZ INFO (Sodda variant) --}}
+                    <div class="card border-0 mb-4 rounded-4 shadow-sm bg-white">
                         <div class="card-body p-3">
                             <div class="d-flex align-items-center">
-                                <div class="bg-white rounded-3 p-3 shadow-sm me-3">
-                                    <i class="ri-file-list-3-line fs-3" style="color: var(--yuksalish-orange);"></i>
+                                {{-- Fayl ikonka --}}
+                                <div class="flex-shrink-0 rounded-3 d-flex align-items-center justify-content-center me-3"
+                                    style="width: 45px; height: 45px; background-color: #fff4e6; color: #F58025;">
+                                    <i class="ri-file-text-line fs-4"></i>
                                 </div>
+
                                 <div class="flex-grow-1">
-                                    <h6 class="fw-bold mb-1">{{ $selectedExam->quiz->name ?? 'Quiz nomi' }}</h6>
-                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <span class="badge bg-white text-primary border shadow-sm">
-                                            <i class="ri-book-line me-1"></i>{{ $selectedExam->quiz->subject->name ?? 'Fan' }}
+                                    <h6 class="fw-bold text-dark mb-1">{{ $selectedExam->quiz->name ?? 'Quiz nomi' }}</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="d-flex align-items-center text-muted small bg-light px-2 py-1 rounded border border-light">
+                                            <i class="ri-book-open-line me-1 text-primary"></i> {{ $selectedExam->quiz->subject->name ?? 'Fan' }}
                                         </span>
-                                        <span class="badge bg-white text-secondary border shadow-sm">
-                                            <i class="ri-time-line me-1"></i>{{ $selectedExam->created_at->format('d.m.Y H:i') }}
+                                        <span class="d-flex align-items-center text-muted small bg-light px-2 py-1 rounded border border-light">
+                                            <i class="ri-time-line me-1 text-secondary"></i> {{ $selectedExam->created_at->format('d.m.Y H:i') }}
                                         </span>
                                     </div>
                                 </div>
@@ -520,13 +578,13 @@
                         </div>
                     </div>
 
-                    {{-- Questions List --}}
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">
-                            <i class="ri-question-line me-2" style="color: var(--yuksalish-orange);"></i>
+                    {{-- Savollar ro'yxati sarlavhasi --}}
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        <h6 class="fw-bold mb-0 text-dark d-flex align-items-center">
+                            <i class="ri-question-answer-line me-2 text-warning"></i>
                             Savollar va javoblar
                         </h6>
-                        <span class="badge bg-light text-dark border">
+                        <span class="badge bg-white text-muted border shadow-sm rounded-pill">
                             {{ $selectedExam->answers->count() }} ta savol
                         </span>
                     </div>
