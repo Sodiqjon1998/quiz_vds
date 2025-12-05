@@ -3,7 +3,7 @@
 
 @section('content')
 
-    <style>
+    <!-- <style>
         table,
         tr,
         th,
@@ -118,5 +118,7 @@
                 this.submit();
             }
         });
-    </script>
+    </script> -->
+
+    @livewire('teacher.exam.exam-result-test')
 @endsection

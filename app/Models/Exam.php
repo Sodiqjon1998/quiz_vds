@@ -6,6 +6,7 @@ use App\Models\Teacher\Quiz;
 use App\Models\Teacher\Teacher;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use PHPUnit\Metadata\Uses;
 
 /**
  *
@@ -52,20 +53,37 @@ class Exam extends Model
         // Boshqa barcha mass assignment qilinadigan ustunlarni shu yerga qo'shing
     ];
 
+
     public function answers()
     {
-        return $this->hasMany(ExamAnswer::class);
+        return $this->hasMany(ExamAnswer::class, 'exam_id');
     }
 
 
-    public function quiz()
-    {
-        return $this->belongsTo(Quiz::class);
-    }
 
+    // User relation
     public function user()
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsTo(Users::class, 'user_id');
+    }
+
+    // Quiz relation
+    public function quiz()
+    {
+        return $this->belongsTo(Quiz::class, 'quiz_id');
+    }
+
+    // Subject relation
+    public function subject()
+    {
+        return $this->belongsTo(Subjects::class, 'subject_id');
+    }
+
+
+    // Kim yaratgan
+    public function creator()
+    {
+        return $this->belongsTo(Uses::class, 'created_by');
     }
 
 

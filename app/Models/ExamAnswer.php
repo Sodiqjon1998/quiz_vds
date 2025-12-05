@@ -47,19 +47,21 @@ class ExamAnswer extends Model
     ];
 
 
-     public function question()
-    {
-        return $this->belongsTo(Question::class);
-    }
-
-
+    // Exam relation
     public function exam()
     {
-        return $this->belongsTo(Exam::class);
+        return $this->belongsTo(Exam::class, 'exam_id');
     }
 
+    // Question relation
+    public function question()
+    {
+        return $this->belongsTo(Question::class, 'question_id');
+    }
+
+    // Option relation
     public function option()
     {
-        return $this->belongsTo(Option::class);
+        return $this->belongsTo(Option::class, 'option_id');
     }
 }

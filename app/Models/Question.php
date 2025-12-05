@@ -56,16 +56,16 @@ class Question extends Model
         'updated_by'
     ];
 
-    // Quiz relation
-    public function quiz()
-    {
-        return $this->belongsTo(Quiz::class);
-    }
-
     // Options relation
     public function options()
     {
-        return $this->hasMany(Option::class);
+        return $this->hasMany(Option::class, 'question_id');
+    }
+
+    // Quiz relation
+    public function quiz()
+    {
+        return $this->belongsTo(Quiz::class, 'quiz_id');
     }
 
     // Correct option

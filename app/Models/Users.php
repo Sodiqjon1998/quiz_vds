@@ -350,4 +350,29 @@ class Users extends Authenticatable
             ->latest()
             ->first();
     }
+
+
+    // 2. Sinf nomini olib beradigan yordamchi funksiya
+    public function getClassNameAttribute()
+    {
+        // 1. Ma'lumotni olamiz
+        $ids = $this->classes_id;
+
+        // 2. Agar bo'sh bo'lsa, srazi qaytaramiz
+        if (empty($ids)) {
+            return '-';
+        }
+
+        // 3. MUHIM JOYI: Agar array bo'lmasa (string kelsa), uni arrayga o'rab olamiz
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+
+        // 4. Endi bemalol whereIn ishlataveramiz (chunki $ids aniq array bo'ldi)
+        $class = \Illuminate\Support\Facades\DB::table('classes')
+            ->whereIn('id', $ids)
+            ->first();
+
+        return $class ? $class->name : '-';
+    }
 }

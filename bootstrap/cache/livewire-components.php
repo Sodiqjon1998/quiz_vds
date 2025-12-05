@@ -10,6 +10,7 @@
   'koordinator.report.reading-records' => 'App\\Http\\Livewire\\Koordinator\\Report\\ReadingRecords',
   'teacher.classes.classes-manager' => 'App\\Http\\Livewire\\Teacher\\Classes\\ClassesManager',
   'teacher.exam.exam-result' => 'App\\Http\\Livewire\\Teacher\\Exam\\ExamResult',
+  'teacher.exam.exam-result-test' => 'App\\Http\\Livewire\\Teacher\\Exam\\ExamResultTest',
   'teacher.exam.student-monitoring' => 'App\\Http\\Livewire\\Teacher\\Exam\\StudentMonitoring',
   'teacher.quiz.question-manager' => 'App\\Http\\Livewire\\Teacher\\Quiz\\QuestionManager',
   'teacher.quiz.quiz-manager' => 'App\\Http\\Livewire\\Teacher\\Quiz\\QuizManager',

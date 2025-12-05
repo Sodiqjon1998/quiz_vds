@@ -97,6 +97,82 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-statistics.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-analytics.css') }}">
 
+    <style>
+        :root {
+            /* Logotipdan olingan asosiy rang (Taxminiy kod, logotipga moslashtirildi) */
+            --brand-color: #E08E45;
+            /* Faol holatdagi gradientning ikkinchi rangi */
+            --brand-color-dark: #C97A35;
+            /* Juda och fon rangi (hover uchun) */
+            --brand-light: #FFF5EC;
+            /* Matn rangi */
+            --text-dark: #434343;
+        }
+
+        /* 1. Sidebar umumiy foni */
+        .bg-menu-theme {
+            background-color: #ffffff !important;
+            color: var(--text-dark);
+        }
+
+        /* 2. Logo qismi */
+        .app-brand-text {
+            color: var(--text-dark) !important;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* 3. Menyu havolalari (Linklar) */
+        .menu-link {
+            color: var(--text-dark);
+            font-weight: 500;
+            border-radius: 8px;
+            /* Burchaklarni yumshatish */
+            margin: 0 10px;
+            /* Yonlardan ozgina joy tashlash */
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Iconlar rangi */
+        .menu-link i {
+            color: #8E8E8E;
+            /* Oddiy holatda kulrang */
+            transition: color 0.3s ease;
+        }
+
+        /* 4. Hover holati (Sichqoncha borganda) */
+        .menu-item .menu-link:hover {
+            background-color: var(--brand-light) !important;
+            color: var(--brand-color) !important;
+        }
+
+        .menu-item .menu-link:hover i {
+            color: var(--brand-color) !important;
+        }
+
+        /* 5. ACTIVE holati (Tanlangan menyu) - Professional yondashuv */
+        .menu-item.active .menu-link {
+            /* Oddiy rang o'rniga zamonaviy gradient */
+            background: linear-gradient(45deg, var(--brand-color), var(--brand-color-dark)) !important;
+            color: #ffffff !important;
+
+            /* Yumshoq soya berish (Shadow) */
+            box-shadow: 0 4px 14px 0 rgba(224, 142, 69, 0.4) !important;
+        }
+
+        /* Active bo'lganda icon rangi oq bo'lishi kerak */
+        .menu-item.active .menu-link i {
+            color: #ffffff !important;
+        }
+
+        /* Sub-menu (Ichki menyular) ochilgandagi holat */
+        .menu-item.active.open>.menu-link {
+            background: var(--brand-light) !important;
+            color: var(--brand-color) !important;
+            box-shadow: none !important;
+        }
+    </style>
+
 
     <!-- Helpers -->
     <script src="{{ asset('assets/vendor/js/helpers.js') }}"></script>
