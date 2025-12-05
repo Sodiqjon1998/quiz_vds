@@ -426,9 +426,24 @@
                         @endforelse
                 </div>
 
-                {{-- Pagination --}}
-                <div class="p-3 border-top">
-                    {{ $exams->links() }}
+                {{-- Pagination & Summary (YANGILANGAN) --}}
+                <div class="p-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 bg-white" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
+
+                    {{-- Chap taraf: Statistika --}}
+                    <div class="text-muted small">
+                        @if($exams->total() > 0)
+                        Jami <span class="fw-bold text-dark">{{ $exams->total() }}</span> ta natijadan
+                        <span class="fw-bold text-dark">{{ $exams->firstItem() }}</span> dan
+                        <span class="fw-bold text-dark">{{ $exams->lastItem() }}</span> gachasi ko'rsatilmoqda
+                        @else
+                        Ma'lumot topilmadi
+                        @endif
+                    </div>
+
+                    {{-- O'ng taraf: Sahifalash tugmalari --}}
+                    <div>
+                        {{ $exams->links() }}
+                    </div>
                 </div>
             </div>
         </div>
