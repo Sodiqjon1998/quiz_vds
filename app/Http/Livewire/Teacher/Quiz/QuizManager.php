@@ -87,8 +87,15 @@ class QuizManager extends Component
 
         $extension = $this->importFile->getClientOriginalExtension();
         $fileName = pathinfo($this->importFile->getClientOriginalName(), PATHINFO_FILENAME);
-        // Faylning to'liq yo'lini olib olamiz, chunki reset qilinganda yo'qolishi mumkin
-        $realPath = $this->importFile->getRealPath();
+
+        // ✅ Railway uchun: Livewire faylini to'g'ridan-to'g'ri o'qish
+        $tempPath = null;
+        $fullPath = $this->importFile->getRealPath();
+
+        // ✅ Fayl mavjudligini tekshirish
+        if (!file_exists($fullPath) || !is_readable($fullPath)) {
+            throw new \Exception("Fayl o'qib bo'lmadi. Qayta urinib ko'ring.");
+        }
 
         DB::beginTransaction();
         try {
@@ -104,22 +111,37 @@ class QuizManager extends Component
 
             // 2. Fayl turiga qarab o'qish
             if (in_array($extension, ['xlsx', 'xls'])) {
-                $this->processExcel($realPath, $quiz->id);
+                $this->processExcel($fullPath, $quiz->id);
             } elseif ($extension === 'pdf') {
-                $this->processPdf($realPath, $quiz->id);
+                $this->processPdf($fullPath, $quiz->id);
             }
 
             DB::commit();
-            session()->flash('message', 'Quiz muvaffaqiyatli import qilindi! Jami savollar: ' . $quiz->questions()->count());
+
+            // ✅ Muvaffaqiyatli xabar
+            $questionCount = $quiz->questions()->count();
+            session()->flash('message', "✅ Quiz muvaffaqiyatli import qilindi! Jami savollar: {$questionCount}");
+
             $this->closeImportModal();
         } catch (\Exception $e) {
             DB::rollBack();
+
+            // ✅ Batafsil xatolik xabari
+            \Log::error('Import xatoligi: ' . $e->getMessage(), [
+                'file' => $fileName,
+                'class_id' => $this->importClassId,
+                'trace' => $e->getTraceAsString()
+            ]);
+
             session()->flash('error', 'Import xatoligi: ' . $e->getMessage());
         } finally {
-            // ✅ TUZATISH: FAYLNI DARHOL O'CHIRISH
+            // ✅ Faqat Livewire temp faylini tozalash
             if ($this->importFile) {
-                // Bu metod livewire-tmp papkasidagi fizik faylni o'chiradi
-                $this->importFile->delete();
+                try {
+                    $this->importFile->delete();
+                } catch (\Exception $e) {
+                    \Log::warning("Livewire temp fayl o'chirilmadi", ['error' => $e->getMessage()]);
+                }
             }
 
             // O'zgaruvchini tozalash

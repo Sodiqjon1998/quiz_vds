@@ -20,6 +20,14 @@ return [
             'throw' => false,
         ],
 
+        // ✅ RAILWAY UCHUN: Livewire temp fayllar
+        'livewire-tmp' => [
+            'driver' => 'local',
+            'root' => storage_path('app/livewire-tmp'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -32,7 +40,7 @@ return [
             'throw' => false,
         ],
 
-         'b2' => [
+        'b2' => [
             'driver' => 's3',
             'key' => env('BACKBLAZE_KEY_ID'),
             'secret' => env('BACKBLAZE_APPLICATION_KEY'),
