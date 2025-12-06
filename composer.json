@@ -66,9 +66,7 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-                "livewire/livewire",
-                "mrdebug/crudgen",
-                "pestphp/pest-plugin-laravel"
+                "mrdebug/crudgen"
             ]
         }
     },
