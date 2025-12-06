@@ -1,19 +1,13 @@
 [phases.setup]
-nixPkgs = ["php83", "php83Packages.composer", "nodejs_20"]
+nixPkgs = ["php83", "php83Packages.composer"]
 
 [phases.build]
 cmds = [
-    "composer install --no-dev --optimize-autoloader",
-    "npm install",
-    "npm run build",
-    # Cache ni tozalash
+    "composer install --no-dev --optimize-autoloader --no-interaction",
     "rm -rf bootstrap/cache/*.php",
-    "rm -rf storage/framework/cache/*",
-    # Storage papkalarini yaratish
-    "mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache",
+    "mkdir -p storage/app/public storage/logs storage/framework/{cache/data,sessions,views} bootstrap/cache",
     "chmod -R 775 storage bootstrap/cache"
 ]
 
-
 [start]
-cmd = "php artisan package:discover --ansi && php artisan config:clear && (php artisan storage:link || true) && php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan config:cache && (php artisan storage:link 2>/dev/null || true) && php artisan serve --host=0.0.0.0 --port=$PORT"
