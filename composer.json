@@ -58,15 +58,12 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump"
         ]
     },
-    "laravel": {
-        "dont-discover": [
-            "livewire/livewire"
-        ]
-    },
     "extra": {
         "laravel": {
             "dont-discover": [
-                "mrdebug/crudgen"
+                "livewire/livewire",
+                "mrdebug/crudgen",
+                "pestphp/pest-plugin-laravel"
             ]
         }
     },
