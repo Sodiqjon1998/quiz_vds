@@ -39,6 +39,24 @@
                 }
             }, 200);
         });
+
+        // Livewire har safar yangilanganida MathJax-ni render qilish
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.hook('morph.updated', ({
+                el,
+                component
+            }) => {
+                if (window.MathJax) {
+                    setTimeout(() => {
+                        MathJax.typesetPromise().then(() => {
+                            console.log('✅ MathJax rendered!');
+                        }).catch(err => {
+                            console.error('❌ MathJax error:', err);
+                        });
+                    }, 100);
+                }
+            });
+        });
     </script>
 
     <!-- MathJax Script - TO'LIQ VERSIYA -->
@@ -198,6 +216,40 @@
         .upload-area:hover {
             border-color: var(--yuksalish-orange);
             background: #fffbf8;
+        }
+
+        /* Mobile uchun maxsus stilllar */
+        @media (max-width: 768px) {
+
+            /* Savol matni */
+            .question-text {
+                font-size: 1rem !important;
+                line-height: 1.6 !important;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+
+            /* MathJax formulalar */
+            .MathJax {
+                font-size: 1.1em !important;
+            }
+
+            /* Variantlar */
+            .option-card {
+                padding: 12px !important;
+                min-height: auto !important;
+            }
+
+            /* Savol kartasi */
+            .question-card {
+                padding: 15px 10px !important;
+            }
+
+            /* Savol raqami */
+            .question-number {
+                min-width: 35px !important;
+                font-size: 0.9rem !important;
+            }
         }
     </style>
 
@@ -471,40 +523,76 @@
                         </div>
                     </div>
 
-                    {{-- QUESTIONS LIST --}}
+                    {{-- QUESTIONS LIST (YANGILANGAN DIZAYN) --}}
                     <div class="row g-3">
                         @forelse($this->questions as $index => $question)
                         <div class="col-12">
-                            <div class="card border-0 shadow-sm position-relative" style="border-radius: 10px; overflow: hidden;">
-                                <div class="position-absolute top-0 start-0 bottom-0 bg-warning" style="width: 4px;"></div>
-                                <div class="card-body ps-4">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div class="w-100 me-3">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <span class="badge bg-light text-dark border me-2">#{{ $index + 1 }}</span>
-                                                <h6 class="fw-bold text-dark mb-0 text-break">{!! $question->name !!}</h6>
-                                            </div>
-                                            @if($question->image)
-                                            <img src="{{ asset('storage/' . $question->image) }}" class="img-thumbnail mb-3 rounded" style="max-height: 120px;">
-                                            @endif
-                                            @php
-                                            $letters = ['A', 'B', 'C', 'D'];
-                                            $correctIndex = $question->options->search(fn($o) => $o->is_correct);
-                                            @endphp
-                                            @if($correctIndex !== false)
-                                            <div class="d-inline-flex align-items-center px-3 py-2 rounded bg-success-subtle text-success border border-success-subtle mt-2">
-                                                <span class="fw-bold me-2 bg-success text-white rounded-circle d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; font-size: 12px;">
-                                                    {{ $letters[$correctIndex] }}
-                                                </span>
-                                                <span class="fw-medium">{!! $question->options[$correctIndex]->name !!}</span>
-                                            </div>
-                                            @else
-                                            <div class="text-danger small mt-2"><i class="ri-error-warning-line"></i> To'g'ri javob belgilanmagan!</div>
-                                            @endif
+                            <div class="card border-0 shadow-sm position-relative overflow-hidden"
+                                style="border-radius: 12px;">
+                                <div class="position-absolute top-0 start-0 bottom-0 bg-warning" style="width: 5px;"></div>
+
+                                <div class="card-body p-3 p-md-4 ps-3 ps-md-4">
+                                    <div class="d-flex gap-2 gap-md-3 align-items-start">
+
+                                        {{-- Savol Raqami --}}
+                                        <div class="flex-shrink-0">
+                                            <span class="badge bg-light text-dark border d-flex align-items-center justify-content-center shadow-sm"
+                                                style="width: 30px; height: 30px; font-size: 0.85rem;">
+                                                {{ $index + 1 }}
+                                            </span>
                                         </div>
-                                        <div class="d-flex flex-column gap-2">
-                                            <button wire:click="editQuestion({{ $question->id }})" class="btn btn-sm btn-light text-warning border shadow-sm" title="Tahrirlash"><i class="ri-pencil-line fs-5"></i></button>
-                                            <button wire:click="deleteQuestion({{ $question->id }})" onclick="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="btn btn-sm btn-light text-danger border shadow-sm" title="O'chirish"><i class="ri-delete-bin-line fs-5"></i></button>
+
+                                        {{-- Savol Matni --}}
+                                        <div class="w-100" style="min-width: 0;">
+                                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                                <h6 class="fw-bold text-dark mb-2 flex-grow-1"
+                                                    style="font-size: clamp(0.95rem, 2vw, 1.1rem); 
+                               line-height: 1.5; 
+                               word-break: break-word;">
+                                                    {!! $this->formatMathForView($question->name) !!}
+                                                </h6>
+
+                                                {{-- Tugmalar --}}
+                                                <div class="d-flex gap-2">
+                                                    <button wire:click="editQuestion({{ $question->id }})"
+                                                        class="btn btn-sm btn-light text-warning border shadow-sm"
+                                                        title="Tahrirlash">
+                                                        <i class="ri-pencil-line"></i>
+                                                    </button>
+                                                    <button onclick="if(confirm('Rostdan ham o\'chirmoqchimisiz?')) @this.call('deleteQuestion', {{ $question->id }})"
+                                                        class="btn btn-sm btn-light text-danger border shadow-sm"
+                                                        title="O'chirish">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {{-- Variantlar - Mobile Responsive --}}
+                                            <div class="row g-2">
+                                                @foreach($question->options as $opt)
+                                                <div class="col-12 col-sm-6">
+                                                    <div class="p-2 p-sm-3 rounded-3 border d-flex align-items-center
+                            {{ $opt->is_correct ? 'bg-success-subtle border-success' : 'bg-white' }}"
+                                                        style="font-size: clamp(0.85rem, 1.5vw, 1rem);">
+
+                                                        <span class="fw-bold me-2 d-flex align-items-center justify-content-center rounded-circle border
+                                {{ $opt->is_correct ? 'bg-success text-white' : 'bg-light text-secondary' }}"
+                                                            style="min-width: 24px; width: 24px; height: 24px; font-size: 0.75rem;">
+                                                            {{ chr(65 + $loop->index) }}
+                                                        </span>
+
+                                                        <span class="flex-grow-1 {{ $opt->is_correct ? 'fw-bold text-success-emphasis' : '' }}"
+                                                            style="word-break: break-word; overflow-wrap: break-word;">
+                                                            {!! $this->formatMathForView($opt->name) !!}
+                                                        </span>
+
+                                                        @if($opt->is_correct)
+                                                        <i class="ri-checkbox-circle-fill text-success fs-6 ms-1"></i>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -512,9 +600,11 @@
                         </div>
                         @empty
                         <div class="col-12 text-center py-5">
-                            <div class="text-muted opacity-50"><i class="ri-question-answer-line" style="font-size: 60px;"></i></div>
-                            <h6 class="text-muted mt-3">Bu quizda hali savollar yo'q</h6>
-                            <p class="text-muted small">Yangi savol qo'shish uchun yuqoridagi tugmani bosing</p>
+                            <div class="bg-light rounded-circle d-inline-flex p-4 mb-3">
+                                <i class="ri-question-answer-line text-muted opacity-50" style="font-size: 40px;"></i>
+                            </div>
+                            <h6 class="text-muted fw-bold">Bu quizda hali savollar yo'q</h6>
+                            <p class="text-muted small mb-0">Yuqoridagi "Yangi Savol" tugmasi orqali qo'shishingiz mumkin</p>
                         </div>
                         @endforelse
                     </div>
@@ -546,12 +636,14 @@
                             <label class="form-label fw-bold text-dark">Savol matni <span class="text-danger">*</span></label>
                             <div class="input-group shadow-sm">
                                 <span class="input-group-text bg-white text-muted"><i class="ri-text"></i></span>
-                                <textarea wire:model="questionText" class="form-control border-start-0" rows="3" placeholder="LaTeX formulalar: \( x^2 \)"></textarea>
+                                <textarea wire:model.live="questionText" class="form-control border-start-0" rows="3" placeholder="LaTeX formulalar: \( x^2 \), \frac{1}{2}"></textarea>
                             </div>
                             @error('questionText') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
                             @if($questionText)
-                            <div class="mt-2 p-3 bg-light rounded border"><small class="text-muted d-block mb-1">Ko'rinishi:</small>
-                                <div>{!! $questionText !!}</div>
+                            <div class="mt-2 p-3 bg-light rounded border" wire:ignore>
+                                <small class="text-muted d-block mb-1">Ko'rinishi:</small>
+                                <div id="question-preview">{!! $this->formatMathForView($questionText) !!}</div>
                             </div>
                             @endif
                         </div>
@@ -582,8 +674,16 @@
                                                 <label class="form-check-label fw-bold" for="opt_{{$index}}">{{ $letter }} varianti</label>
                                             </div>
                                         </div>
-                                        <textarea wire:model="options.{{ $index }}" class="form-control form-control-sm border-0 bg-white" rows="2" placeholder="Variantni yozing..."></textarea>
+                                        <textarea wire:model.live="options.{{ $index }}" class="form-control form-control-sm border-0 bg-white" rows="2" placeholder="Variantni yozing... \( x^2 \)"></textarea>
                                         @error('options.'.$index) <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
+                                        {{-- Preview --}}
+                                        @if($options[$index])
+                                        <div class="mt-2 p-2 bg-white rounded border border-secondary-subtle" wire:ignore>
+                                            <small class="text-muted">Preview:</small>
+                                            <div class="preview-{{ $index }}">{!! $this->formatMathForView($options[$index]) !!}</div>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

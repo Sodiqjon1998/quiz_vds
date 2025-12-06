@@ -314,6 +314,8 @@ class QuizManager extends Component
     }
 
 
+
+
     public function closeViewModal()
     {
         $this->showViewModal = false;
@@ -329,6 +331,10 @@ class QuizManager extends Component
         $this->currentQuiz = Quiz::with(['subject', 'class'])->findOrFail($quizId);
         $this->showQuestionsModal = true;
         $this->questionSearch = '';
+
+
+        // MathJax-ni qayta ishga tushirish
+        $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function closeQuestionsModal()
@@ -349,6 +355,9 @@ class QuizManager extends Component
         $this->showQuestionFormModal = false;
         $this->reset(['questionId', 'questionText', 'questionImage', 'existingImage', 'correctOption', 'isEditQuestion']);
         $this->options = ['', '', '', ''];
+
+        // MathJax trigger
+        $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function saveQuestion()
@@ -401,12 +410,14 @@ class QuizManager extends Component
                     'question_id' => $qId,
                     'name' => $optText,
                     'is_correct' => ($index == $this->correctOption),
-                    'created_by' => Auth::id()
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id()
                 ]);
             }
         });
 
         $this->closeQuestionFormModal();
+        $this->emit('questionUpdated');
         session()->flash('message', 'Savol muvaffaqiyatli saqlandi!'); // Global xabar
     }
 
@@ -424,6 +435,9 @@ class QuizManager extends Component
         $this->correctOption = $q->options->search(fn($o) => $o->is_correct);
         $this->isEditQuestion = true;
         $this->showQuestionFormModal = true;
+
+        // MathJax trigger
+        $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function deleteQuestion($id)
@@ -433,7 +447,7 @@ class QuizManager extends Component
             Storage::disk('public')->delete($q->image);
         }
         $q->delete();
-        // session()->flash('message', 'Savol o\'chirildi!'); 
+        session()->flash('message', 'Savol o\'chirildi!');
     }
 
     public function removeImage()
