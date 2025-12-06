@@ -10,6 +10,7 @@ use App\Models\Attachment;
 use App\Models\Student\Quiz;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class QuizController extends Controller
 {
@@ -28,7 +29,10 @@ class QuizController extends Controller
                 ->where('subject_id', $subjectId)
                 ->count();
 
-            $attachment = Attachment::getAttamptById($quizId);
+            // ✅ Attachment'ni cache'lash
+            $attachment = Cache::remember("quiz_{$quizId}_attachment", 3600, function () use ($quizId) {
+                return Attachment::getAttamptById($quizId);
+            });
 
             if (!$attachment) {
                 return response()->json([
@@ -55,26 +59,33 @@ class QuizController extends Controller
 
             // Sana tekshirish
             if ($examDate->isToday()) {
-                // Savollarni olish (tasodifiy tartibda)
-                $questions = Question::where('quiz_id', $quizId)
-                    ->where('status', Question::STATUS_ACTIVE)
-                    ->with('options')
-                    ->inRandomOrder()
-                    ->get()
-                    ->map(function ($question) {
-                        return [
-                            'id' => $question->id,
-                            'question_text' => $question->question,
-                            'mark' => $question->mark,
-                            'options' => $question->options->shuffle()->map(function ($option) {
-                                return [
-                                    'id' => $option->id,
-                                    'option_text' => $option->option,
-                                    // is_correct ni yo'qotamiz (xavfsizlik uchun)
-                                ];
-                            })
-                        ];
-                    });
+
+                // ✅ YANGI KOD SHU YERDA
+                $cacheKey = "quiz_{$quizId}_questions";
+
+                $questions = Cache::remember($cacheKey, 3600, function () use ($quizId) {
+                    \Log::info("Quiz {$quizId} savollar DB'dan yuklanmoqda");
+
+                    return Question::where('quiz_id', $quizId)
+                        ->where('status', Question::STATUS_ACTIVE)
+                        ->with('options')
+                        ->get();
+                });
+
+                // Tasodifiy tartibda (cache'dan keyin)
+                $questions = $questions->shuffle()->map(function ($question) {
+                    return [
+                        'id' => $question->id,
+                        'question_text' => $question->question,
+                        'mark' => $question->mark,
+                        'options' => $question->options->shuffle()->map(function ($option) {
+                            return [
+                                'id' => $option->id,
+                                'option_text' => $option->option,
+                            ];
+                        })
+                    ];
+                });
 
                 return response()->json([
                     'success' => true,
@@ -145,8 +156,10 @@ class QuizController extends Controller
 
             $user = $request->user();
 
-            // Urinishlarni tekshirish
-            $attachment = Attachment::getAttamptById($quizId);
+            // ✅ Urinishlarni tekshirish (cache'dan)
+            $attachment = Cache::remember("quiz_{$quizId}_attachment", 3600, function () use ($quizId) {
+                return Attachment::getAttamptById($quizId);
+            });
 
             \Log::info('Attachment found', ['attachment' => $attachment]);
 
@@ -181,11 +194,17 @@ class QuizController extends Controller
             $correctAnswers = 0;
             $detailedResults = [];
 
-            // Quiz savollari
-            $questions = Question::where('quiz_id', $quizId)
-                ->where('status', Question::STATUS_ACTIVE)
-                ->with('options')
-                ->get();
+            // ✅ Bir xil cache'dan olish (tezroq!)
+            $cacheKey = "quiz_{$quizId}_questions";
+
+            $questions = Cache::remember($cacheKey, 3600, function () use ($quizId) {
+                \Log::info("Submit: Quiz {$quizId} savollar DB'dan yuklanmoqda");
+
+                return Question::where('quiz_id', $quizId)
+                    ->where('status', Question::STATUS_ACTIVE)
+                    ->with('options')
+                    ->get();
+            });
 
             \Log::info('Questions loaded', ['count' => $questions->count()]);
 
@@ -230,12 +249,12 @@ class QuizController extends Controller
             \Log::info('Exam created', ['exam_id' => $exam->id]);
 
             // Javoblarni saqlash
+            $answers = [];
             foreach ($questions as $question) {
                 $selectedOptionId = $validated['answers'][$question->id] ?? null;
 
-                // ✅ Faqat javob berilgan bo'lsa saqlaydi
                 if ($selectedOptionId) {
-                    \DB::table('exam_answer')->insert([
+                    $answers[] = [
                         'exam_id' => $exam->id,
                         'question_id' => $question->id,
                         'option_id' => $selectedOptionId,
@@ -243,9 +262,12 @@ class QuizController extends Controller
                         'updated_by' => $user->id,
                         'created_at' => now(),
                         'updated_at' => now(),
-                    ]);
+                    ];
                 }
             }
+
+            // ✅ Bir marta yozish (tezroq!)
+            \DB::table('exam_answer')->insert($answers);
 
             \Log::info('Answers saved');
 
