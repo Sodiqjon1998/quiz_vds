@@ -903,7 +903,7 @@
     @endif
 
 
-    {{-- IMPORT MODAL --}}
+    {{-- IMPORT MODAL - Error Display --}}
     @if($showImportModal)
     <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5); z-index: 1080;" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -915,8 +915,28 @@
                     <button type="button" class="btn-close" wire:click="closeImportModal"></button>
                 </div>
                 <div class="modal-body">
-                    {{-- Alert Info --}}
-                    <div class="alert alert-info d-flex align-items-start small border-0 bg-info-subtle text-info-emphasis">
+
+                    {{-- ✅ ERROR ALERT --}}
+                    @if (session()->has('error'))
+                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
+                        <i class="ri-error-warning-line me-2"></i>
+                        <strong>Xatolik!</strong>
+                        <div class="mt-1 small">{{ session('error') }}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
+
+                    {{-- ✅ SUCCESS ALERT --}}
+                    @if (session()->has('message'))
+                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
+                        <i class="ri-checkbox-circle-line me-2"></i>
+                        {{ session('message') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
+
+                    {{-- Info Alert --}}
+                    <div class="alert alert-info d-flex align-items-start small border-0 bg-info-subtle text-info-emphasis mb-3">
                         <i class="ri-information-line fs-5 me-2 mt-1"></i>
                         <div>
                             <strong>Excel fayl shabloni:</strong><br>
@@ -925,10 +945,6 @@
                             6-ustun: To'g'ri javob harfi (A, B, C yoki D)
                         </div>
                     </div>
-
-                    @if (session()->has('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
-                    @endif
 
                     <form wire:submit.prevent="importQuiz">
                         <div class="mb-3">
@@ -943,9 +959,13 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Fayl yuklash (.xlsx, .pdf)</label>
+                            <label class="form-label fw-bold">Excel fayl (.xlsx, .xls)</label>
                             <div class="upload-area p-4 text-center cursor-pointer position-relative">
-                                <input type="file" wire:model="importFile" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
+                                <input type="file"
+                                    wire:model="importFile"
+                                    accept=".xlsx,.xls"
+                                    class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
+                                    style="cursor: pointer;">
                                 @if($importFile)
                                 <div class="text-success fw-bold">
                                     <i class="ri-file-check-line fs-3 d-block mb-1"></i>
@@ -954,18 +974,29 @@
                                 @else
                                 <div class="text-muted">
                                     <i class="ri-upload-2-line fs-3 d-block mb-1"></i>
-                                    Faylni shu yerga tashlang yoki bosing
+                                    Excel faylni shu yerga tashlang yoki bosing
                                 </div>
                                 @endif
                             </div>
                             @error('importFile') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-                            <div wire:loading wire:target="importFile" class="text-primary small mt-1">Yuklanmoqda...</div>
+
+                            {{-- Loading indicator --}}
+                            <div wire:loading wire:target="importFile" class="text-primary small mt-2">
+                                <i class="ri-loader-4-line ri-spin me-1"></i> Yuklanmoqda...
+                            </div>
                         </div>
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
-                                <span wire:loading.remove wire:target="importQuiz">Import qilish</span>
-                                <span wire:loading wire:target="importQuiz"><i class="ri-loader-4-line ri-spin"></i> Jarayonda...</span>
+                            <button type="submit"
+                                class="btn btn-success"
+                                wire:loading.attr="disabled"
+                                wire:target="importQuiz">
+                                <span wire:loading.remove wire:target="importQuiz">
+                                    <i class="ri-upload-2-line me-1"></i> Import qilish
+                                </span>
+                                <span wire:loading wire:target="importQuiz">
+                                    <i class="ri-loader-4-line ri-spin me-1"></i> Jarayonda...
+                                </span>
                             </button>
                         </div>
                     </form>
