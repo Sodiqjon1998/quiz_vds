@@ -233,15 +233,18 @@ class QuizController extends Controller
             foreach ($questions as $question) {
                 $selectedOptionId = $validated['answers'][$question->id] ?? null;
 
-                \DB::table('exam_answer')->insert([
-                    'exam_id' => $exam->id,
-                    'question_id' => $question->id,
-                    'option_id' => $selectedOptionId,
-                    'created_by' => $user->id,
-                    'updated_by' => $user->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                // ✅ Faqat javob berilgan bo'lsa saqlaydi
+                if ($selectedOptionId) {
+                    \DB::table('exam_answer')->insert([
+                        'exam_id' => $exam->id,
+                        'question_id' => $question->id,
+                        'option_id' => $selectedOptionId,
+                        'created_by' => $user->id,
+                        'updated_by' => $user->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
 
             \Log::info('Answers saved');
