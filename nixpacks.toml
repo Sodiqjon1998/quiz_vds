@@ -6,13 +6,18 @@ cmds = [
     "composer install --no-dev --optimize-autoloader",
     "npm install",
     "npm run build",
-    # Cache ni tozalash
     "rm -rf bootstrap/cache/*.php",
     "rm -rf storage/framework/cache/*",
-    # Storage papkalarini yaratish
-    "mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache",
-    "chmod -R 775 storage bootstrap/cache"
+    "mkdir -p storage/logs",
+    "mkdir -p storage/framework/cache/data",
+    "mkdir -p storage/framework/sessions",
+    "mkdir -p storage/framework/views",
+    "mkdir -p storage/app/public",
+    "mkdir -p storage/app/livewire-tmp",
+    "mkdir -p bootstrap/cache",
+    "chmod -R 775 storage",
+    "chmod -R 775 bootstrap/cache"
 ]
 
 [start]
-cmd = "php artisan package:discover --ansi && php artisan config:clear && (php artisan storage:link || true) && php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan package:discover --ansi && php artisan config:clear && php artisan serve --host=0.0.0.0 --port=$PORT"
