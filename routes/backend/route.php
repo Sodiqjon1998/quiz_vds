@@ -4,6 +4,7 @@ use App\Http\Controllers\Backend\SiteController;
 use App\Http\Controllers\Backend\UsersController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\ClassesController;
+use App\Http\Livewire\Backend\Report\ClassPerformance;
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
@@ -60,6 +61,13 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
         Route::get('/backend/subjects/{id}/edit', 'edit')->name('backend.subjects.edit');
         Route::post('/backend/subjects/{id}/update', 'update')->name('backend.subjects.update');
         Route::delete('/backend/subjects/{id}', 'destroy')->name('backend.subjects.destroy');
+    });
 
+
+    // Hisobotlar uchun alohida guruh (tartibli bo'lishi uchun)
+    Route::group(['prefix' => 'reports', 'as' => 'backend.reports.'], function () {
+
+        // Sinf Ko'rsatkichlari
+        Route::get('/class-performance', ClassPerformance::class)->name('class-performance');
     });
 });

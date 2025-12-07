@@ -1,6 +1,7 @@
 <?php return array (
   'backend.classes.classes-manager' => 'App\\Http\\Livewire\\Backend\\Classes\\ClassesManager',
   'backend.dashboard.statistics' => 'App\\Http\\Livewire\\Backend\\Dashboard\\Statistics',
+  'backend.report.class-performance' => 'App\\Http\\Livewire\\Backend\\Report\\ClassPerformance',
   'backend.student.student-manager' => 'App\\Http\\Livewire\\Backend\\Student\\StudentManager',
   'backend.subject.subject-manager' => 'App\\Http\\Livewire\\Backend\\Subject\\SubjectManager',
   'backend.users.users-manager' => 'App\\Http\\Livewire\\Backend\\Users\\UsersManager',
