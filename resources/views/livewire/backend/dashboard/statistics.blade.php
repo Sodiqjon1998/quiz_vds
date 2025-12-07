@@ -163,7 +163,8 @@
                     <small class="text-muted">Kunlik hisobotlar soni</small>
                 </div>
                 <div class="p-4">
-                    <div id="activityChart" style="min-height: 300px;"></div>
+                    {{-- ID va wire:ignore muhim --}}
+                    <div wire:ignore id="activityChart" style="min-height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -175,7 +176,7 @@
                     <h5 class="fw-bold mb-0 text-dark"><i class="ri-pie-chart-2-line text-primary me-2"></i> Foydalanuvchilar</h5>
                 </div>
                 <div class="p-4 d-flex align-items-center justify-content-center">
-                    <div id="usersChart" style="min-height: 300px;"></div>
+                    <div wire:ignore id="usersChart" style="min-height: 300px;"></div>
                 </div>
             </div>
         </div>
@@ -235,117 +236,133 @@
             </div>
         </div>
     </div>
-</div>
 
-{{-- APEXCHARTS SCRIPT --}}
-@push('scripts')
-<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+    {{-- SKRIPLAR (To'g'ridan-to'g'ri fayl oxirida) --}}
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script>
+        document.addEventListener('livewire:load', function() {
 
-        // 1. HAFTALIK FAOLLIK (Area Chart)
-        const activityOptions = {
-            series: [{
-                name: 'Hisobotlar',
-                data: @json($stats['chart_data']) // PHP dan kelgan ma'lumot
-            }],
-            chart: {
-                height: 300,
-                type: 'area',
-                toolbar: {
-                    show: false
-                },
-                fontFamily: 'Inter, sans-serif'
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'smooth',
-                width: 2
-            },
-            colors: ['#F58025'], // Yuksalish Orange
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.7,
-                    opacityTo: 0.2,
-                    stops: [0, 90, 100]
-                }
-            },
-            xaxis: {
-                categories: @json($stats['chart_days']), // PHP dan kelgan kunlar
-                axisBorder: {
-                    show: false
-                },
-                axisTicks: {
-                    show: false
-                }
-            },
-            grid: {
-                borderColor: '#f1f1f1',
-                strokeDashArray: 4,
-            },
-            tooltip: {
-                theme: 'light'
+            // 1. HAFTALIK FAOLLIK (Area Chart)
+            var activityData = @json($stats['chart_data']);
+            var activityDays = @json($stats['chart_days']);
+
+            // Agar ma'lumotlar bo'sh bo'lsa ham grafik ko'rinishi uchun
+            if (!activityData || activityData.length === 0) {
+                activityData = [0, 0, 0, 0, 0, 0, 0];
             }
-        };
 
-        const activityChart = new ApexCharts(document.querySelector("#activityChart"), activityOptions);
-        activityChart.render();
+            const activityOptions = {
+                series: [{
+                    name: 'Hisobotlar',
+                    data: activityData
+                }],
+                chart: {
+                    height: 300,
+                    type: 'area',
+                    toolbar: {
+                        show: false
+                    },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                colors: ['#F58025'], // Yuksalish Orange
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.2,
+                        stops: [0, 90, 100]
+                    }
+                },
+                xaxis: {
+                    categories: activityDays,
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    }
+                },
+                grid: {
+                    borderColor: '#f1f1f1',
+                    strokeDashArray: 4,
+                },
+                tooltip: {
+                    theme: 'light'
+                }
+            };
+
+            const activityChart = new ApexCharts(document.querySelector("#activityChart"), activityOptions);
+            activityChart.render();
 
 
-        // 2. FOYDALANUVCHILAR (Donut Chart)
-        const usersOptions = {
-            series: [{
+            // 2. FOYDALANUVCHILAR (Donut Chart)
+            var studentCount = {
                 {
                     $stats['counts']['students']
                 }
-            }, {
+            };
+            var teacherCount = {
                 {
                     $stats['counts']['teachers']
                 }
-            }],
-            labels: ['O\'quvchilar', 'O\'qituvchilar'],
-            chart: {
-                type: 'donut',
-                height: 320,
-                fontFamily: 'Inter, sans-serif'
-            },
-            colors: ['#0d6efd', '#F58025'], // Moviy va Zarg'aldoq
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '70%',
-                        labels: {
-                            show: true,
-                            total: {
-                                show: true,
-                                label: 'Jami',
-                                fontSize: '18px',
-                                color: '#6c757d',
-                                formatter: function(w) {
-                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+            };
+
+            // Agar ikkalasi ham 0 bo'lsa, chiroyli ko'rinish uchun 1 ta qo'shamiz (yoki matn chiqaramiz)
+            var showChart = (studentCount > 0 || teacherCount > 0);
+
+            if (showChart) {
+                const usersOptions = {
+                    series: [studentCount, teacherCount],
+                    labels: ['O\'quvchilar', 'O\'qituvchilar'],
+                    chart: {
+                        type: 'donut',
+                        height: 320,
+                        fontFamily: 'Inter, sans-serif'
+                    },
+                    colors: ['#0d6efd', '#F58025'],
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                size: '70%',
+                                labels: {
+                                    show: true,
+                                    total: {
+                                        show: true,
+                                        label: 'Jami',
+                                        fontSize: '18px',
+                                        color: '#6c757d',
+                                        formatter: function(w) {
+                                            return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                        }
+                                    }
                                 }
                             }
                         }
+                    },
+                    legend: {
+                        position: 'bottom',
+                        markers: {
+                            radius: 12
+                        }
+                    },
+                    dataLabels: {
+                        enabled: false
                     }
-                }
-            },
-            legend: {
-                position: 'bottom',
-                markers: {
-                    radius: 12
-                }
-            },
-            dataLabels: {
-                enabled: false
-            }
-        };
+                };
 
-        const usersChart = new ApexCharts(document.querySelector("#usersChart"), usersOptions);
-        usersChart.render();
-    });
-</script>
-@endpush
+                const usersChart = new ApexCharts(document.querySelector("#usersChart"), usersOptions);
+                usersChart.render();
+            } else {
+                document.querySelector("#usersChart").innerHTML = '<div class="text-center py-5 text-muted">Hozircha ma\'lumot yo\'q</div>';
+            }
+        });
+    </script>
+</div>

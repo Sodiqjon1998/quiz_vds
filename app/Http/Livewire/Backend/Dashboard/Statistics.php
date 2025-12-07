@@ -16,7 +16,8 @@ class Statistics extends Component
 
     public function render()
     {
-        $cacheKey = 'admin_dashboard_stats_v4_' . $this->filterType;
+        // Kesh kaliti
+        $cacheKey = 'admin_dashboard_stats_v6_' . $this->filterType;
 
         $stats = Cache::remember($cacheKey, 600, function () {
             // 1. ASOSIY RAQAMLAR
@@ -38,7 +39,7 @@ class Statistics extends Component
                 ])->first();
             $readingStats = $readingStats ? (array) $readingStats : ['total_records' => 0, 'active_students' => 0];
 
-            // 3. TOP 5 SINF (CAST bilan)
+            // 3. TOP 5 SINF
             $topClasses = DB::table('classes')
                 ->select('classes.name', DB::raw('count(daily_reports.id) as reports_count'))
                 ->join('users', function ($join) {
@@ -60,17 +61,18 @@ class Statistics extends Component
                 ->limit(5)
                 ->get();
 
-            // 5. ✅ YANGI: HAFTALIK FAOLLIK GRAFIGI UCHUN MA'LUMOT
+            // 5. HAFTALIK FAOLLIK GRAFIGI (Real ma'lumot)
             $chartActivity = [];
             $days = [];
+
             for ($i = 6; $i >= 0; $i--) {
                 $date = Carbon::now()->subDays($i);
-                $days[] = $date->format('d.m'); // Sana (kun.oy)
+                $days[] = $date->format('d.m');
 
-                // Shu kungi hisobotlar soni
                 $count = DB::table('daily_reports')
                     ->whereDate('report_date', $date->format('Y-m-d'))
                     ->count();
+
                 $chartActivity[] = $count;
             }
 
@@ -80,8 +82,8 @@ class Statistics extends Component
                 'reading' => $readingStats,
                 'top_classes' => $topClasses,
                 'top_teachers' => $topTeachers,
-                'chart_days' => $days,        // Grafik uchun kunlar
-                'chart_data' => $chartActivity // Grafik uchun sonlar
+                'chart_days' => $days,
+                'chart_data' => $chartActivity
             ];
         });
 
