@@ -7,6 +7,7 @@ use App\Models\Teacher\Quiz;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache; // Cache qo'shildi
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,8 +18,6 @@ class ExamResultTest extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
-
-    // Sinf bo'yicha filter uchun o'zgaruvchi
     public $classId = '';
     public $quizId = '';
 
@@ -39,7 +38,6 @@ class ExamResultTest extends Component
         $this->resetPage();
     }
 
-    // YANGI: Sinf o'zgarganda sahifani yangilash
     public function updatingClassId()
     {
         $this->resetPage();
@@ -47,31 +45,22 @@ class ExamResultTest extends Component
 
     public function showDetails($examId)
     {
+        // Bu funksiya modal ochilganda ishlaydi, shuning uchun bu yerda 
+        // to'liq ma'lumotlarni (answers, options) yuklash normal holat.
+        // Buni keshlashtirish shart emas, chunki foydalanuvchi har doim ham bossavermaydi.
         try {
-            Log::info('showDetails called with exam ID: ' . $examId);
-
-            // Relation nomlarini to'g'riladik
             $this->selectedExam = Exam::with([
-                'user',  // 'users' emas
+                'user',
                 'quiz.subject',
-                'answers.question',  // 'exam_answer' emas
+                'answers.question',
                 'answers.option'
             ])->findOrFail($examId);
 
-            Log::info('Exam loaded', [
-                'exam_id' => $this->selectedExam->id,
-                'answers_count' => $this->selectedExam->answers->count()
-            ]);
-
             // Statistikani hisoblash
             $totalQuestions = $this->selectedExam->answers->count();
-            $correctAnswers = 0;
-
-            foreach ($this->selectedExam->answers as $answer) {
-                if ($answer->option && $answer->option->is_correct) {
-                    $correctAnswers++;
-                }
-            }
+            $correctAnswers = $this->selectedExam->answers
+                ->filter(fn($a) => $a->option && $a->option->is_correct)
+                ->count();
 
             $percentage = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100) : 0;
 
@@ -83,16 +72,11 @@ class ExamResultTest extends Component
 
             $this->showDetailModal = true;
 
-            Log::info('Modal should be open now', [
-                'showDetailModal' => $this->showDetailModal,
-                'stats' => $this->examStats
-            ]);
+            // --- MUHIM QO'SHIMCHA ---
+            // Modal ochilgandan keyin MathJaxni ishga tushirish
+            $this->dispatchBrowserEvent('renderMathJax');
         } catch (\Exception $e) {
-            Log::error('Error in showDetails: ' . $e->getMessage(), [
-                'exam_id' => $examId,
-                'trace' => $e->getTraceAsString()
-            ]);
-
+            Log::error('Error in showDetails: ' . $e->getMessage());
             $this->showDetailModal = false;
             session()->flash('error', 'Xatolik yuz berdi: ' . $e->getMessage());
         }
@@ -100,7 +84,6 @@ class ExamResultTest extends Component
 
     public function closeDetailModal()
     {
-        Log::info('closeDetailModal called');
         $this->showDetailModal = false;
         $this->selectedExam = null;
         $this->examStats = [];
@@ -108,49 +91,72 @@ class ExamResultTest extends Component
 
     public function render()
     {
-        // Sinflar ro'yxati (Dropdown uchun)
-        $classes = DB::table('classes')->orderBy('name')->get();
+        $teacherId = Auth::id();
+        $page = request()->input('page', 1);
 
-        // 3. Quizlar ro'yxati (Faqat shu o'qituvchi tuzganlari)
-        $quizzes = Quiz::where('created_by', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // 1. Sinflar va Quizlarni keshdan olish (kam o'zgaradigan ma'lumotlar)
+        $classes = Cache::remember('all_classes_list', 3600, function () {
+            return DB::table('classes')->orderBy('name')->get();
+        });
 
-        // Asosiy so'rov
-        $exams = Exam::with(['user', 'quiz.subject', 'answers.option'])
-            ->whereHas('quiz', function ($q) {
-                $q->where('created_by', Auth::id());
-            })
-            // Qidiruv
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->whereHas('user', function ($userQuery) {
-                        $userQuery->where('first_name', 'like', '%' . $this->search . '%')
-                            ->orWhere('last_name', 'like', '%' . $this->search . '%');
-                    })
-                        ->orWhereHas('quiz', function ($quizQuery) {
-                            $quizQuery->where('name', 'like', '%' . $this->search . '%');
-                        });
-                });
-            })
-            // Sinf Filter
-            ->when($this->classId, function ($query) {
-                $query->whereHas('user', function ($q) {
-                    $q->whereJsonContains('classes_id', (string)$this->classId)
-                        ->orWhereJsonContains('classes_id', (int)$this->classId);
-                });
-            })
-            // 4. QUIZ FILTER (YANGI)
-            ->when($this->quizId, function ($query) {
-                $query->where('quiz_id', $this->quizId);
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $quizzes = Cache::remember('teacher_quizzes_list_' . $teacherId, 600, function () use ($teacherId) {
+            return Quiz::where('created_by', $teacherId)
+                ->orderBy('created_at', 'desc')
+                ->get();
+        });
+
+        // 2. Asosiy jadval uchun kesh kaliti
+        $cacheKey = 'exam_test_list_' . $teacherId . '_' .
+            $this->search . '_' .
+            $this->classId . '_' .
+            $this->quizId . '_' .
+            $page;
+
+        // 3. Asosiy so'rov (Optimallashtirilgan)
+        $exams = Cache::remember($cacheKey, 300, function () use ($teacherId) {
+            return Exam::with(['user', 'quiz.subject'])
+                // DIQQAT: Javoblarni to'liq yuklash o'rniga faqat sonini olamiz (SQL COUNT)
+                ->withCount('answers as total_questions')
+                ->withCount(['answers as correct_answers' => function ($query) {
+                    $query->whereHas('option', function ($q) {
+                        $q->where('is_correct', 1);
+                    });
+                }])
+                ->whereHas('quiz', function ($q) use ($teacherId) {
+                    $q->where('created_by', $teacherId);
+                })
+                ->when($this->search, function ($query) {
+                    $query->where(function ($q) {
+                        $q->whereHas('user', function ($userQuery) {
+                            $userQuery->where('first_name', 'like', '%' . $this->search . '%')
+                                ->orWhere('last_name', 'like', '%' . $this->search . '%');
+                        })
+                            ->orWhereHas('quiz', function ($quizQuery) {
+                                $quizQuery->where('name', 'like', '%' . $this->search . '%');
+                            });
+                    });
+                })
+                ->when($this->classId, function ($query) {
+                    $query->whereHas('user', function ($q) {
+                        // Agar bazada classes_id oddiy INT bo'lsa, pastdagi qatorni ishlating:
+                        // $q->where('classes_id', $this->classId);
+
+                        // Eski kodingizdagi JSON logikasi:
+                        $q->whereJsonContains('classes_id', (string)$this->classId)
+                            ->orWhereJsonContains('classes_id', (int)$this->classId);
+                    });
+                })
+                ->when($this->quizId, function ($query) {
+                    $query->where('quiz_id', $this->quizId);
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        });
 
         return view('livewire.teacher.exam.exam-result-test', [
             'exams' => $exams,
             'classes' => $classes,
-            'quizzes' => $quizzes // <--- Viewga yuboramiz
+            'quizzes' => $quizzes
         ]);
     }
 }

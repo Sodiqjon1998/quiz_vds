@@ -11,6 +11,7 @@ use Livewire\WithPagination;
 use Carbon\Carbon;
 use App\Exports\StudentMonitoringExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Cache;
 
 class StudentMonitoring extends Component
 {
@@ -179,6 +180,27 @@ class StudentMonitoring extends Component
             $this->classFilter = $classId;
         }
 
+        // --- YANGI QO'SHILGAN QISM ---
+        // Joriy oyni aniqlab, $quarter o'zgaruvchisiga yuklaymiz
+        $currentMonth = Carbon::now()->month;
+
+        $months = [
+            1 => 'Yanvar',
+            2 => 'Fevral',
+            3 => 'Mart',
+            4 => 'Aprel',
+            5 => 'May',
+            9 => 'Sentyabr',
+            10 => 'Oktyabr',
+            11 => 'Noyabr',
+            12 => 'Dekabr',
+        ];
+
+        // Agar hozirgi oy ro'yxatda bo'lsa (o'quv yili ichida), o'shani tanlaymiz.
+        // Yoz oylari (6, 7, 8) bo'lsa, 'Sentyabr' ga tushadi yoki o'zingiz xohlagan oyni qo'yishingiz mumkin.
+        $this->quarter = $months[$currentMonth] ?? 'Sentyabr';
+        // ------------------------------
+
         $this->updateClassName();
     }
 
@@ -196,164 +218,180 @@ class StudentMonitoring extends Component
 
     public function render()
     {
+        // 1. Agar sinf tanlanmagan bo'lsa, bo'sh sahifa qaytarish
         if (!$this->classFilter) {
             return view('livewire.teacher.exam.student-monitoring', [
                 'students' => collect([]),
                 'classes' => Classes::where('status', 1)->orderBy('name')->get(),
                 'subjects' => Subjects::where('status', 1)->orderBy('name')->get(),
-                'availableSubjects' => collect([]), // ✅ YANGI
+                'availableSubjects' => collect([]),
                 'showEmptyMessage' => true,
             ]);
         }
 
-        $studentsQuery = Users::select([
-            'users.id',
-            'users.first_name',
-            'users.last_name',
-            'users.classes_id'
-        ])
-            ->where('users.user_type', Users::TYPE_STUDENT)
-            ->where('users.status', 1)
-            ->where('classes_id', $this->classFilter)
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('users.first_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('users.last_name', 'like', '%' . $this->search . '%');
-                });
-            })
-            ->orderBy('users.first_name');
+        // 2. Kesh kalitini yaratish (Sinf, fan, qidiruv, chorak va sahifa raqami bo'yicha unikal)
+        // Sahifa raqamini olish (kesh to'g'ri ishlashi uchun juda muhim)
+        $page = request()->input('page', 1);
 
-        $students = $studentsQuery->paginate(20);
+        $cacheKey = 'monitoring_v1_' .
+            $this->classFilter . '_' .
+            $this->subjectFilter . '_' .
+            $this->quarter . '_' .
+            $this->search . '_page_' . $page;
 
+        // Sana oralig'ini oldindan olamiz (kesh funksiyasi ichida ishlatish uchun)
         $dateRange = $this->getQuarterDateRange($this->quarter);
 
-        // ✅ YANGI: Barcha mavjud fanlarni olish (bu sinf uchun test topshirilgan fanlar)
-        $availableSubjects = DB::table('exam')
-            ->select([
-                'subjects.id',
-                'subjects.name'
+        // 3. Cache::remember - Ma'lumotni keshdan olish yoki hisoblash
+        // 600 soniya (10 daqiqa) davomida saqlanadi
+        $cachedData = Cache::remember($cacheKey, 600, function () use ($dateRange) {
+
+            // A. Studentlarni bazadan olish
+            $studentsQuery = Users::select([
+                'users.id',
+                'users.first_name',
+                'users.last_name',
+                'users.classes_id'
             ])
-            ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
-            ->join('subjects', 'subjects.id', '=', 'quiz.subject_id')
-            ->join('users', 'users.id', '=', 'exam.user_id')
-            ->where('users.classes_id', $this->classFilter)
-            ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
-            ->when($this->subjectFilter, function ($query) {
-                $query->where('subjects.id', $this->subjectFilter);
-            })
-            ->groupBy('subjects.id', 'subjects.name')
-            ->orderBy('subjects.name')
-            ->get();
+                ->where('users.user_type', Users::TYPE_STUDENT)
+                ->where('users.status', 1)
+                ->where('classes_id', $this->classFilter)
+                ->when($this->search, function ($query) {
+                    $query->where(function ($q) {
+                        $q->where('users.first_name', 'like', '%' . $this->search . '%')
+                            ->orWhere('users.last_name', 'like', '%' . $this->search . '%');
+                    });
+                })
+                ->orderBy('users.first_name');
 
-        foreach ($students as $index => $student) {
-            $student->number = ($students->currentPage() - 1) * $students->perPage() + $index + 1;
+            $students = $studentsQuery->paginate(20);
 
-            // Har bir fan uchun ma'lumot
-            $subjectsData = [];
+            // B. Mavjud fanlarni olish
+            $availableSubjects = DB::table('exam')
+                ->select(['subjects.id', 'subjects.name'])
+                ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
+                ->join('subjects', 'subjects.id', '=', 'quiz.subject_id')
+                ->join('users', 'users.id', '=', 'exam.user_id')
+                ->where('users.classes_id', $this->classFilter)
+                ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
+                ->when($this->subjectFilter, function ($query) {
+                    $query->where('subjects.id', $this->subjectFilter);
+                })
+                ->groupBy('subjects.id', 'subjects.name')
+                ->orderBy('subjects.name')
+                ->get();
 
-            foreach ($availableSubjects as $availableSubject) {
-                // ✅ Har bir exam uchun alohida hisoblash, keyin eng yuqorisini olish
-                $examResults = DB::table('exam')
-                    ->select([
-                        'exam.id as exam_id',
-                        DB::raw('COUNT(exam_answer.id) as total_questions'),
-                        DB::raw('SUM(CASE WHEN option.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
-                    ])
-                    ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
-                    ->leftJoin('exam_answer', 'exam_answer.exam_id', '=', 'exam.id')
-                    ->leftJoin('option', 'option.id', '=', 'exam_answer.option_id')
-                    ->where('exam.user_id', $student->id)
-                    ->where('quiz.subject_id', $availableSubject->id)
-                    ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
-                    ->groupBy('exam.id')
-                    ->get();
+            // C. Har bir student uchun hisob-kitoblar (Og'ir jarayon)
+            foreach ($students as $index => $student) {
+                $student->number = ($students->currentPage() - 1) * $students->perPage() + $index + 1;
+                $subjectsData = [];
 
-                // Eng yuqori foizni topish
-                $maxScore = 0;
-                $examCount = $examResults->count();
+                foreach ($availableSubjects as $availableSubject) {
+                    $examResults = DB::table('exam')
+                        ->select([
+                            'exam.id as exam_id',
+                            DB::raw('COUNT(exam_answer.id) as total_questions'),
+                            DB::raw('SUM(CASE WHEN option.is_correct = 1 THEN 1 ELSE 0 END) as correct_answers')
+                        ])
+                        ->join('quiz', 'quiz.id', '=', 'exam.quiz_id')
+                        ->leftJoin('exam_answer', 'exam_answer.exam_id', '=', 'exam.id')
+                        ->leftJoin('option', 'option.id', '=', 'exam_answer.option_id')
+                        ->where('exam.user_id', $student->id)
+                        ->where('quiz.subject_id', $availableSubject->id)
+                        ->whereBetween('exam.created_at', [$dateRange['start'], $dateRange['end']])
+                        ->groupBy('exam.id')
+                        ->get();
 
-                foreach ($examResults as $result) {
-                    if ($result->total_questions > 0) {
-                        $score = round(($result->correct_answers / $result->total_questions) * 100);
-                        if ($score > $maxScore) {
-                            $maxScore = $score;
+                    $maxScore = 0;
+                    $examCount = $examResults->count();
+
+                    foreach ($examResults as $result) {
+                        if ($result->total_questions > 0) {
+                            $score = round(($result->correct_answers / $result->total_questions) * 100);
+                            if ($score > $maxScore) $maxScore = $score;
                         }
+                    }
+
+                    $subjectsData[$availableSubject->id] = [
+                        'subject_id' => $availableSubject->id,
+                        'subject_name' => $availableSubject->name,
+                        'score' => $maxScore,
+                        'grade' => $this->getGrade($maxScore),
+                        'exam_count' => $examCount
+                    ];
+                }
+
+                $student->subjectsData = collect($subjectsData);
+
+                // Qo'shimcha ma'lumotlar (Xulq, Uy vazifa, Kitob)
+                $conductData = $this->getConductData($student->id, $dateRange);
+                $homeworkData = $this->getHomeworkData($student->id, $dateRange);
+                $readingData = $this->getReadingData($student->id, $dateRange);
+
+                // Umumiy ballni hisoblash
+                $totalScore = 0;
+                $subjectCount = 0;
+                foreach ($subjectsData as $data) {
+                    if ($data['score'] > 0) {
+                        $totalScore += $data['score'];
+                        $subjectCount++;
                     }
                 }
 
-                $subjectsData[$availableSubject->id] = [
-                    'subject_id' => $availableSubject->id,
-                    'subject_name' => $availableSubject->name,
-                    'score' => $maxScore, // ✅ Eng yuqori natija
-                    'grade' => $this->getGrade($maxScore),
-                    'exam_count' => $examCount
-                ];
-            }
-
-            $student->subjectsData = collect($subjectsData);
-
-            // Xulqatvor, uy vazifalari, kitobxonlik
-            $conductData = $this->getConductData($student->id, $dateRange);
-            $homeworkData = $this->getHomeworkData($student->id, $dateRange);
-            $readingData = $this->getReadingData($student->id, $dateRange);
-
-            // Umumiy ball hisoblash
-            $totalScore = 0;
-            $subjectCount = 0;
-
-            foreach ($subjectsData as $data) {
-                if ($data['score'] > 0) {
-                    $totalScore += $data['score'];
+                if ($conductData) {
+                    $student->conduct_grade = $conductData['grade'];
+                    $student->conduct_score = $conductData['score'];
+                    $totalScore += $conductData['score'];
                     $subjectCount++;
+                } else {
+                    $student->conduct_grade = '-';
+                    $student->conduct_score = 0;
                 }
+
+                if ($homeworkData) {
+                    $student->homework_grade = $homeworkData['grade'];
+                    $student->homework_score = $homeworkData['score'];
+                    $totalScore += $homeworkData['score'];
+                    $subjectCount++;
+                } else {
+                    $student->homework_grade = '-';
+                    $student->homework_score = 0;
+                }
+
+                if ($readingData) {
+                    $student->reading_score = $readingData['score'];
+                    $totalScore += $readingData['score'];
+                    $subjectCount++;
+                } else {
+                    $student->reading_score = 0;
+                }
+
+                $student->total_score = $totalScore;
+                $student->average_score = $subjectCount > 0 ? round($totalScore / $subjectCount) : 0;
+                $student->overall_grade = $this->getGrade($student->average_score);
             }
 
-            if ($conductData) {
-                $student->conduct_grade = $conductData['grade'];
-                $student->conduct_score = $conductData['score'];
-                $totalScore += $conductData['score'];
-                $subjectCount++;
-            } else {
-                $student->conduct_grade = '-';
-                $student->conduct_score = 0;
+            // D. Reyting bo'yicha saralash
+            $studentsCollection = $students->getCollection()->sortByDesc('total_score')->values();
+            foreach ($studentsCollection as $index => $student) {
+                $student->rank = $index + 1;
             }
+            $students->setCollection($studentsCollection->sortBy('first_name')->values());
 
-            if ($homeworkData) {
-                $student->homework_grade = $homeworkData['grade'];
-                $student->homework_score = $homeworkData['score'];
-                $totalScore += $homeworkData['score'];
-                $subjectCount++;
-            } else {
-                $student->homework_grade = '-';
-                $student->homework_score = 0;
-            }
+            // Keshga saqlash uchun array qaytaramiz (chunki ikkita o'zgaruvchi kerak)
+            return [
+                'students' => $students,
+                'availableSubjects' => $availableSubjects
+            ];
+        });
 
-            if ($readingData) {
-                $student->reading_score = $readingData['score'];
-                $totalScore += $readingData['score'];
-                $subjectCount++;
-            } else {
-                $student->reading_score = 0;
-            }
-
-            $student->total_score = $totalScore;
-            $student->average_score = $subjectCount > 0 ? round($totalScore / $subjectCount) : 0;
-            $student->overall_grade = $this->getGrade($student->average_score);
-        }
-
-        // Reytingni hisoblash
-        $studentsCollection = $students->getCollection()->sortByDesc('total_score')->values();
-        foreach ($studentsCollection as $index => $student) {
-            $student->rank = $index + 1;
-        }
-
-        $students->setCollection($studentsCollection->sortBy('first_name')->values());
-
+        // 4. Keshdan olingan ma'lumotlarni Viewga uzatish
         return view('livewire.teacher.exam.student-monitoring', [
-            'students' => $students,
+            'students' => $cachedData['students'],
+            'availableSubjects' => $cachedData['availableSubjects'],
+            // Quyidagilarni keshlamadik, chunki ular yengil so'rovlar
             'classes' => Classes::where('status', 1)->orderBy('name')->get(),
             'subjects' => Subjects::where('status', 1)->orderBy('name')->get(),
-            'availableSubjects' => $availableSubjects, // ✅ YANGI
             'showEmptyMessage' => false,
         ]);
     }

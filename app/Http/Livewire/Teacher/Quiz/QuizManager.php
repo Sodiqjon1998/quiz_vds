@@ -12,8 +12,9 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel; // Excel import uchun
-use Smalot\PdfParser\Parser as PdfParser; // PDF import uchun
+use Illuminate\Support\Facades\Cache;
+use Maatwebsite\Excel\Facades\Excel;
+use Smalot\PdfParser\Parser as PdfParser;
 
 class QuizManager extends Component
 {
@@ -21,17 +22,17 @@ class QuizManager extends Component
 
     protected $paginationTheme = 'bootstrap';
 
-    // === 1. GLOBAL STATE ===
+    // === GLOBAL STATE ===
     public $search = '';
 
-    // === 2. QUIZ STATE ===
+    // === QUIZ STATE ===
     public $showModal = false;
     public $showViewModal = false;
     public $isEdit = false;
     public $quizId, $name, $classes_id;
     public $viewingQuiz = null;
 
-    // === 3. QUESTION STATE ===
+    // === QUESTION STATE ===
     public $showQuestionsModal = false;
     public $showQuestionFormModal = false;
     public $currentQuiz = null;
@@ -40,19 +41,18 @@ class QuizManager extends Component
     // Question Form Variables
     public $questionId, $questionText, $questionImage, $existingImage;
     public $options = ['', '', '', ''];
-    public $correctOption = null; // 0, 1, 2, 3
+    public $correctOption = null;
     public $isEditQuestion = false;
 
-    // === 4. ATTACHMENT STATE ===
+    // === ATTACHMENT STATE ===
     public $showAttachmentModal = false;
     public $attachmentQuizId, $attachmentDate, $attachmentTime, $attachmentNumber;
 
-    // === 5. IMPORT STATE ===
+    // === IMPORT STATE ===
     public $showImportModal = false;
     public $importFile;
     public $importClassId;
 
-    // === LISTENERS ===
     protected $listeners = ['questionSaved' => '$refresh'];
 
     public function updatedSearch()
@@ -60,10 +60,7 @@ class QuizManager extends Component
         $this->resetPage();
     }
 
-    // ==========================================
-    // === 1. IMPORT FUNKSIYALARI (YANGI) ===
-    // ==========================================
-
+    // === IMPORT FUNKSIYALARI ===
     public function openImportModal()
     {
         $this->reset(['importFile', 'importClassId']);
@@ -80,26 +77,14 @@ class QuizManager extends Component
         $this->validate([
             'importFile' => 'required|file|mimes:xlsx,xls,pdf|max:10240',
             'importClassId' => 'required|exists:classes,id',
-        ], [
-            'importFile.required' => 'Fayl tanlanmadi',
-            'importClassId.required' => 'Sinfni tanlang',
         ]);
 
         $extension = $this->importFile->getClientOriginalExtension();
         $fileName = pathinfo($this->importFile->getClientOriginalName(), PATHINFO_FILENAME);
-
-        // ✅ Railway uchun: Livewire faylini to'g'ridan-to'g'ri o'qish
-        $tempPath = null;
         $fullPath = $this->importFile->getRealPath();
-
-        // ✅ Fayl mavjudligini tekshirish
-        if (!file_exists($fullPath) || !is_readable($fullPath)) {
-            throw new \Exception("Fayl o'qib bo'lmadi. Qayta urinib ko'ring.");
-        }
 
         DB::beginTransaction();
         try {
-            // 1. Yangi Quiz yaratish
             $quiz = Quiz::create([
                 'name' => $fileName,
                 'subject_id' => Auth::user()->subject_id,
@@ -109,81 +94,38 @@ class QuizManager extends Component
                 'updated_by' => Auth::id(),
             ]);
 
-            // 2. Fayl turiga qarab o'qish
             if (in_array($extension, ['xlsx', 'xls'])) {
                 $this->processExcel($fullPath, $quiz->id);
-            } elseif ($extension === 'pdf') {
-                $this->processPdf($fullPath, $quiz->id);
             }
 
             DB::commit();
-
-            // ✅ Muvaffaqiyatli xabar
-            $questionCount = $quiz->questions()->count();
-            session()->flash('message', "✅ Quiz muvaffaqiyatli import qilindi! Jami savollar: {$questionCount}");
-
+            session()->flash('message', "✅ Quiz muvaffaqiyatli import qilindi!");
             $this->closeImportModal();
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // ✅ Batafsil xatolik xabari
-            \Log::error('Import xatoligi: ' . $e->getMessage(), [
-                'file' => $fileName,
-                'class_id' => $this->importClassId,
-                'trace' => $e->getTraceAsString()
-            ]);
-
             session()->flash('error', 'Import xatoligi: ' . $e->getMessage());
-        } finally {
-            // ✅ Faqat Livewire temp faylini tozalash
-            if ($this->importFile) {
-                try {
-                    $this->importFile->delete();
-                } catch (\Exception $e) {
-                    \Log::warning("Livewire temp fayl o'chirilmadi", ['error' => $e->getMessage()]);
-                }
-            }
-
-            // O'zgaruvchini tozalash
-            $this->reset(['importFile', 'importClassId']);
         }
     }
 
-
-
-
-    // Excel faylni qayta ishlash
     private function processExcel($filePath, $quizId)
     {
-        // 1-qatorda sarlavha bor deb hisoblaymiz va uni tashlab yuboramiz
         $data = Excel::toCollection(new \stdClass, $filePath)->first()->slice(1);
-
         foreach ($data as $row) {
-            // Bo'sh qatorlarni o'tkazib yuborish
             if (!isset($row[0]) || empty($row[0])) continue;
 
-            $questionText = $row[0];
-            $optA = $row[1];
-            $optB = $row[2];
-            $optC = $row[3];
-            $optD = $row[4];
-            $correctLetter = strtoupper(trim($row[5])); // A, B, C, D
-
-            // Harfni indexga o'girish
             $correctMap = ['A' => 0, 'B' => 1, 'C' => 2, 'D' => 3];
+            $correctLetter = strtoupper(trim($row[5]));
             $correctIndex = $correctMap[$correctLetter] ?? 0;
 
-            // Savolni yaratish
             $question = Question::create([
                 'quiz_id' => $quizId,
-                'name' => $questionText,
+                'name' => $row[0],
                 'status' => 1,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
 
-            // Variantlarni yaratish
-            $optionsData = [$optA, $optB, $optC, $optD];
+            $optionsData = [$row[1], $row[2], $row[3], $row[4]];
             foreach ($optionsData as $index => $optText) {
                 Option::create([
                     'question_id' => $question->id,
@@ -196,22 +138,7 @@ class QuizManager extends Component
         }
     }
 
-    // PDF faylni qayta ishlash
-    private function processPdf($filePath, $quizId)
-    {
-        $parser = new PdfParser();
-        $pdf = $parser->parseFile($filePath);
-        $text = $pdf->getText();
-
-        // PDF strukturasi murakkab bo'lgani uchun hozircha ogohlantirish beramiz
-        // Kelajakda RegEx yordamida parsing yozish mumkin
-        throw new \Exception("PDF import hozircha test rejimida. Iltimos, Excel formatidan foydalaning.");
-    }
-
-    // ==========================================
-    // === 2. QUIZ CRUD (OPTIMALLASHTIRILGAN) ===
-    // ==========================================
-
+    // === QUIZ CRUD ===
     public function createQuiz()
     {
         $this->reset(['name', 'classes_id', 'quizId', 'isEdit']);
@@ -223,9 +150,6 @@ class QuizManager extends Component
         $this->validate([
             'name' => 'required|min:3',
             'classes_id' => 'required|exists:classes,id',
-        ], [
-            'name.required' => 'Quiz nomini kiriting',
-            'classes_id.required' => 'Sinfni tanlang',
         ]);
 
         $data = [
@@ -236,20 +160,18 @@ class QuizManager extends Component
         ];
 
         if ($this->isEdit) {
-            Quiz::where('id', $this->quizId)->where('created_by', Auth::id())->update($data);
-            session()->flash('message', 'Quiz muvaffaqiyatli yangilandi!');
+            Quiz::where('id', $this->quizId)->update($data);
         } else {
             $data['created_by'] = Auth::id();
             Quiz::create($data);
-            session()->flash('message', 'Yangi quiz yaratildi!');
         }
-
         $this->showModal = false;
+        session()->flash('message', 'Muvaffaqiyatli saqlandi!');
     }
 
     public function editQuiz($id)
     {
-        $quiz = Quiz::where('id', $id)->where('created_by', Auth::id())->firstOrFail();
+        $quiz = Quiz::findOrFail($id);
         $this->quizId = $quiz->id;
         $this->name = $quiz->name;
         $this->classes_id = $quiz->classes_id;
@@ -259,110 +181,40 @@ class QuizManager extends Component
 
     public function deleteQuiz($id)
     {
-        Quiz::where('id', $id)->where('created_by', Auth::id())->delete();
-        session()->flash('message', 'Quiz o\'chirildi!');
+        Quiz::where('id', $id)->delete();
     }
 
     public function closeModal()
     {
         $this->showModal = false;
-        $this->reset(['name', 'classes_id', 'isEdit', 'quizId']);
     }
 
-    // --- VIEW MODAL ---
+    // === VIEW MODAL ===
     public function viewQuiz($id)
     {
         $this->viewingQuiz = Quiz::with(['questions.options', 'subject', 'class'])
-            ->where('id', $id)
-            ->where('created_by', Auth::id())
-            ->firstOrFail();
+            ->findOrFail($id);
         $this->showViewModal = true;
-
-        // Livewire 2 sintaksisi
+        // MUHIM: Modal ochilganda MathJax render bo'lishi uchun signal yuboramiz
         $this->dispatchBrowserEvent('renderMathJax');
     }
-
-
-
-    public function formatMathForView($text)
-    {
-        // Agar allaqachon LaTeX formatida bo'lsa, tegmaymiz
-        // \( yoki \[ yoki $$ borligini tekshirish
-        if (str_contains($text, '\(') || str_contains($text, '\[') || str_contains($text, '$$')) {
-            return $text;
-        }
-
-        // Faqat ^ belgisi bor matnlarni o'giramiz
-        if (!str_contains($text, '^')) {
-            return $text;
-        }
-
-        // Qavs ichidagi darajalarni o'girish: (5^3) → \( 5^3 \)
-        $text = preg_replace('/\(([^)]*\^[^)]*)\)/', '\( $1 \)', $text);
-
-        // Tenglamalarni o'girish: S=a^2 → \( S=a^2 \)
-        // Lekin faqat LaTeX formatida bo'lmagan joylarni
-        $text = preg_replace_callback('/([A-Za-z]+\s*=\s*[A-Za-z0-9\^\+\-\*\/\(\)\.]+)/', function ($matches) {
-            // Agar allaqachon \( ichida bo'lmasa
-            if (!str_contains($matches[0], '\(')) {
-                return '\( ' . $matches[1] . ' \)';
-            }
-            return $matches[0];
-        }, $text);
-
-        // return $text;
-
-        // Agar allaqachon LaTeX formatida bo'lsa
-        if (str_contains($text, '\(') || str_contains($text, '\[')) {
-            return $text;
-        }
-
-        // $ belgisi bor bo'lsa - bu matematika
-        if (str_contains($text, '$')) {
-            // $ ... $ → \( ... \)
-            $text = preg_replace('/\$([^\$]+)\$/', '\( $1 \)', $text);
-            // $$ ... $$ → \[ ... \]
-            $text = preg_replace('/\$\$(.+?)\$\$/s', '\[ $1 \]', $text);
-            return $text;
-        }
-
-        // LaTeX buyruqlari bor bo'lsa (frac, sqrt, cdot va boshqalar)
-        if (preg_match('/\\\\(frac|sqrt|cdot|times|div|pm|geq|leq|neq|sum|prod|int|lim)/', $text)) {
-            // Butun matnni LaTeX formatiga o'girish
-            return '\( ' . $text . ' \)';
-        }
-
-        return $text;
-    }
-
-
-
 
     public function closeViewModal()
     {
         $this->showViewModal = false;
-        $this->viewingQuiz = null;
     }
 
-    // ==========================================
-    // === 3. QUESTION CRUD (OPTIMALLASHTIRILGAN) ===
-    // ==========================================
-
+    // === QUESTION CRUD ===
     public function manageQuestions($quizId)
     {
         $this->currentQuiz = Quiz::with(['subject', 'class'])->findOrFail($quizId);
         $this->showQuestionsModal = true;
-        $this->questionSearch = '';
-
-
-        // MathJax-ni qayta ishga tushirish
         $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function closeQuestionsModal()
     {
         $this->showQuestionsModal = false;
-        $this->currentQuiz = null;
     }
 
     public function createQuestion()
@@ -370,60 +222,38 @@ class QuizManager extends Component
         $this->reset(['questionId', 'questionText', 'questionImage', 'existingImage', 'correctOption', 'isEditQuestion']);
         $this->options = ['', '', '', ''];
         $this->showQuestionFormModal = true;
+        $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function closeQuestionFormModal()
     {
         $this->showQuestionFormModal = false;
-        $this->reset(['questionId', 'questionText', 'questionImage', 'existingImage', 'correctOption', 'isEditQuestion']);
-        $this->options = ['', '', '', ''];
-
-        // MathJax trigger
-        $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function saveQuestion()
     {
         $this->validate([
-            'questionText' => 'required|min:5',
-            'options.*' => 'required|min:1',
-            'correctOption' => 'required|in:0,1,2,3',
-            'questionImage' => 'nullable|image|max:2048',
-        ], [
-            'questionText.required' => 'Savol matnini kiriting',
-            'options.*.required' => 'Barcha variantlarni to\'ldiring',
-            'correctOption.required' => 'To\'g\'ri javobni belgilang',
+            'questionText' => 'required',
+            'options.*' => 'required',
+            'correctOption' => 'required',
         ]);
 
         DB::transaction(function () {
             $imagePath = $this->questionImage ? $this->questionImage->store('questions', 'public') : $this->existingImage;
 
-            $data = [
-                'name' => $this->questionText,
-                'image' => $imagePath,
-                'updated_by' => Auth::id()
-            ];
-
             if ($this->isEditQuestion) {
-                // Yangilash
                 $question = Question::findOrFail($this->questionId);
-
-                // Eski rasmni o'chirish (agar yangisi yuklansa)
-                if ($this->questionImage && $question->image) {
-                    Storage::disk('public')->delete($question->image);
-                }
-
-                $question->update($data);
-
-                // Variantlarni tozalab, qayta yozamiz (osonroq yo'l)
+                $question->update(['name' => $this->questionText, 'image' => $imagePath]);
                 Option::where('question_id', $this->questionId)->delete();
                 $qId = $this->questionId;
             } else {
-                // Yaratish
-                $data['quiz_id'] = $this->currentQuiz->id;
-                $data['created_by'] = Auth::id();
-                $data['status'] = 1;
-                $question = Question::create($data);
+                $question = Question::create([
+                    'quiz_id' => $this->currentQuiz->id,
+                    'name' => $this->questionText,
+                    'image' => $imagePath,
+                    'created_by' => Auth::id(),
+                    'status' => 1
+                ]);
                 $qId = $question->id;
             }
 
@@ -439,8 +269,8 @@ class QuizManager extends Component
         });
 
         $this->closeQuestionFormModal();
-        $this->emit('questionUpdated');
-        session()->flash('message', 'Savol muvaffaqiyatli saqlandi!'); // Global xabar
+        session()->flash('message', 'Savol saqlandi!');
+        $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function editQuestion($id)
@@ -449,80 +279,50 @@ class QuizManager extends Component
         $this->questionId = $q->id;
         $this->questionText = $q->name;
         $this->existingImage = $q->image;
-
         $this->options = $q->options->pluck('name')->toArray();
-        // Agar variantlar kam bo'lsa, 4 taga to'ldiramiz
         $this->options = array_pad($this->options, 4, '');
-
         $this->correctOption = $q->options->search(fn($o) => $o->is_correct);
         $this->isEditQuestion = true;
         $this->showQuestionFormModal = true;
-
-        // MathJax trigger
         $this->dispatchBrowserEvent('renderMathJax');
     }
 
     public function deleteQuestion($id)
     {
-        $q = Question::findOrFail($id);
-        if ($q->image) {
-            Storage::disk('public')->delete($q->image);
-        }
-        $q->delete();
-        session()->flash('message', 'Savol o\'chirildi!');
+        Question::findOrFail($id)->delete();
     }
 
     public function removeImage()
     {
+        if ($this->questionId) {
+            Question::where('id', $this->questionId)->update(['image' => null]);
+        }
         $this->existingImage = null;
         $this->questionImage = null;
-
-        if ($this->isEditQuestion && $this->questionId) {
-            $q = Question::find($this->questionId);
-            if ($q && $q->image) {
-                Storage::disk('public')->delete($q->image);
-                $q->update(['image' => null]);
-            }
-        }
     }
 
-    // ==========================================
-    // === 4. ATTACHMENT (FAYLLAR) CRUD ===
-    // ==========================================
-
+    // === ATTACHMENT ===
     public function manageAttachments($quizId)
     {
         $this->attachmentQuizId = $quizId;
-        $this->reset(['attachmentDate', 'attachmentTime', 'attachmentNumber']);
         $this->showAttachmentModal = true;
     }
 
     public function closeAttachmentModal()
     {
         $this->showAttachmentModal = false;
-        $this->reset(['attachmentDate', 'attachmentTime', 'attachmentNumber']);
     }
 
     public function saveAttachment()
     {
-        $this->validate([
-            'attachmentDate' => 'required|date',
-            'attachmentTime' => 'required',
-            'attachmentNumber' => 'required|numeric',
-        ]);
-
+        $this->validate(['attachmentDate' => 'required', 'attachmentNumber' => 'required']);
         DB::table('attachment')->insert([
             'quiz_id' => $this->attachmentQuizId,
             'date' => $this->attachmentDate,
             'time' => $this->attachmentTime,
             'number' => $this->attachmentNumber,
-            'status' => 1,
-            'created_by' => Auth::id(),
-            'updated_by' => Auth::id(),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => now()
         ]);
-
         $this->reset(['attachmentDate', 'attachmentTime', 'attachmentNumber']);
     }
 
@@ -531,23 +331,18 @@ class QuizManager extends Component
         DB::table('attachment')->where('id', $id)->delete();
     }
 
-    // Computed Property: Fayllarni olish
     public function getAttachmentsProperty()
     {
         if (!$this->attachmentQuizId) return [];
-        return DB::table('attachment')
-            ->where('quiz_id', $this->attachmentQuizId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return DB::table('attachment')->where('quiz_id', $this->attachmentQuizId)->get();
     }
 
-    // ==========================================
-    // === 5. RENDER & GETTERS ===
-    // ==========================================
-
+    // === RENDER ===
     public function render()
     {
-        $quizzes = Quiz::with(['subject', 'class', 'attachment'])
+        $classes = Cache::remember('classes_list', 3600, fn() => Classes::all());
+
+        $quizzes = Quiz::with(['subject', 'class'])
             ->withCount('questions')
             ->where('created_by', Auth::id())
             ->where('name', 'like', '%' . $this->search . '%')
@@ -556,18 +351,16 @@ class QuizManager extends Component
 
         return view('livewire.teacher.quiz.quiz-manager', [
             'quizzes' => $quizzes,
-            'classes' => Classes::all(),
+            'classes' => $classes,
         ]);
     }
 
-    // Savollarni olish (Computed - optimallik uchun)
     public function getQuestionsProperty()
     {
         if (!$this->currentQuiz) return [];
         return $this->currentQuiz->questions()
             ->with('options')
             ->where('name', 'like', '%' . $this->questionSearch . '%')
-            ->orderBy('created_at', 'desc')
             ->get();
     }
 }

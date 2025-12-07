@@ -1,11 +1,70 @@
 <div>
+    {{-- 1. MATHJAX KONFIGURATSIYASI (QuizManager dan olindi) --}}
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [
+                    ['\\(', '\\)'],
+                    ['$', '$']
+                ],
+                displayMath: [
+                    ['\\[', '\\]'],
+                    ['$$', '$$']
+                ],
+                processEscapes: true,
+                processEnvironments: true,
+                packages: {
+                    '[+]': ['base', 'ams', 'noerrors', 'noundefined', 'autoload']
+                }
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('✅ MathJax to\'liq yuklandi!');
+                    });
+                }
+            }
+        };
+
+        // PHP dan 'renderMathJax' buyrug'i kelganda ishlaydi
+        window.addEventListener('renderMathJax', () => {
+            setTimeout(() => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise().then(() => {
+                        console.log('✅ Formulalar render qilindi!');
+                    });
+                }
+            }, 200); // 200ms kutish (modal ochilishi uchun)
+        });
+
+        // Livewire har safar yangilanganda
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.hook('morph.updated', ({
+                el,
+                component
+            }) => {
+                if (window.MathJax) {
+                    setTimeout(() => {
+                        MathJax.typesetPromise();
+                    }, 100);
+                }
+            });
+        });
+    </script>
+
+    {{-- Scriptni majburiy yuklash --}}
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
+
     <style>
         :root {
             --yuksalish-orange: #F58025;
             --yuksalish-dark: #212529;
         }
 
-        /* Asosiy stillar o'zgarishsiz qoldi... */
+        /* ... Eski CSS stillaringiz o'zgarishsiz qoladi ... */
         .mobile-exam-card {
             border-left: 5px solid var(--yuksalish-orange);
             background: white;
@@ -48,10 +107,7 @@
             box-shadow: 0 0 0 3px rgba(245, 128, 37, 0.1);
         }
 
-        /* ---------------------------------------------------- */
-        /* PROFESSIONAL MODAL CSS (O'ZGARTIRILDI) */
-        /* ---------------------------------------------------- */
-
+        /* Modal Styles */
         .modal-backdrop-custom {
             position: fixed;
             top: 0;
@@ -60,13 +116,10 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
-            /* Orqa fonni xira qilish - zamonaviy ko'rinish */
             z-index: 9998;
             display: flex !important;
-            /* MUHIM: Center o'rniga flex-start ishlatamiz */
             align-items: flex-start;
             justify-content: center;
-            /* Yuqoridan joy tashlash */
             padding-top: 3rem;
             padding-bottom: 3rem;
         }
@@ -75,12 +128,9 @@
             position: relative;
             width: 100%;
             max-width: 800px;
-            /* Biroz ixchamroq */
             margin: 0 15px;
-            /* Yon tomonlardan joy */
             z-index: 9999;
             animation: modalSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            /* Apple style animatsiya */
         }
 
         @keyframes modalSlideDown {
@@ -100,98 +150,44 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             background: white;
-            /* MUHIM: Modal balandligini ekran bo'yicha cheklash */
             max-height: calc(100vh - 6rem);
             display: flex;
             flex-direction: column;
         }
 
-        /* Header va Footer qotib turadi, faqat body scroll bo'ladi */
         .modal-header {
             padding: 1.25rem 1.5rem;
             background: #fff;
+            flex-shrink: 0;
             border-bottom: 1px solid #f0f0f0;
             border-radius: 16px 16px 0 0;
-            flex-shrink: 0;
-            /* Siqilmaydi */
         }
 
         .modal-footer {
             padding: 1.25rem 1.5rem;
             background: #fff;
+            flex-shrink: 0;
             border-top: 1px solid #f0f0f0;
             border-radius: 0 0 16px 16px;
-            flex-shrink: 0;
-            /* Siqilmaydi */
         }
 
         .modal-body-scroll {
             padding: 1.5rem;
             overflow-y: auto;
-            /* Flex yordamida qolgan barcha joyni egallaydi */
             flex: 1;
         }
 
-        /* Scrollbar dizayni */
-        .modal-body-scroll::-webkit-scrollbar {
-            width: 6px;
+        /* MathJax Font Fix */
+        .math-content mjx-container {
+            font-size: 1.15em !important;
+            outline: none !important;
         }
 
-        .modal-body-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .modal-body-scroll::-webkit-scrollbar-thumb {
-            background-color: #e2e8f0;
-            border-radius: 3px;
-        }
-
-        .modal-body-scroll::-webkit-scrollbar-thumb:hover {
-            background-color: var(--yuksalish-orange);
-        }
-
-        .question-item {
-            transition: all 0.2s;
-            border: 1px solid #f0f0f0;
-            border-left: 4px solid transparent;
-        }
-
-        .question-item:hover {
-            background-color: #fafbfc;
-            border-left-color: var(--yuksalish-orange);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .correct-answer-box {
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Mobile responsive */
         @media (max-width: 768px) {
             .modal-backdrop-custom {
                 padding-top: 1rem;
                 padding-bottom: 1rem;
                 align-items: flex-end;
-                /* Mobileda pastdan chiqsa qulayroq */
-            }
-
-            .modal-dialog-custom {
-                margin: 0;
-                width: 100%;
-                max-width: 100%;
             }
 
             .modal-content {
@@ -200,7 +196,6 @@
                 border-bottom-right-radius: 0;
             }
 
-            /* Mobile animatsiyasi - pastdan tepaga */
             @keyframes modalSlideDown {
                 from {
                     transform: translateY(100%);
@@ -232,7 +227,6 @@
 
                     <div class="col-12 col-xl">
                         <div class="row g-2">
-                            {{-- 1. SINF FILTER --}}
                             <div class="col-12 col-md-3">
                                 <select wire:model.live="classId" class="form-select border-0 bg-light shadow-sm" style="border-radius: 10px; cursor: pointer;">
                                     <option value="">Barcha sinflar</option>
@@ -241,8 +235,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            {{-- 2. QUIZ FILTER (YANGI) --}}
                             <div class="col-12 col-md-3">
                                 <select wire:model.live="quizId" class="form-select border-0 bg-light shadow-sm" style="border-radius: 10px; cursor: pointer;">
                                     <option value="">Barcha Quizlar</option>
@@ -251,8 +243,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            {{-- 3. QIDIRUV --}}
                             <div class="col-12 col-md-6">
                                 <div class="search-box w-100">
                                     <i class="ri-search-line text-muted me-2"></i>
@@ -282,98 +272,61 @@
                         <tbody>
                             @forelse($exams as $exam)
                             @php
-                            $total = $exam->answers->count();
-                            $correct = $exam->answers->filter(fn($a) => $a->option && $a->option->is_correct)->count();
+                            $total = $exam->total_questions ?? 0;
+                            $correct = $exam->correct_answers ?? 0;
                             $incorrect = $total - $correct;
                             $percent = $total > 0 ? round(($correct / $total) * 100) : 0;
                             $badgeClass = $percent >= 80 ? 'badge-score-high' : ($percent >= 50 ? 'badge-score-mid' : 'badge-score-low');
-
-                            // URINISH SONINI HISOBLASH
-                            $attempt = \App\Models\Exam::where('user_id', $exam->user_id)
-                            ->where('quiz_id', $exam->quiz_id)
-                            ->where('created_at', '<=', $exam->created_at)
-                                ->count();
-                                @endphp
-                                <tr>
-                                    <td class="ps-4 fw-bold text-muted">#{{ $exam->id }}</td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar bg-light text-primary rounded-circle me-2 d-flex justify-content-center align-items-center" style="width: 35px; height: 35px;">
-                                                {{ substr($exam->user->first_name ?? 'U', 0, 1) }}
-                                                {{ substr($exam->user->last_name ?? 'U', 0, 1) }}
-                                            </div>
-                                            <div>
-                                                <div class="fw-bold">{{ $exam->user->first_name ?? 'Noma\'lum' }} {{ $exam->user->last_name ?? '' }}</div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <small class="text-muted">ID: {{ $exam->user_id }}</small>
-                                                    {{-- SINF NOMI --}}
-                                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" style="font-size: 0.65rem;">
-                                                        {{ $exam->user->class_name }}
-                                                    </span>
-                                                </div>
+                            @endphp
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#{{ $exam->id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar bg-light text-primary rounded-circle me-2 d-flex justify-content-center align-items-center" style="width: 35px; height: 35px;">
+                                            {{ substr($exam->user->first_name ?? 'U', 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">{{ $exam->user->first_name ?? 'Noma\'lum' }} {{ $exam->user->last_name ?? '' }}</div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <small class="text-muted">ID: {{ $exam->user_id }}</small>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">{{ $exam->quiz->name ?? '-' }}</div>
-
-                                        <div class="d-flex align-items-center gap-2 mt-1">
-                                            <span class="badge bg-light text-dark border">{{ $exam->quiz->subject->name ?? 'Fan' }}</span>
-
-                                            {{-- URINISH BELGISI (YANGI) --}}
-                                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25" style="font-size: 0.7rem;">
-                                                <i class="ri-history-line me-1"></i> {{ $attempt }}-urinish
-                                            </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">{{ $exam->quiz->name ?? '-' }}</div>
+                                    <span class="badge bg-light text-dark border">{{ $exam->quiz->subject->name ?? 'Fan' }}</span>
+                                </td>
+                                <td class="text-center text-muted">
+                                    {{ $exam->created_at->format('d.m.Y H:i') }}
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <div class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;" title="To'g'ri">
+                                            <i class="ri-checkbox-circle-line me-1"></i> <span class="fw-bold small">{{ $correct }}</span>
                                         </div>
-                                    </td>
-                                    <td class="text-center text-muted">
-                                        {{ $exam->created_at->format('d.m.Y H:i') }}
-                                    </td>
-
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center justify-content-center gap-2">
-                                            {{-- To'g'ri (Yashil) --}}
-                                            <div class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                                style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;"
-                                                title="To'g'ri javoblar">
-                                                <i class="ri-checkbox-circle-line me-1"></i>
-                                                <span class="fw-bold small">{{ $correct }}</span>
-                                            </div>
-
-                                            {{-- Xato (Qizil) --}}
-                                            <div class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                                style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7;"
-                                                title="Xato javoblar">
-                                                <i class="ri-close-circle-line me-1"></i>
-                                                <span class="fw-bold small">{{ $incorrect }}</span>
-                                            </div>
-
-                                            {{-- Jami (Ko'k - YANGILANGAN STIL) --}}
-                                            <div class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                                style="background-color: #e7f1ff; color: #0c63e4; border-color: #b6d4fe;"
-                                                title="Jami savollar">
-                                                <i class="ri-stack-line me-1"></i>
-                                                <span class="fw-bold small">{{ $total }}</span>
-                                            </div>
+                                        <div class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7;" title="Xato">
+                                            <i class="ri-close-circle-line me-1"></i> <span class="fw-bold small">{{ $incorrect }}</span>
                                         </div>
-                                    </td>
-
-                                    <td class="text-center">
-                                        <span class="badge {{ $badgeClass }} px-3 py-2 rounded-pill">
-                                            {{ $percent }}%
-                                        </span>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <button wire:click="showDetails({{ $exam->id }})" type="button" class="btn btn-sm btn-light text-primary border shadow-sm">
-                                            <i class="ri-eye-line me-1"></i> Ko'rish
-                                        </button>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">Ma'lumot topilmadi</td>
-                                </tr>
-                                @endforelse
+                                        <div class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #e7f1ff; color: #0c63e4; border-color: #b6d4fe;" title="Jami">
+                                            <i class="ri-stack-line me-1"></i> <span class="fw-bold small">{{ $total }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {{ $badgeClass }} px-3 py-2 rounded-pill">{{ $percent }}%</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button wire:click="showDetails({{ $exam->id }})" type="button" class="btn btn-sm btn-light text-primary border shadow-sm">
+                                        <i class="ri-eye-line me-1"></i> Ko'rish
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">Ma'lumot topilmadi</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -382,187 +335,114 @@
                 <div class="d-md-none p-3 bg-light">
                     @forelse($exams as $exam)
                     @php
-                    $total = $exam->answers->count();
-                    $correct = $exam->answers->filter(fn($a) => $a->option && $a->option->is_correct)->count();
+                    $total = $exam->total_questions ?? 0;
+                    $correct = $exam->correct_answers ?? 0;
                     $incorrect = $total - $correct;
                     $percent = $total > 0 ? round(($correct / $total) * 100) : 0;
                     $color = $percent >= 80 ? '#198754' : ($percent >= 50 ? '#ffc107' : '#dc3545');
-
-                    // URINISH SONINI HISOBLASH
-                    $attempt = \App\Models\Exam::where('user_id', $exam->user_id)
-                    ->where('quiz_id', $exam->quiz_id)
-                    ->where('created_at', '<=', $exam->created_at)
-                        ->count();
-                        @endphp
-
-                        <div class="mobile-exam-card mb-3 p-3 position-relative" wire:click="showDetails({{ $exam->id }})">
-                            <div class="d-flex justify-content-between mb-2">
-                                <div style="max-width: 70%;">
-                                    <h6 class="fw-bold mb-0 text-truncate">{{ $exam->user->first_name ?? 'Noma\'lum' }} {{ $exam->user->last_name ?? '' }}</h6>
-                                    {{-- Urinish soni mobil uchun --}}
-                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 mt-1" style="font-size: 0.65rem;">
-                                        {{ $attempt }}-urinish
+                    @endphp
+                    <div class="mobile-exam-card mb-3 p-3 position-relative" wire:click="showDetails({{ $exam->id }})">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6 class="fw-bold mb-0 text-truncate">{{ $exam->user->first_name ?? 'Noma\'lum' }} {{ $exam->user->last_name ?? '' }}</h6>
+                            <span class="small text-muted">{{ $exam->created_at->format('d.m H:i') }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1 text-dark small"><i class="ri-file-list-3-line me-1 text-muted"></i> {{ $exam->quiz->name ?? '-' }}</p>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 45px; height: 45px; border-radius: 50%; background: {{ $color }}15; color: {{ $color }}; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">
+                                    {{ $percent }}%
+                                </div>
+                                <div class="ms-3 d-flex gap-2">
+                                    <span class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; font-size: 0.8rem;">
+                                        <i class="ri-check-line me-1"></i> {{ $correct }}
+                                    </span>
+                                    <span class="d-flex align-items-center px-2 py-1 rounded-pill border" style="background-color: #e7f1ff; color: #0c63e4; border-color: #b6d4fe; font-size: 0.8rem;">
+                                        <i class="ri-stack-line me-1"></i> {{ $total }}
                                     </span>
                                 </div>
-                                <span class="small text-muted">{{ $exam->created_at->format('d.m H:i') }}</span>
                             </div>
-
-                            <div class="mb-3">
-                                <p class="mb-1 text-dark small"><i class="ri-file-list-3-line me-1 text-muted"></i> {{ $exam->quiz->name ?? '-' }}</p>
-                            </div>
-
-                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                <div class="d-flex align-items-center">
-                                    <div style="width: 45px; height: 45px; border-radius: 50%; background: {{ $color }}15; color: {{ $color }}; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">
-                                        {{ $percent }}%
-                                    </div>
-
-                                    {{-- Statistika (3 ta badge yonma-yon) --}}
-                                    <div class="ms-3 d-flex gap-2">
-                                        {{-- To'g'ri --}}
-                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                            style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; font-size: 0.8rem;">
-                                            <i class="ri-check-line me-1"></i> {{ $correct }}
-                                        </span>
-
-                                        {{-- Xato --}}
-                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                            style="background-color: #f8d7da; color: #842029; border-color: #f5c2c7; font-size: 0.8rem;">
-                                            <i class="ri-close-line me-1"></i> {{ $incorrect }}
-                                        </span>
-
-                                        {{-- Jami (YANGILANGAN STIL) --}}
-                                        <span class="d-flex align-items-center px-2 py-1 rounded-pill border"
-                                            style="background-color: #e7f1ff; color: #0c63e4; border-color: #b6d4fe; font-size: 0.8rem;">
-                                            <i class="ri-stack-line me-1"></i> {{ $total }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-light text-primary"><i class="ri-arrow-right-s-line"></i></button>
-                            </div>
+                            <button type="button" class="btn btn-sm btn-light text-primary"><i class="ri-arrow-right-s-line"></i></button>
                         </div>
-                        @empty
-                        <div class="text-center py-5 text-muted">Hech qanday natija topilmadi</div>
-                        @endforelse
+                    </div>
+                    @empty
+                    <div class="text-center py-5 text-muted">Hech qanday natija topilmadi</div>
+                    @endforelse
                 </div>
 
-                {{-- Pagination & Summary (YANGILANGAN) --}}
+                {{-- Pagination --}}
                 <div class="p-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 bg-white" style="border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;">
-
-                    {{-- Chap taraf: Statistika --}}
                     <div class="text-muted small">
                         @if($exams->total() > 0)
                         Jami <span class="fw-bold text-dark">{{ $exams->total() }}</span> ta natijadan
-                        <span class="fw-bold text-dark">{{ $exams->firstItem() }}</span> dan
-                        <span class="fw-bold text-dark">{{ $exams->lastItem() }}</span> gachasi ko'rsatilmoqda
-                        @else
-                        Ma'lumot topilmadi
+                        <span class="fw-bold text-dark">{{ $exams->firstItem() }}</span> - <span class="fw-bold text-dark">{{ $exams->lastItem() }}</span>
                         @endif
                     </div>
-
-                    {{-- O'ng taraf: Sahifalash tugmalari --}}
-                    <div>
-                        {{ $exams->links() }}
-                    </div>
+                    <div>{{ $exams->links() }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- DETAIL MODAL (YANGILANGAN) --}}
+    {{-- DETAIL MODAL --}}
     @if($showDetailModal && $selectedExam)
-    {{-- Backdrop --}}
     <div class="modal-backdrop-custom" wire:click="closeDetailModal">
-        {{-- Modal Dialog --}}
         <div class="modal-dialog-custom" onclick="event.stopPropagation()">
             <div class="modal-content">
-                {{-- Fixed Header --}}
                 <div class="modal-header">
                     <div class="d-flex align-items-center justify-content-between w-100">
-                        <h5 class="modal-title fw-bold m-0">
-                            <i class="ri-bar-chart-box-line me-2" style="color: var(--yuksalish-orange);"></i>
-                            Natija tahlili
-                        </h5>
+                        <h5 class="modal-title fw-bold m-0"><i class="ri-bar-chart-box-line me-2" style="color: var(--yuksalish-orange);"></i> Natija tahlili</h5>
                         <button type="button" class="btn-close" wire:click="closeDetailModal"></button>
                     </div>
                 </div>
 
-                {{-- Scrollable Body --}}
                 <div class="modal-body modal-body-scroll bg-light">
-
-                    {{-- 1. RESULT CARD (OQ FON + SARIQ ACCENT) --}}
+                    {{-- 1. RESULT CARD --}}
                     <div class="card border-0 mb-3 rounded-4 shadow-sm bg-white position-relative overflow-hidden">
-                        {{-- Chap tomondagi sariq chiziq --}}
                         <div class="position-absolute top-0 start-0 h-100" style="width: 6px; background-color: #F58025;"></div>
-
                         <div class="card-body p-4">
                             <div class="row align-items-center text-center">
-
-                                {{-- O'quvchi --}}
                                 <div class="col-4 position-relative">
                                     <div class="d-flex flex-column align-items-center">
-                                        {{-- Ikonka doirasi --}}
-                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center"
-                                            style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
+                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
                                             <i class="ri-user-smile-line fs-3"></i>
                                         </div>
-                                        <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">O'quvchi</div>
-                                        <div class="fw-bold text-dark text-truncate w-100 px-1" style="font-size: 0.95rem;">
-                                            {{ $selectedExam->user->first_name }}
-                                            <br>
-                                            {{ $selectedExam->user->last_name }}
-                                        </div>
+                                        <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">O'quvchi</div>
+                                        <div class="fw-bold text-dark text-truncate w-100 px-1">{{ $selectedExam->user->first_name }} <br> {{ $selectedExam->user->last_name }}</div>
                                     </div>
-
-                                    {{-- Ajratuvchi chiziq --}}
                                     <div class="position-absolute top-50 end-0 translate-middle-y bg-light" style="width: 2px; height: 60%;"></div>
                                 </div>
-
-                                {{-- Ball (Markaziy) --}}
                                 <div class="col-4 position-relative">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center"
-                                            style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
+                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
                                             <i class="ri-medal-line fs-3"></i>
                                         </div>
-                                        <div class="text-uppercase text-muted fw-bold mb-0" style="font-size: 0.65rem; letter-spacing: 0.5px;">Ball</div>
-                                        <div class="fw-bold" style="font-size: 2.2rem; color: #F58025; line-height: 1.2;">
-                                            {{ $examStats['percentage'] }}%
-                                        </div>
+                                        <div class="text-uppercase text-muted fw-bold mb-0" style="font-size: 0.65rem;">Ball</div>
+                                        <div class="fw-bold" style="font-size: 2.2rem; color: #F58025; line-height: 1.2;">{{ $examStats['percentage'] }}%</div>
                                     </div>
-
-                                    {{-- Ajratuvchi chiziq --}}
                                     <div class="position-absolute top-50 end-0 translate-middle-y bg-light" style="width: 2px; height: 60%;"></div>
                                 </div>
-
-                                {{-- Natija --}}
                                 <div class="col-4">
                                     <div class="d-flex flex-column align-items-center">
-                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center"
-                                            style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
+                                        <div class="mb-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: rgba(245, 128, 37, 0.1); color: #F58025;">
                                             <i class="ri-checkbox-multiple-line fs-3"></i>
                                         </div>
-                                        <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">Natija</div>
-                                        <div class="fw-bold text-dark fs-5">
-                                            {{ $examStats['correct'] }} <span class="text-muted mx-1">/</span> {{ $examStats['total'] }}
-                                        </div>
+                                        <div class="text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Natija</div>
+                                        <div class="fw-bold text-dark fs-5">{{ $examStats['correct'] }} <span class="text-muted mx-1">/</span> {{ $examStats['total'] }}</div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
 
-                    {{-- 2. QUIZ INFO (Sodda variant) --}}
+                    {{-- 2. QUIZ INFO --}}
                     <div class="card border-0 mb-4 rounded-4 shadow-sm bg-white">
                         <div class="card-body p-3">
                             <div class="d-flex align-items-center">
-                                {{-- Fayl ikonka --}}
-                                <div class="flex-shrink-0 rounded-3 d-flex align-items-center justify-content-center me-3"
-                                    style="width: 45px; height: 45px; background-color: #fff4e6; color: #F58025;">
+                                <div class="flex-shrink-0 rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; background-color: #fff4e6; color: #F58025;">
                                     <i class="ri-file-text-line fs-4"></i>
                                 </div>
-
                                 <div class="flex-grow-1">
                                     <h6 class="fw-bold text-dark mb-1">{{ $selectedExam->quiz->name ?? 'Quiz nomi' }}</h6>
                                     <div class="d-flex flex-wrap gap-2">
@@ -578,15 +458,11 @@
                         </div>
                     </div>
 
-                    {{-- Savollar ro'yxati sarlavhasi --}}
+                    {{-- SAVOLLAR RO'YXATI --}}
                     <div class="d-flex justify-content-between align-items-center mb-3 px-1">
                         <h6 class="fw-bold mb-0 text-dark d-flex align-items-center">
-                            <i class="ri-question-answer-line me-2 text-warning"></i>
-                            Savollar va javoblar
+                            <i class="ri-question-answer-line me-2 text-warning"></i> Savollar va javoblar
                         </h6>
-                        <span class="badge bg-white text-muted border shadow-sm rounded-pill">
-                            {{ $selectedExam->answers->count() }} ta savol
-                        </span>
                     </div>
 
                     <div class="row g-3">
@@ -602,16 +478,15 @@
                                 <div class="card-body">
                                     <div class="d-flex align-items-start gap-3">
                                         <div class="flex-shrink-0">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                                                style="width: 45px; height: 45px; background: {{ $bgGradient }};">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px; background: {{ $bgGradient }};">
                                                 <i class="{{ $statusIcon }} fs-4 text-{{ $statusColor }}"></i>
                                             </div>
                                         </div>
-
                                         <div class="flex-grow-1">
                                             <div class="mb-3">
                                                 <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }} border border-{{ $statusColor }} mb-2">Savol #{{ $loop->iteration }}</span>
-                                                <div class="fw-bold text-dark fs-6">
+                                                <div class="fw-bold text-dark fs-6 math-content">
+                                                    {{-- MATH CLASS QO'SHILDI --}}
                                                     {!! $answer->question->name ?? 'Savol topilmadi' !!}
                                                 </div>
                                             </div>
@@ -622,29 +497,25 @@
                                                     <i class="ri-user-voice-line me-2 mt-1 opacity-50"></i>
                                                     <div>
                                                         <div class="small text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Sizning javobingiz:</div>
-                                                        <div class="fw-medium text-dark">{!! $answer->option->name !!}</div>
+                                                        <div class="fw-medium text-dark math-content">{!! $answer->option->name !!}</div>
                                                     </div>
                                                 </div>
                                             </div>
                                             @else
-                                            <div class="alert alert-secondary border-0 mb-2 py-2" role="alert">
-                                                <i class="ri-close-line me-2"></i>
-                                                <span class="fw-medium">Javob belgilanmagan</span>
+                                            <div class="alert alert-secondary border-0 mb-2 py-2">
+                                                <i class="ri-close-line me-2"></i> <span class="fw-medium">Javob belgilanmagan</span>
                                             </div>
                                             @endif
 
-                                            {{-- To'g'ri javob --}}
                                             @if(!$isCorrect && $answer->question)
-                                            @php
-                                            $correctOption = $answer->question->options->firstWhere('is_correct', true);
-                                            @endphp
+                                            @php $correctOption = $answer->question->options->firstWhere('is_correct', true); @endphp
                                             @if($correctOption)
                                             <div class="p-3 rounded-3 correct-answer-box bg-white border border-success border-opacity-25 shadow-sm">
                                                 <div class="d-flex align-items-start">
                                                     <i class="ri-lightbulb-flash-line fs-5 me-2 mt-1 text-success"></i>
                                                     <div>
                                                         <div class="small text-uppercase text-success fw-bold" style="font-size: 0.7rem;">To'g'ri javob:</div>
-                                                        <div class="text-dark fw-medium">{!! $correctOption->name !!}</div>
+                                                        <div class="text-dark fw-medium math-content">{!! $correctOption->name !!}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -659,11 +530,8 @@
                     </div>
                 </div>
 
-                {{-- Fixed Footer --}}
                 <div class="modal-footer bg-light justify-content-between">
-                    <button type="button" class="btn btn-white border shadow-sm px-4" wire:click="closeDetailModal">
-                        Yopish
-                    </button>
+                    <button type="button" class="btn btn-white border shadow-sm px-4" wire:click="closeDetailModal">Yopish</button>
                     <button type="button" class="btn btn-primary px-4 shadow-sm" style="background-color: var(--yuksalish-orange); border-color: var(--yuksalish-orange);" onclick="window.print()">
                         <i class="ri-printer-line me-2"></i> Chop etish
                     </button>
