@@ -1,20 +1,99 @@
 <div>
-    {{-- Debug info --}}
-    <!-- <div class="alert alert-info mb-3">
-        <strong>Debug Info:</strong><br>
-        Class Filter: {{ $classFilter ?? 'NOT SET' }}<br>
-        Class Name: {{ $className ?? 'NOT SET' }}<br>
-        Date From: {{ $dateFrom }}<br>
-        Date To: {{ $dateTo }}<br>
-        Show Empty: {{ $showEmptyMessage ?? 'false' ? 'true' : 'false' }}
-    </div> -->
+    <style>
+        :root {
+            --yuksalish-orange: #F58025;
+            --yuksalish-dark: #212529;
+            --yuksalish-gray: #f8f9fa;
+        }
 
-    {{-- Header --}}
+        .btn-yuksalish {
+            background-color: var(--yuksalish-orange);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-yuksalish:hover {
+            background-color: #d96d1b;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .bg-gradient-orange {
+            background: linear-gradient(135deg, #F58025 0%, #ff9f5a 100%);
+        }
+
+        /* Stats Card Professional (Oq fon, rangli icon) */
+        .stats-card {
+            background: white;
+            border: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            border-color: var(--yuksalish-orange);
+        }
+
+        .stats-icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Tabs */
+        .nav-tabs {
+            border-bottom: 2px solid #eee;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            font-weight: 600;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 20px;
+            transition: all 0.2s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--yuksalish-orange);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--yuksalish-orange);
+            background: transparent;
+            border-bottom: 3px solid var(--yuksalish-orange);
+        }
+
+        /* Mobile Card */
+        .mobile-student-card {
+            border-left: 4px solid var(--yuksalish-orange);
+            background: white;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+
+    {{-- HEADER --}}
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-gradient-success text-white py-3">
+        <div class="card-header bg-gradient-orange text-white py-3">
             <h4 class="mb-0 fw-bold text-white">
-                <i class="ri-bar-chart-box-line me-2"></i>
-                O'quvchilar faoliyati
+                <i class="ri-bar-chart-box-line me-2"></i> O'quvchilar Faoliyati
             </h4>
         </div>
 
@@ -22,11 +101,8 @@
             {{-- Filters --}}
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold text-danger">
-                        <i class="ri-graduation-cap-line me-1"></i>
-                        Sinf *
-                    </label>
-                    <select wire:model.live="classFilter" class="form-select border-danger border-2" required>
+                    <label class="form-label fw-semibold text-muted">Sinf *</label>
+                    <select wire:model.live="classFilter" class="form-select border-2" style="border-color: var(--yuksalish-orange);">
                         <option value="">-- Sinfni tanlang --</option>
                         @foreach($classes as $class)
                         <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -36,344 +112,231 @@
 
                 @if($classFilter)
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">
-                        <i class="ri-calendar-line me-1"></i>Dan
-                    </label>
+                    <label class="form-label fw-semibold text-muted">Dan</label>
                     <input type="date" wire:model.live="dateFrom" class="form-control">
                 </div>
-
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">
-                        <i class="ri-calendar-line me-1"></i>Gacha
-                    </label>
+                    <label class="form-label fw-semibold text-muted">Gacha</label>
                     <input type="date" wire:model.live="dateTo" class="form-control">
                 </div>
-
                 <div class="col-md-2 d-flex align-items-end">
-                    <button wire:click="$refresh" class="btn btn-primary w-100">
-                        <i class="ri-refresh-line me-1"></i>Yangilash
-                    </button>
+                    <button wire:click="$refresh" class="btn btn-yuksalish w-100"><i class="ri-refresh-line me-1"></i> Yangilash</button>
                 </div>
                 @endif
             </div>
 
-            {{-- Sinf tanlanmagan --}}
-            @if($showEmptyMessage ?? false)
-            <div class="alert alert-warning border-0 shadow-sm">
-                <div class="d-flex align-items-center">
-                    <i class="ri-information-line fs-1 me-3"></i>
-                    <div>
-                        <h5 class="alert-heading mb-2">Sinf tanlang</h5>
-                        <p class="mb-0">Hisobotlarni ko'rish uchun yuqorida sinf tanlang</p>
-                    </div>
+            @if($showEmptyMessage)
+            <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center">
+                <i class="ri-information-line fs-1 me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">Sinf tanlanmagan</h5>
+                    <p class="mb-0">Iltimos, hisobotlarni ko'rish uchun yuqorida sinfni tanlang.</p>
                 </div>
             </div>
 
             @else
-            {{-- Statistics --}}
+
+            {{-- STATISTICS CARDS (Tuzatilgan dizayn) --}}
             @if($statistics)
-            <!-- <div class="alert alert-success mb-4">
-                        <strong>Statistika:</strong><br>
-                        Jami hisobotlar: {{ $statistics['total_reports'] }}<br>
-                        Jami vazifalar: {{ $statistics['total_tasks'] }}<br>
-                        Bajarildi: {{ $statistics['completed_tasks'] }}<br>
-                        O'quvchilar: {{ $statistics['students_count'] }}
-                    </div> -->
-
             <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="card border-0 bg-secondary bg-opacity-10 h-100">
-                        <div class="card-body text-center">
-                            <i class="ri-file-list-3-line text-primary mb-2" style="font-size: 2.5rem;"></i>
-                            <h3 class="fw-bold text-primary mb-1">{{ $statistics['total_reports'] }}</h3>
-                            <p class="text-muted mb-0 small">Jami hisobotlar</p>
+                <div class="col-6 col-md-3">
+                    <div class="card stats-card h-100">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <div class="stats-icon-box bg-secondary bg-opacity-10 text-primary me-3">
+                                <i class="ri-file-list-3-line"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0 text-dark">{{ $statistics['total_reports'] }}</h4>
+                                <small class="text-muted">Jami hisobotlar</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-3">
-                    <div class="card border-0 bg-info bg-opacity-10 h-100">
-                        <div class="card-body text-center">
-                            <i class="ri-task-line text-info mb-2" style="font-size: 2.5rem;"></i>
-                            <h3 class="fw-bold text-info mb-1">{{ $statistics['total_tasks'] }}</h3>
-                            <p class="text-muted mb-0 small">Jami vazifalar</p>
+                <div class="col-6 col-md-3">
+                    <div class="card stats-card h-100">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <div class="stats-icon-box bg-info bg-opacity-10 text-info me-3">
+                                <i class="ri-task-line"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0 text-dark">{{ $statistics['total_tasks'] }}</h4>
+                                <small class="text-muted">Jami vazifalar</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-3">
-                    <div class="card border-0 bg-success bg-opacity-10 h-100">
-                        <div class="card-body text-center">
-                            <i class="ri-checkbox-circle-line text-success mb-2" style="font-size: 2.5rem;"></i>
-                            <h3 class="fw-bold text-success mb-1">{{ $statistics['completed_tasks'] }}</h3>
-                            <p class="text-muted mb-0 small">Bajarildi</p>
+                <div class="col-6 col-md-3">
+                    <div class="card stats-card h-100">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <div class="stats-icon-box bg-success bg-opacity-10 text-success me-3">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0 text-dark">{{ $statistics['completed_tasks'] }}</h4>
+                                <small class="text-muted">Bajarildi</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-3">
-                    <div class="card border-0 bg-warning bg-opacity-10 h-100">
-                        <div class="card-body text-center">
-                            <i class="ri-percent-line text-warning mb-2" style="font-size: 2.5rem;"></i>
-                            <h3 class="fw-bold text-warning mb-1">{{ $statistics['completion_rate'] }}%</h3>
-                            <p class="text-muted mb-0 small">Bajarilish foizi</p>
+                <div class="col-6 col-md-3">
+                    <div class="card stats-card h-100">
+                        <div class="card-body d-flex align-items-center p-3">
+                            <div class="stats-icon-box bg-warning bg-opacity-10 text-warning me-3">
+                                <i class="ri-pie-chart-line"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0 text-dark">{{ $statistics['completion_rate'] }}%</h4>
+                                <small class="text-muted">Samaradorlik</small>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             @endif
 
-            {{-- Top 3 --}}
-            {{-- Top 3 --}}
-            <!-- @if(count($topStudents) > 0)
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <h5 class="mb-0 fw-bold text-white">
-                        <i class="ri-trophy-line me-2"></i>
-                        TOP 3 ENG FAOL O'QUVCHILAR
-                    </h5>
-                </div>
-                <div class="card-body p-3">
-                    <div class="row g-2">
-                        @foreach($topStudents as $index => $student)
-                        <div class="col-md-4">
-                            <div class="card h-100 border-2 
-                            {{ $index == 0 ? 'border-warning' : ($index == 1 ? 'border-secondary' : 'border-danger') }}">
-                                <div class="card-body p-3 text-center">
-                                    {{-- Medal Icon --}}
-                                    <div class="mb-2" style="font-size: 2rem;">
-                                        @if($index == 0)
-                                        🥇
-                                        @elseif($index == 1)
-                                        🥈
-                                        @else
-                                        🥉
-                                        @endif
-                                    </div>
+            {{-- TABS (Filter Buttons) --}}
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'submitted' ? 'active' : '' }}"
+                        wire:click="setTab('submitted')">
+                        <i class="ri-check-double-line me-1"></i> Topshirganlar
+                        <span class="badge bg-success-subtle text-success ms-1 rounded-pill">{{ $students->count() }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link {{ $activeTab === 'missing' ? 'active' : '' }}"
+                        wire:click="setTab('missing')">
+                        <i class="ri-close-circle-line me-1"></i> Topshirmaganlar
+                    </button>
+                </li>
+            </ul>
 
-                                    {{-- Student Name --}}
-                                    <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">{{ $student['name'] }}</h6>
-
-                                    {{-- Stats in compact form --}}
-                                    <div class="row g-1 mb-2 text-start">
-                                        <div class="col-12 d-flex justify-content-between align-items-center py-1 border-bottom">
-                                            <small class="text-muted">Hisobotlar:</small>
-                                            <span class="badge bg-primary">{{ $student['reports_done'] }}</span>
-                                        </div>
-                                        <div class="col-12 d-flex justify-content-between align-items-center py-1 border-bottom">
-                                            <small class="text-muted">Vazifalar:</small>
-                                            <span class="badge bg-success">{{ $student['tasks_done'] }}</span>
-                                        </div>
-                                        <div class="col-12 d-flex justify-content-between align-items-center py-1">
-                                            <small class="text-muted">Test:</small>
-                                            <span class="badge bg-info">{{ $student['exam_score'] }}%</span>
-                                        </div>
-                                    </div>
-
-                                    {{-- Total Score --}}
-                                    <div class="pt-2 border-top">
-                                        <small class="text-muted d-block mb-1">Umumiy ball</small>
-                                        <h4 class="fw-bold mb-0 
-                                        {{ $index == 0 ? 'text-warning' : ($index == 1 ? 'text-secondary' : 'text-danger') }}">
-                                            {{ $student['total_score'] }}
-                                        </h4>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            @endif -->
-
-            {{-- Top 3 - Ultra Compact --}}
-            @if(count($topStudents) > 0)
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-warning bg-opacity-75">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="ri-trophy-line me-2"></i>
-                        TOP 3 ENG FAOL O'QUVCHILAR
-                    </h6>
-                </div>
-                <div class="card-body p-2">
-                    <div class="row g-2">
-                        @foreach($topStudents as $index => $student)
-                        <div class="col-md-4">
-                            <div class="card border-2 h-100
-                            {{ $index == 0 ? 'border-warning bg-warning bg-opacity-10' : 
-                               ($index == 1 ? 'border-secondary bg-secondary bg-opacity-10' : 
-                               'border-danger bg-danger bg-opacity-10') }}">
-                                <div class="card-body p-2">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="me-2" style="font-size: 1.5rem;">
-                                            @if($index == 0) 🥇
-                                            @elseif($index == 1) 🥈
-                                            @else 🥉
-                                            @endif
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-0 fw-bold" style="font-size: 0.85rem;">
-                                                {{ $student['name'] }}
-                                            </h6>
-                                        </div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-around text-center mb-2">
-                                        <div>
-                                            <div class="badge bg-primary mb-1">{{ $student['reports_done'] }}</div>
-                                            <small class="d-block text-muted" style="font-size: 0.7rem;">Hisobot</small>
-                                        </div>
-                                        <div>
-                                            <div class="badge bg-success mb-1">{{ $student['tasks_done'] }}</div>
-                                            <small class="d-block text-muted" style="font-size: 0.7rem;">Vazifa</small>
-                                        </div>
-                                        <div>
-                                            <div class="badge bg-info mb-1">{{ $student['exam_score'] }}%</div>
-                                            <small class="d-block text-muted" style="font-size: 0.7rem;">Test</small>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-center pt-2 border-top">
-                                        <h5 class="mb-0 fw-bold
-                                        {{ $index == 0 ? 'text-warning' : 
-                                           ($index == 1 ? 'text-secondary' : 'text-danger') }}">
-                                            {{ $student['total_score'] }}
-                                        </h5>
-                                        <small class="text-muted" style="font-size: 0.7rem;">ball</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            {{-- Top 3 - Minimal --}}
-            <!-- @if(count($topStudents) > 0)
-            <div class="alert alert-warning border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);">
-                <div class="d-flex align-items-center mb-2">
-                    <i class="ri-trophy-fill text-warning me-2 fs-4"></i>
-                    <strong>TOP 3 ENG FAOL O'QUVCHILAR</strong>
-                </div>
-
-                <div class="row g-2">
-                    @foreach($topStudents as $index => $student)
-                    <div class="col-md-4">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body p-2">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center">
-                                        <span class="me-2" style="font-size: 1.3rem;">
-                                            @if($index == 0) 🥇
-                                            @elseif($index == 1) 🥈
-                                            @else 🥉
-                                            @endif
-                                        </span>
-                                        <div>
-                                            <div class="fw-bold" style="font-size: 0.85rem;">{{ $student['name'] }}</div>
-                                            <small class="text-muted">
-                                                📊 {{ $student['reports_done'] }} |
-                                                ✅ {{ $student['tasks_done'] }} |
-                                                📝 {{ $student['exam_score'] }}%
-                                            </small>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <h5 class="mb-0 fw-bold text-success">{{ $student['total_score'] }}</h5>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif -->
-
-            {{-- Students Table --}}
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
+            {{-- STUDENTS LIST (DESKTOP) --}}
+            <div class="d-none d-md-block table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="bg-light">
                         <tr>
-                            <th>№</th>
+                            <th class="text-center" style="width: 50px;">#</th>
                             <th>F.I.O</th>
-                            <th class="text-center">HISOBOTLAR</th>
-                            <th class="text-center">JAMI VAZIFALAR</th>
-                            <th class="text-center">BAJARILDI</th>
-                            <th class="text-center">BAJARILISH %</th>
-                            <th class="text-center">AMALLAR</th>
+                            <th class="text-center">Hisobotlar</th>
+                            <th class="text-center">Vazifalar (Jami)</th>
+                            <th class="text-center">Bajarildi</th>
+                            <th class="text-center">Foiz</th>
+                            <th class="text-center" style="width: 100px;">Batafsil</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($students as $index => $student)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td><strong>{{ $student->first_name }} {{ $student->last_name }}</strong></td>
+                            <td class="text-center fw-bold">{{ $index + 1 }}</td>
+                            <td><span class="fw-bold text-dark">{{ $student->first_name }} {{ $student->last_name }}</span></td>
+                            <td class="text-center"><span class="badge bg-primary rounded-pill">{{ $student->total_reports }}</span></td>
+                            <td class="text-center"><span class="badge bg-info rounded-pill">{{ $student->total_tasks }}</span></td>
+                            <td class="text-center"><span class="badge bg-success rounded-pill">{{ $student->completed_tasks }}</span></td>
                             <td class="text-center">
-                                <span class="badge bg-primary">{{ $student->total_reports }}</span>
+                                @php $color = $student->task_completion_rate >= 80 ? 'success' : ($student->task_completion_rate >= 50 ? 'warning' : 'danger'); @endphp
+                                <span class="fw-bold text-{{ $color }}">{{ $student->task_completion_rate }}%</span>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-info">{{ $student->total_tasks }}</span>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-success">{{ $student->completed_tasks }}</span>
-                            </td>
-                            <td class="text-center">
-                                <strong>{{ $student->task_completion_rate }}%</strong>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-primary"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#detail-{{ $student->id }}">
-                                    <i class="ri-eye-line"></i>
+                                <button class="btn btn-sm btn-light border text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $student->id }}">
+                                    <i class="ri-arrow-down-s-line"></i>
                                 </button>
                             </td>
                         </tr>
-                        <tr class="collapse" id="detail-{{ $student->id }}">
+                        <tr class="collapse" id="collapse-{{ $student->id }}">
                             <td colspan="7" class="bg-light p-3">
-                                <strong>Vazifalar:</strong>
-                                @if(count($student->tasks) > 0)
-                                <div class="row g-2 mt-2">
-                                    @foreach($student->tasks as $task)
-                                    <div class="col-md-2">
-                                        <div class="card {{ $task['is_completed'] ? 'border-success' : 'border-danger' }}">
-                                            <div class="card-body p-2 text-center">
-                                                <div>{{ $task['emoji'] }}</div>
-                                                <small>{{ $task['name'] }}</small>
-                                                <br>
-                                                <span class="badge {{ $task['is_completed'] ? 'bg-success' : 'bg-danger' }}">
-                                                    {{ $task['is_completed'] ? '✓' : '✗' }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                @if(count($student->tasks_list) > 0)
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach($student->tasks_list as $task)
+                                    <div class="bg-white border rounded px-3 py-2 shadow-sm d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                                        <i class="ri-checkbox-blank-circle-line text-muted"></i>
+                                        <span>{{ $task['name'] }}</span>
+                                        @if($task['is_completed']) <i class="ri-checkbox-circle-fill text-success fs-5"></i>
+                                        @else <i class="ri-close-circle-fill text-danger fs-5"></i> @endif
                                     </div>
                                     @endforeach
                                 </div>
                                 @else
-                                <p class="text-muted mt-2">Vazifalar yo'q</p>
+                                <span class="text-muted small">Vazifalar mavjud emas</span>
                                 @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-4">
-                                <p class="text-muted">O'quvchilar topilmadi</p>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="ri-user-unfollow-line fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                O'quvchilar topilmadi
                             </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            {{-- STUDENTS LIST (MOBILE) --}}
+            <div class="d-md-none">
+                @forelse($students as $student)
+                <div class="mobile-student-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h6 class="fw-bold mb-0 text-dark">{{ $student->first_name }} {{ $student->last_name }}</h6>
+                        <span class="badge {{ $student->task_completion_rate >= 70 ? 'bg-success' : 'bg-warning' }}">
+                            {{ $student->task_completion_rate }}%
+                        </span>
+                    </div>
+
+                    <div class="row text-center g-2 mb-3">
+                        <div class="col-4">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold text-primary">{{ $student->total_reports }}</div>
+                                <small class="text-muted" style="font-size: 0.7rem;">Hisobot</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold text-info">{{ $student->total_tasks }}</div>
+                                <small class="text-muted" style="font-size: 0.7rem;">Vazifa</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="bg-light rounded p-2">
+                                <div class="fw-bold text-success">{{ $student->completed_tasks }}</div>
+                                <small class="text-muted" style="font-size: 0.7rem;">Bajarildi</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-sm btn-light w-100 border text-muted" type="button" data-bs-toggle="collapse" data-bs-target="#mob-collapse-{{ $student->id }}">
+                        Batafsil vazifalar <i class="ri-arrow-down-s-line ms-1"></i>
+                    </button>
+
+                    <div class="collapse mt-2" id="mob-collapse-{{ $student->id }}">
+                        <div class="bg-light rounded p-2">
+                            @if(count($student->tasks_list) > 0)
+                            @foreach($student->tasks_list as $task)
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom last-border-0">
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                    <i class="ri-checkbox-blank-circle-line text-muted"></i>
+                                    <span class="text-truncate small">{{ $task['name'] }}</span>
+                                </div>
+                                @if($task['is_completed'])
+                                <i class="ri-checkbox-circle-fill text-success fs-5"></i>
+                                @else
+                                <i class="ri-close-circle-fill text-danger fs-5"></i>
+                                @endif
+                            </div>
+                            @endforeach
+                            @else
+                            <span class="text-muted small d-block text-center">Vazifalar mavjud emas</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="text-center py-5 text-muted">Ma'lumot topilmadi</div>
+                @endforelse
+            </div>
+
             @endif
         </div>
     </div>
 </div>
-
-<style>
-    .bg-gradient-success {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    }
-</style>
