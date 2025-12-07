@@ -45,6 +45,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}/start', [SiteController::class, 'start'])->name('start');
 
         Route::post('/{subjectId}/{quizId}/submit', [QuizController::class, 'submitQuiz'])->name('submit.quiz');
+
+        // ✅ YANGI: Duel uchun quizlar ro'yxati
+        Route::get('/duel/list', [QuizController::class, 'getDuelQuizzes'])->name('duel.list');
+        
+        // ✅ YANGI: Duel rejimi uchun alohida yo'l
+        Route::get('/{subjectId}/{quizId}/duel', [QuizController::class, 'getDuelQuestions'])->name('duel');
     });
 
     // === Reading Management ===

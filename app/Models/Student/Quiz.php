@@ -75,18 +75,28 @@ class Quiz extends Model
         return !is_null($classes) ? $classes : null;
     }
 
-    public static function getOptionById($id = null){
+    public static function getOptionById($id = null)
+    {
         $options = Option::where('question_id', '=', $id)->get();
         return !is_null($options) ? $options : null;
     }
 
-    public static function getAttachmentById($id = null){
+    public static function getAttachmentById($id = null)
+    {
         $attachment = Attachment::where('quiz_id', '=', $id)->first();
         return !is_null($attachment) ? $attachment : null;
     }
 
-   public function attachment() // Metod nomini birlikka o'zgartirdim
-{
-    return $this->hasOne(Attachment::class);
-}
+    public function attachment() // Metod nomini birlikka o'zgartirdim
+    {
+        return $this->hasOne(Attachment::class);
+    }
+
+    /**
+     * Quiz fan bilan bog'lanish
+     */
+    public function subject()
+    {
+        return $this->belongsTo(Subjects::class, 'subject_id');
+    }
 }

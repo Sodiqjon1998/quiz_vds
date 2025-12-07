@@ -317,4 +317,94 @@ class QuizController extends Controller
             ], 500);
         }
     }
+
+
+    /**
+     * Duel rejimi uchun maxsus metod.
+     * Bu metodda to'g'ri javoblar (is_correct) OCHIQ holda yuboriladi.
+     */
+    public function getDuelQuestions(Request $request, $subjectId, $quizId)
+    {
+        try {
+            // Faqat savollar kerak, vaqt yoki urinishlar muhim emas (o'yin uchun)
+            $questions = \App\Models\Question::where('quiz_id', $quizId)
+                ->where('status', \App\Models\Question::STATUS_ACTIVE)
+                ->with('options')
+                ->get();
+
+            if ($questions->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Bu testda savollar yo'q."
+                ], 404);
+            }
+
+            // Formatlash (Javoblarni ko'rsatamiz!)
+            $formattedQuestions = $questions->shuffle()->map(function ($question) {
+                return [
+                    'id' => $question->id,
+                    'question_text' => $question->name, // Modelda savol matni 'name'
+                    'options' => $question->options->shuffle()->map(function ($option) {
+                        return [
+                            'id' => $option->id,
+                            'option_text' => $option->name, // Variant matni
+                            'is_correct' => (bool) $option->is_correct, // <-- MUHIM: Bu yerda javobni yuboryapmiz
+                        ];
+                    })
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'questions' => $formattedQuestions
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server xatosi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Duel sahifasi uchun barcha quizlar ro'yxatini qaytaradi.
+     */
+    public function getDuelQuizzes(Request $request)
+    {
+        try {
+            // Student Quiz modelidan foydalanamiz
+            $quizzes = \App\Models\Student\Quiz::with('subject')
+                ->where('status', Quiz::STATUS_ACTIVE) // Faqat faol quizlar (agar status ustuni bo'lsa)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $data = $quizzes->map(function ($quiz) {
+                return [
+                    'id' => $quiz->id,
+                    'name' => $quiz->name,
+                    'class' => $quiz->class,
+                    'subject' => [
+                        'id' => $quiz->subject->id,
+                        'name' => $quiz->subject->name ?? 'Fan nomi yo\'q'
+                    ],
+                    // Savollar sonini ham qo'shish foydali bo'ladi
+                    'questions_count' => \App\Models\Question::where('quiz_id', $quiz->id)->count()
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Server xatosi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    // Class tugashi
 }
