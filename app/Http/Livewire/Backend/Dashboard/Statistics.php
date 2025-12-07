@@ -8,16 +8,15 @@ use App\Models\Subjects;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
+use Carbon\Carbon;
 
 class Statistics extends Component
 {
-    // Vaqt oralig'i (Default: Oy)
     public $filterType = 'month';
 
     public function render()
     {
-        // Kesh kaliti (Har safar kod o'zgarganda versiyani yangilaymiz: v3)
-        $cacheKey = 'admin_dashboard_stats_v3_' . $this->filterType;
+        $cacheKey = 'admin_dashboard_stats_v4_' . $this->filterType;
 
         $stats = Cache::remember($cacheKey, 600, function () {
             // 1. ASOSIY RAQAMLAR
@@ -28,25 +27,18 @@ class Statistics extends Component
                 'subjects' => Subjects::count(),
             ];
 
-            // 2. TEST NATIJALARI
-            $examStats = DB::table('exam')
-                ->select(DB::raw('count(*) as total_exams'))
-                ->first();
-
+            // 2. TEST VA KITOBXONLIK
+            $examStats = DB::table('exam')->select(DB::raw('count(*) as total_exams'))->first();
             $examStats = $examStats ? (array) $examStats : ['total_exams' => 0];
 
-            // 3. KITOBXONLIK
             $readingStats = DB::table('reading_records')
                 ->select([
                     DB::raw('count(*) as total_records'),
                     DB::raw('count(distinct users_id) as active_students')
-                ])
-                ->first();
-
+                ])->first();
             $readingStats = $readingStats ? (array) $readingStats : ['total_records' => 0, 'active_students' => 0];
 
-            // 4. TOP 5 FAOL SINFLAR (TUZATILDI)
-            // Muammo shu yerda edi: classes_id ni to'g'ri formatlab ulash kerak
+            // 3. TOP 5 SINF (CAST bilan)
             $topClasses = DB::table('classes')
                 ->select('classes.name', DB::raw('count(daily_reports.id) as reports_count'))
                 ->join('users', function ($join) {
@@ -58,7 +50,7 @@ class Statistics extends Component
                 ->limit(5)
                 ->get();
 
-            // 5. ENG FAOL O'QITUVCHILAR
+            // 4. TOP 5 O'QITUVCHI
             $topTeachers = DB::table('users')
                 ->select('users.first_name', 'users.last_name', DB::raw('count(quiz.id) as quiz_count'))
                 ->join('quiz', 'quiz.created_by', '=', 'users.id')
@@ -68,12 +60,28 @@ class Statistics extends Component
                 ->limit(5)
                 ->get();
 
+            // 5. ✅ YANGI: HAFTALIK FAOLLIK GRAFIGI UCHUN MA'LUMOT
+            $chartActivity = [];
+            $days = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $days[] = $date->format('d.m'); // Sana (kun.oy)
+
+                // Shu kungi hisobotlar soni
+                $count = DB::table('daily_reports')
+                    ->whereDate('report_date', $date->format('Y-m-d'))
+                    ->count();
+                $chartActivity[] = $count;
+            }
+
             return [
                 'counts' => $counts,
                 'exam_total' => $examStats['total_exams'],
                 'reading' => $readingStats,
                 'top_classes' => $topClasses,
-                'top_teachers' => $topTeachers
+                'top_teachers' => $topTeachers,
+                'chart_days' => $days,        // Grafik uchun kunlar
+                'chart_data' => $chartActivity // Grafik uchun sonlar
             ];
         });
 

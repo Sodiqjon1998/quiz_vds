@@ -65,7 +65,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Top Lists */
         .list-item {
             display: flex;
             align-items: center;
@@ -106,8 +105,8 @@
         }
     </style>
 
+    {{-- 1-QATOR: ASOSIY KARTALAR --}}
     <div class="row g-4 mb-4">
-        {{-- 1. O'QUVCHILAR --}}
         <div class="col-12 col-md-6 col-xl-3">
             <div class="stat-card p-4">
                 <div class="d-flex justify-content-between align-items-start">
@@ -115,17 +114,10 @@
                         <div class="stat-label mb-1">O'quvchilar</div>
                         <div class="stat-value">{{ number_format($stats['counts']['students']) }}</div>
                     </div>
-                    <div class="icon-box bg-blue-soft">
-                        <i class="ri-user-smile-line"></i>
-                    </div>
-                </div>
-                <div class="small text-success mt-2">
-                    <i class="ri-arrow-up-line"></i> Faol o'quvchilar bazasi
+                    <div class="icon-box bg-blue-soft"><i class="ri-user-smile-line"></i></div>
                 </div>
             </div>
         </div>
-
-        {{-- 2. O'QITUVCHILAR --}}
         <div class="col-12 col-md-6 col-xl-3">
             <div class="stat-card p-4">
                 <div class="d-flex justify-content-between align-items-start">
@@ -133,35 +125,21 @@
                         <div class="stat-label mb-1">O'qituvchilar</div>
                         <div class="stat-value">{{ number_format($stats['counts']['teachers']) }}</div>
                     </div>
-                    <div class="icon-box bg-orange-soft">
-                        <i class="ri-briefcase-line"></i>
-                    </div>
-                </div>
-                <div class="small text-muted mt-2">
-                    Jami pedagoglar soni
+                    <div class="icon-box bg-orange-soft"><i class="ri-briefcase-line"></i></div>
                 </div>
             </div>
         </div>
-
-        {{-- 3. TESTLAR --}}
         <div class="col-12 col-md-6 col-xl-3">
             <div class="stat-card p-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="stat-label mb-1">Ishlangan Testlar</div>
+                        <div class="stat-label mb-1">Testlar</div>
                         <div class="stat-value">{{ number_format($stats['exam_total']) }}</div>
                     </div>
-                    <div class="icon-box bg-purple-soft">
-                        <i class="ri-file-list-3-line"></i>
-                    </div>
-                </div>
-                <div class="small text-primary mt-2">
-                    <i class="ri-bar-chart-fill"></i> Bilim darajasi nazorati
+                    <div class="icon-box bg-purple-soft"><i class="ri-file-list-3-line"></i></div>
                 </div>
             </div>
         </div>
-
-        {{-- 4. KITOBXONLIK --}}
         <div class="col-12 col-md-6 col-xl-3">
             <div class="stat-card p-4">
                 <div class="d-flex justify-content-between align-items-start">
@@ -169,19 +147,43 @@
                         <div class="stat-label mb-1">Audio Yozuvlar</div>
                         <div class="stat-value">{{ number_format($stats['reading']['total_records']) }}</div>
                     </div>
-                    <div class="icon-box bg-green-soft">
-                        <i class="ri-mic-line"></i>
-                    </div>
-                </div>
-                <div class="small text-success mt-2">
-                    {{ $stats['reading']['active_students'] }} nafar o'quvchi faol
+                    <div class="icon-box bg-green-soft"><i class="ri-mic-line"></i></div>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- 2-QATOR: GRAFIKLAR (DIAGRAMMALAR) --}}
+    <div class="row g-4 mb-4">
+        {{-- GRAFIK 1: Haftalik Faollik --}}
+        <div class="col-12 col-lg-8">
+            <div class="stat-card">
+                <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="ri-line-chart-line text-success me-2"></i> Haftalik Faollik</h5>
+                    <small class="text-muted">Kunlik hisobotlar soni</small>
+                </div>
+                <div class="p-4">
+                    <div id="activityChart" style="min-height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- GRAFIK 2: Foydalanuvchilar Nisbati --}}
+        <div class="col-12 col-lg-4">
+            <div class="stat-card">
+                <div class="p-4 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="ri-pie-chart-2-line text-primary me-2"></i> Foydalanuvchilar</h5>
+                </div>
+                <div class="p-4 d-flex align-items-center justify-content-center">
+                    <div id="usersChart" style="min-height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 3-QATOR: TOP RO'YXATLAR --}}
     <div class="row g-4">
-        {{-- TOP SINFLAR --}}
+        {{-- Top Sinflar --}}
         <div class="col-12 col-lg-6">
             <div class="stat-card">
                 <div class="p-4 border-bottom">
@@ -207,7 +209,7 @@
             </div>
         </div>
 
-        {{-- TOP O'QITUVCHILAR --}}
+        {{-- Top O'qituvchilar --}}
         <div class="col-12 col-lg-6">
             <div class="stat-card">
                 <div class="p-4 border-bottom">
@@ -234,3 +236,116 @@
         </div>
     </div>
 </div>
+
+{{-- APEXCHARTS SCRIPT --}}
+@push('scripts')
+<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // 1. HAFTALIK FAOLLIK (Area Chart)
+        const activityOptions = {
+            series: [{
+                name: 'Hisobotlar',
+                data: @json($stats['chart_data']) // PHP dan kelgan ma'lumot
+            }],
+            chart: {
+                height: 300,
+                type: 'area',
+                toolbar: {
+                    show: false
+                },
+                fontFamily: 'Inter, sans-serif'
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            colors: ['#F58025'], // Yuksalish Orange
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.2,
+                    stops: [0, 90, 100]
+                }
+            },
+            xaxis: {
+                categories: @json($stats['chart_days']), // PHP dan kelgan kunlar
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                }
+            },
+            grid: {
+                borderColor: '#f1f1f1',
+                strokeDashArray: 4,
+            },
+            tooltip: {
+                theme: 'light'
+            }
+        };
+
+        const activityChart = new ApexCharts(document.querySelector("#activityChart"), activityOptions);
+        activityChart.render();
+
+
+        // 2. FOYDALANUVCHILAR (Donut Chart)
+        const usersOptions = {
+            series: [{
+                {
+                    $stats['counts']['students']
+                }
+            }, {
+                {
+                    $stats['counts']['teachers']
+                }
+            }],
+            labels: ['O\'quvchilar', 'O\'qituvchilar'],
+            chart: {
+                type: 'donut',
+                height: 320,
+                fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#0d6efd', '#F58025'], // Moviy va Zarg'aldoq
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '70%',
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: 'Jami',
+                                fontSize: '18px',
+                                color: '#6c757d',
+                                formatter: function(w) {
+                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    radius: 12
+                }
+            },
+            dataLabels: {
+                enabled: false
+            }
+        };
+
+        const usersChart = new ApexCharts(document.querySelector("#usersChart"), usersOptions);
+        usersChart.render();
+    });
+</script>
+@endpush
