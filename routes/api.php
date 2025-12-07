@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\QuizController; // <-- Qo'shing
 use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 
 // ======================
 // === PUBLIC ROUTES ===
@@ -19,6 +20,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 // ======================
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Broadcast::routes();
 
     // === User Info ===
     Route::get('/user', function (Request $request) {
@@ -48,9 +51,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // ✅ YANGI: Duel uchun quizlar ro'yxati
         Route::get('/duel/list', [QuizController::class, 'getDuelQuizzes'])->name('duel.list');
-        
+
+        Route::get('/duel/classmates', [QuizController::class, 'getClassmates'])->name('duel.classmates');
+
         // ✅ YANGI: Duel rejimi uchun alohida yo'l
         Route::get('/{subjectId}/{quizId}/duel', [QuizController::class, 'getDuelQuestions'])->name('duel');
+
+        Route::post('/duel/challenge', [QuizController::class, 'sendChallenge']);
+        Route::post('/quiz/duel/accept', [QuizController::class, 'acceptChallenge']);
     });
 
     // === Reading Management ===

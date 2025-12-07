@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.Teacher.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+// ✅ YANGI: Buni qo'shing (Duel o'yini uchun)
+Broadcast::channel('user.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});

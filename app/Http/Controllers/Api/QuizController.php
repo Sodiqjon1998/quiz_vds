@@ -8,6 +8,7 @@ use App\Models\Question;
 use App\Models\Exam;
 use App\Models\Attachment;
 use App\Models\Student\Quiz;
+use App\Models\Users;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -406,5 +407,122 @@ class QuizController extends Controller
             ], 500);
         }
     }
-    // Class tugashi
+
+
+    /**
+     * O'quvchining sinfdoshlarini ro'yxatini qaytaradi (O'zidan tashqari)
+     */
+    /**
+     * O'quvchining sinfdoshlarini ro'yxatini qaytaradi (O'zidan tashqari)
+     */
+    public function getClassmates(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            // classes_id array ekanligini hisobga olamiz
+            $classIds = $user->classes_id;
+
+            if (empty($classIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Siz hech qaysi sinfga biriktirilmagansiz."
+                ], 404);
+            }
+
+            // Queryni boshlaymiz
+            $query = \App\Models\Users::query();
+
+            // 1. O'zini ro'yxatdan chiqarib tashlash
+            $query->where('id', '!=', $user->id);
+
+            // 2. Faqat o'quvchilarni olish (user_type = 4 bu Student)
+            $query->where('user_type', \App\Models\Users::TYPE_STUDENT);
+
+            // 3. Sinfdoshi ekanligini tekshirish (JSON qidiruv)
+            $query->where(function ($q) use ($classIds) {
+                // Agar $classIds massiv bo'lsa
+                if (is_array($classIds)) {
+                    foreach ($classIds as $id) {
+                        // JSON ichidan qidirish (MySQL/PostgreSQL)
+                        $q->orWhereJsonContains('classes_id', $id);
+                        // Yoki oddiy string qidiruv (agar baza JSON support qilmasa)
+                        $q->orWhere('classes_id', 'like', '%"' . $id . '"%');
+                    }
+                } else {
+                    // Agar string yoki son bo'lsa
+                    $q->where('classes_id', 'like', '%"' . $classIds . '"%')
+                        ->orWhere('classes_id', $classIds);
+                }
+            });
+
+            // Kerakli ustunlarni olish ('img' to'g'ri nom)
+            $classmates = $query->select('id', 'first_name', 'last_name', 'img')->get();
+
+            // Ma'lumotlarni formatlash
+            $data = $classmates->map(function ($student) {
+                return [
+                    'id' => $student->id,
+                    'name' => $student->first_name . ' ' . $student->last_name,
+                    // 'img' ustunini tekshiramiz
+                    'avatar' => $student->img ? asset('storage/' . $student->img) : null,
+                    'short_name' => $student->first_name
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ], 200);
+        } catch (\Exception $e) {
+            // Xatolikni log faylga yozish (debug uchun foydali)
+            \Log::error('GetClassmates Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Server xatosi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    // 1. Chaqiruv yuborish
+    public function sendChallenge(Request $request)
+    {
+        $user = $request->user();
+        $targetUserId = $request->input('target_user_id');
+        $quizId = $request->input('quiz_id');
+        $subjectId = $request->input('subject_id');
+
+        // Eventni "otamiz"
+        broadcast(new \App\Events\DuelChallenge($user, $targetUserId, $quizId, $subjectId))->toOthers();
+
+        return response()->json(['success' => true, 'message' => 'Chaqiruv yuborildi!']);
+    }
+
+    // 2. Chaqiruvni qabul qilish
+    public function acceptChallenge(Request $request)
+    {
+        $user = $request->user();
+        // Frontend "challenger_id" deb yuboryaptimi yoki "challengerId" mi? 
+        // Ikkalasini ham tekshirib ko'ramiz:
+        $challengerId = $request->input('challenger_id') ?? $request->input('challengerId');
+
+        // Agar ID kelmasa, xatolik qaytarish kerak
+        if (!$challengerId) {
+            return response()->json(['success' => false, 'message' => 'Chaqiruvchi IDsi topilmadi'], 400);
+        }
+
+        $gameSessionId = uniqid('game_');
+
+        // Log yozib qo'yamiz (storage/logs/laravel.log da ko'rinadi)
+        \Log::info("Duel qabul qilindi. Kim: {$user->id}, Kimni: {$challengerId}");
+
+        broadcast(new \App\Events\DuelAccepted($user, $challengerId, $gameSessionId)); // toOthers() shart emas
+
+        return response()->json([
+            'success' => true,
+            'game_session_id' => $gameSessionId
+        ]);
+    }
 }
