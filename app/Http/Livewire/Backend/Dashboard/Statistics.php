@@ -16,8 +16,8 @@ class Statistics extends Component
 
     public function render()
     {
-        // Kesh kaliti (10 daqiqalik)
-        $cacheKey = 'admin_dashboard_stats_v2_' . $this->filterType;
+        // Kesh kaliti (Har safar kod o'zgarganda versiyani yangilaymiz: v3)
+        $cacheKey = 'admin_dashboard_stats_v3_' . $this->filterType;
 
         $stats = Cache::remember($cacheKey, 600, function () {
             // 1. ASOSIY RAQAMLAR
@@ -28,15 +28,14 @@ class Statistics extends Component
                 'subjects' => Subjects::count(),
             ];
 
-            // 2. TEST NATIJALARI (Umumiy o'rtacha)
+            // 2. TEST NATIJALARI
             $examStats = DB::table('exam')
                 ->select(DB::raw('count(*) as total_exams'))
                 ->first();
 
-            // ✅ TUZATISH: Obyektni massivga o'girish (xatolikni oldini oladi)
             $examStats = $examStats ? (array) $examStats : ['total_exams' => 0];
 
-            // 3. KITOBXONLIK (Umumiy)
+            // 3. KITOBXONLIK
             $readingStats = DB::table('reading_records')
                 ->select([
                     DB::raw('count(*) as total_records'),
@@ -44,20 +43,22 @@ class Statistics extends Component
                 ])
                 ->first();
 
-            // ✅ TUZATISH: Obyektni massivga o'girish
             $readingStats = $readingStats ? (array) $readingStats : ['total_records' => 0, 'active_students' => 0];
 
-            // 4. TOP 5 FAOL SINFLAR (Reyting)
+            // 4. TOP 5 FAOL SINFLAR (TUZATILDI)
+            // Muammo shu yerda edi: classes_id ni to'g'ri formatlab ulash kerak
             $topClasses = DB::table('classes')
                 ->select('classes.name', DB::raw('count(daily_reports.id) as reports_count'))
-                ->join('users', 'users.classes_id', '=', 'classes.id')
+                ->join('users', function ($join) {
+                    $join->on(DB::raw('CAST(users.classes_id AS UNSIGNED)'), '=', 'classes.id');
+                })
                 ->join('daily_reports', 'daily_reports.student_id', '=', 'users.id')
                 ->groupBy('classes.id', 'classes.name')
                 ->orderByDesc('reports_count')
                 ->limit(5)
                 ->get();
 
-            // 5. ENG FAOL O'QITUVCHILAR (Quizlar soni bo'yicha)
+            // 5. ENG FAOL O'QITUVCHILAR
             $topTeachers = DB::table('users')
                 ->select('users.first_name', 'users.last_name', DB::raw('count(quiz.id) as quiz_count'))
                 ->join('quiz', 'quiz.created_by', '=', 'users.id')
@@ -69,10 +70,10 @@ class Statistics extends Component
 
             return [
                 'counts' => $counts,
-                'exam_total' => $examStats['total_exams'], // Array syntax
-                'reading' => $readingStats, // Array syntax
-                'top_classes' => $topClasses, // Collection (Object bo'lib qolaveradi, chunki foreach bor)
-                'top_teachers' => $topTeachers // Collection
+                'exam_total' => $examStats['total_exams'],
+                'reading' => $readingStats,
+                'top_classes' => $topClasses,
+                'top_teachers' => $topTeachers
             ];
         });
 
