@@ -69,5 +69,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
         // Sinf Ko'rsatkichlari
         Route::get('/class-performance', ClassPerformance::class)->name('class-performance');
+
+        // Reports guruhi ichiga qo'shing
+        Route::get('/exam-results', \App\Http\Livewire\Backend\Exam\ExamResult::class)->name('exam-results');
     });
 });
