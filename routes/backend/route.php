@@ -72,5 +72,8 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
         // Reports guruhi ichiga qo'shing
         Route::get('/exam-results', \App\Http\Livewire\Backend\Exam\ExamResult::class)->name('exam-results');
+
+        // Reports guruhi ichiga
+        Route::get('/reading-records', \App\Http\Livewire\Backend\Report\ReadingRecords::class)->name('reading-records');
     });
 });

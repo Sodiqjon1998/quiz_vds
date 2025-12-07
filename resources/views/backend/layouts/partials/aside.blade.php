@@ -41,6 +41,14 @@
             </a>
         </li>
 
+        {{-- Kitobxonlik --}}
+        <li class="menu-item {{ request()->routeIs('backend.reports.reading-records') ? 'active' : '' }}">
+            <a href="{{ route('backend.reports.reading-records') }}" class="menu-link">
+                <i class="menu-icon tf-icons ri-book-read-line"></i>
+                <div data-i18n="Kitobxonlik">Kitobxonlik</div>
+            </a>
+        </li>
+
         {{-- Test Natijalari --}}
         <li class="menu-item {{ request()->routeIs('backend.reports.exam-results') ? 'active' : '' }}">
             <a href="{{ route('backend.reports.exam-results') }}" class="menu-link">

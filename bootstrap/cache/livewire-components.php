@@ -3,6 +3,7 @@
   'backend.dashboard.statistics' => 'App\\Http\\Livewire\\Backend\\Dashboard\\Statistics',
   'backend.exam.exam-result' => 'App\\Http\\Livewire\\Backend\\Exam\\ExamResult',
   'backend.report.class-performance' => 'App\\Http\\Livewire\\Backend\\Report\\ClassPerformance',
+  'backend.report.reading-records' => 'App\\Http\\Livewire\\Backend\\Report\\ReadingRecords',
   'backend.student.student-manager' => 'App\\Http\\Livewire\\Backend\\Student\\StudentManager',
   'backend.subject.subject-manager' => 'App\\Http\\Livewire\\Backend\\Subject\\SubjectManager',
   'backend.users.users-manager' => 'App\\Http\\Livewire\\Backend\\Users\\UsersManager',
