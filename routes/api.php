@@ -58,7 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{subjectId}/{quizId}/duel', [QuizController::class, 'getDuelQuestions'])->name('duel');
 
         Route::post('/duel/challenge', [QuizController::class, 'sendChallenge']);
-        Route::post('/quiz/duel/accept', [QuizController::class, 'acceptChallenge']);
+        Route::post('/duel/accept', [QuizController::class, 'acceptChallenge']);
     });
 
     // === Reading Management ===
