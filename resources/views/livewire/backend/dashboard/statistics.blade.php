@@ -3,6 +3,7 @@
         :root {
             --yuksalish-orange: #F58025;
             --yuksalish-dark: #212529;
+            --yuksalish-gray: #f8f9fa;
         }
 
         .stat-card {
@@ -105,6 +106,16 @@
         }
     </style>
 
+    {{-- MA'LUMOTLARNI SAQLASH UCHUN YASHIRIN ELEMENT --}}
+    <div id="dashboard-chart-data"
+        data-activity="{{ json_encode($stats['chart_data']) }}"
+        data-days="{{ json_encode($stats['chart_days']) }}"
+        data-students="{{ $stats['counts']['students'] }}"
+        data-teachers="{{ $stats['counts']['teachers'] }}"
+        data-coordinators="{{ $stats['counts']['coordinators'] }}"
+        style="display: none;">
+    </div>
+
     {{-- 1-QATOR: ASOSIY KARTALAR --}}
     <div class="row g-4 mb-4">
         <div class="col-12 col-md-6 col-xl-3">
@@ -133,10 +144,10 @@
             <div class="stat-card p-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="stat-label mb-1">Testlar</div>
-                        <div class="stat-value">{{ number_format($stats['exam_total']) }}</div>
+                        <div class="stat-label mb-1">Koordinatorlar</div>
+                        <div class="stat-value">{{ number_format($stats['counts']['coordinators']) }}</div>
                     </div>
-                    <div class="icon-box bg-purple-soft"><i class="ri-file-list-3-line"></i></div>
+                    <div class="icon-box bg-green-soft"><i class="ri-user-star-line"></i></div>
                 </div>
             </div>
         </div>
@@ -144,16 +155,16 @@
             <div class="stat-card p-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="stat-label mb-1">Audio Yozuvlar</div>
-                        <div class="stat-value">{{ number_format($stats['reading']['total_records']) }}</div>
+                        <div class="stat-label mb-1">Testlar</div>
+                        <div class="stat-value">{{ number_format($stats['exam_total']) }}</div>
                     </div>
-                    <div class="icon-box bg-green-soft"><i class="ri-mic-line"></i></div>
+                    <div class="icon-box bg-purple-soft"><i class="ri-file-list-3-line"></i></div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- 2-QATOR: GRAFIKLAR (DIAGRAMMALAR) --}}
+    {{-- 2-QATOR: GRAFIKLAR --}}
     <div class="row g-4 mb-4">
         {{-- GRAFIK 1: Haftalik Faollik --}}
         <div class="col-12 col-lg-8">
@@ -163,8 +174,7 @@
                     <small class="text-muted">Kunlik hisobotlar soni</small>
                 </div>
                 <div class="p-4">
-                    {{-- ID va wire:ignore muhim --}}
-                    <div wire:ignore id="activityChart" style="min-height: 300px;"></div>
+                    <div wire:ignore id="activityChart" style="min-height: 350px;"></div>
                 </div>
             </div>
         </div>
@@ -176,7 +186,7 @@
                     <h5 class="fw-bold mb-0 text-dark"><i class="ri-pie-chart-2-line text-primary me-2"></i> Foydalanuvchilar</h5>
                 </div>
                 <div class="p-4 d-flex align-items-center justify-content-center">
-                    <div wire:ignore id="usersChart" style="min-height: 300px;"></div>
+                    <div wire:ignore id="usersChart" style="min-height: 350px; width: 100%;"></div>
                 </div>
             </div>
         </div>
@@ -236,133 +246,163 @@
             </div>
         </div>
     </div>
+</div>
 
-    {{-- SKRIPLAR (To'g'ridan-to'g'ri fayl oxirida) --}}
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-    <script>
-        document.addEventListener('livewire:load', function() {
+{{-- APEXCHARTS SKRIPTI --}}
+<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
 
-            // 1. HAFTALIK FAOLLIK (Area Chart)
-            var activityData = @json($stats['chart_data']);
-            var activityDays = @json($stats['chart_days']);
+<script>
+    // Grafiklar obyektini global saqlaymiz, shunda keyinroq o'chira olamiz
+    window.dashboardCharts = {
+        activity: null,
+        users: null
+    };
 
-            // Agar ma'lumotlar bo'sh bo'lsa ham grafik ko'rinishi uchun
-            if (!activityData || activityData.length === 0) {
-                activityData = [0, 0, 0, 0, 0, 0, 0];
-            }
+    function initDashboardCharts() {
+        if (typeof ApexCharts === 'undefined') {
+            setTimeout(initDashboardCharts, 100);
+            return;
+        }
 
-            const activityOptions = {
-                series: [{
-                    name: 'Hisobotlar',
-                    data: activityData
-                }],
-                chart: {
-                    height: 300,
-                    type: 'area',
-                    toolbar: {
-                        show: false
-                    },
-                    fontFamily: 'Inter, sans-serif'
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
-                colors: ['#F58025'], // Yuksalish Orange
-                fill: {
-                    type: 'gradient',
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.7,
-                        opacityTo: 0.2,
-                        stops: [0, 90, 100]
-                    }
-                },
-                xaxis: {
-                    categories: activityDays,
-                    axisBorder: {
-                        show: false
-                    },
-                    axisTicks: {
-                        show: false
-                    }
-                },
-                grid: {
-                    borderColor: '#f1f1f1',
-                    strokeDashArray: 4,
-                },
-                tooltip: {
-                    theme: 'light'
+        var dataEl = document.getElementById('dashboard-chart-data');
+        if (!dataEl) return;
+
+        try {
+            var activityData = JSON.parse(dataEl.getAttribute('data-activity'));
+            var activityDays = JSON.parse(dataEl.getAttribute('data-days'));
+
+            var studentCount = parseInt(dataEl.getAttribute('data-students'));
+            var teacherCount = parseInt(dataEl.getAttribute('data-teachers'));
+            var coordinatorCount = parseInt(dataEl.getAttribute('data-coordinators'));
+
+            // --- 1. HAFTALIK FAOLLIK GRAFIGI ---
+            var chart1El = document.querySelector("#activityChart");
+            if (chart1El) {
+                // ESKI GRAFIKNI O'CHIRISH (Muhim joyi shu!)
+                if (window.dashboardCharts.activity) {
+                    window.dashboardCharts.activity.destroy();
                 }
-            };
+                chart1El.innerHTML = ""; // Konteynerni tozalash
 
-            const activityChart = new ApexCharts(document.querySelector("#activityChart"), activityOptions);
-            activityChart.render();
-
-
-            // 2. FOYDALANUVCHILAR (Donut Chart)
-            var studentCount = {
-                {
-                    $stats['counts']['students']
-                }
-            };
-            var teacherCount = {
-                {
-                    $stats['counts']['teachers']
-                }
-            };
-
-            // Agar ikkalasi ham 0 bo'lsa, chiroyli ko'rinish uchun 1 ta qo'shamiz (yoki matn chiqaramiz)
-            var showChart = (studentCount > 0 || teacherCount > 0);
-
-            if (showChart) {
-                const usersOptions = {
-                    series: [studentCount, teacherCount],
-                    labels: ['O\'quvchilar', 'O\'qituvchilar'],
+                var options1 = {
+                    series: [{
+                        name: 'Hisobotlar',
+                        data: activityData
+                    }],
                     chart: {
-                        type: 'donut',
-                        height: 320,
+                        height: 350,
+                        type: 'area',
+                        toolbar: {
+                            show: false
+                        },
                         fontFamily: 'Inter, sans-serif'
                     },
-                    colors: ['#0d6efd', '#F58025'],
-                    plotOptions: {
-                        pie: {
-                            donut: {
-                                size: '70%',
-                                labels: {
-                                    show: true,
-                                    total: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    stroke: {
+                        curve: 'smooth',
+                        width: 3
+                    },
+                    colors: ['#F58025'],
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.7,
+                            opacityTo: 0.2,
+                            stops: [0, 90, 100]
+                        }
+                    },
+                    xaxis: {
+                        categories: activityDays,
+                        axisBorder: {
+                            show: false
+                        },
+                        axisTicks: {
+                            show: false
+                        }
+                    },
+                    grid: {
+                        borderColor: '#f1f1f1',
+                        strokeDashArray: 4
+                    },
+                    tooltip: {
+                        theme: 'light'
+                    }
+                };
+
+                // Yangi grafik yaratish va saqlash
+                window.dashboardCharts.activity = new ApexCharts(chart1El, options1);
+                window.dashboardCharts.activity.render();
+            }
+
+            // --- 2. FOYDALANUVCHILAR GRAFIGI ---
+            var chart2El = document.querySelector("#usersChart");
+            if (chart2El) {
+                // ESKI GRAFIKNI O'CHIRISH
+                if (window.dashboardCharts.users) {
+                    window.dashboardCharts.users.destroy();
+                }
+                chart2El.innerHTML = ""; // Konteynerni tozalash
+
+                if (studentCount === 0 && teacherCount === 0 && coordinatorCount === 0) {
+                    chart2El.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted">Ma\'lumot yo\'q</div>';
+                } else {
+                    var options2 = {
+                        series: [studentCount, teacherCount, coordinatorCount],
+                        labels: ['O\'quvchilar', 'O\'qituvchilar', 'Koordinatorlar'],
+                        chart: {
+                            type: 'donut',
+                            height: 350,
+                            fontFamily: 'Inter, sans-serif'
+                        },
+                        colors: ['#0d6efd', '#F58025', '#198754'],
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    size: '70%',
+                                    labels: {
                                         show: true,
-                                        label: 'Jami',
-                                        fontSize: '18px',
-                                        color: '#6c757d',
-                                        formatter: function(w) {
-                                            return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                        total: {
+                                            show: true,
+                                            label: 'Jami',
+                                            fontSize: '18px',
+                                            color: '#6c757d',
+                                            formatter: function(w) {
+                                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                            }
                                         }
                                     }
                                 }
                             }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            markers: {
+                                radius: 12
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
                         }
-                    },
-                    legend: {
-                        position: 'bottom',
-                        markers: {
-                            radius: 12
-                        }
-                    },
-                    dataLabels: {
-                        enabled: false
-                    }
-                };
+                    };
 
-                const usersChart = new ApexCharts(document.querySelector("#usersChart"), usersOptions);
-                usersChart.render();
-            } else {
-                document.querySelector("#usersChart").innerHTML = '<div class="text-center py-5 text-muted">Hozircha ma\'lumot yo\'q</div>';
+                    // Yangi grafik yaratish va saqlash
+                    window.dashboardCharts.users = new ApexCharts(chart2El, options2);
+                    window.dashboardCharts.users.render();
+                }
             }
-        });
-    </script>
-</div>
+
+        } catch (e) {
+            console.error('Grafik chizishda xatolik:', e);
+        }
+    }
+
+    // Sahifa yuklanganda va Livewire yangilanganda ishga tushirish
+    document.addEventListener('DOMContentLoaded', initDashboardCharts);
+    document.addEventListener('livewire:load', initDashboardCharts);
+
+    // Livewire har safar yangilanganda (filter bosilganda) grafikni qayta chizish
+    document.addEventListener('livewire:update', initDashboardCharts);
+</script>

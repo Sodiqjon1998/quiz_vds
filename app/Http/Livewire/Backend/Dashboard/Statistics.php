@@ -12,18 +12,19 @@ use Carbon\Carbon;
 
 class Statistics extends Component
 {
-    public $filterType = 'month';
+    public $filterType = 'month'; 
 
     public function render()
     {
-        // Kesh kaliti
-        $cacheKey = 'admin_dashboard_stats_v6_' . $this->filterType;
+        // Kesh kaliti (versiya yangilandi: v7)
+        $cacheKey = 'admin_dashboard_stats_v7_' . $this->filterType;
 
         $stats = Cache::remember($cacheKey, 600, function () {
-            // 1. ASOSIY RAQAMLAR
+            // 1. ASOSIY RAQAMLAR (Koordinatorlar qo'shildi)
             $counts = [
                 'students' => Users::where('user_type', Users::TYPE_STUDENT)->count(),
                 'teachers' => Users::where('user_type', Users::TYPE_TEACHER)->count(),
+                'coordinators' => Users::where('user_type', Users::TYPE_KOORDINATOR)->count(), // ✅ YANGI
                 'classes' => Classes::count(),
                 'subjects' => Subjects::count(),
             ];
@@ -42,7 +43,7 @@ class Statistics extends Component
             // 3. TOP 5 SINF
             $topClasses = DB::table('classes')
                 ->select('classes.name', DB::raw('count(daily_reports.id) as reports_count'))
-                ->join('users', function ($join) {
+                ->join('users', function($join) {
                     $join->on(DB::raw('CAST(users.classes_id AS UNSIGNED)'), '=', 'classes.id');
                 })
                 ->join('daily_reports', 'daily_reports.student_id', '=', 'users.id')
@@ -61,18 +62,18 @@ class Statistics extends Component
                 ->limit(5)
                 ->get();
 
-            // 5. HAFTALIK FAOLLIK GRAFIGI (Real ma'lumot)
+            // 5. HAFTALIK FAOLLIK GRAFIGI
             $chartActivity = [];
             $days = [];
 
             for ($i = 6; $i >= 0; $i--) {
                 $date = Carbon::now()->subDays($i);
                 $days[] = $date->format('d.m');
-
+                
                 $count = DB::table('daily_reports')
                     ->whereDate('report_date', $date->format('Y-m-d'))
                     ->count();
-
+                
                 $chartActivity[] = $count;
             }
 
