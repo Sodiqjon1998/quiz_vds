@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,25 +14,22 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.Models.Teacher.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
-});
 
-// ✅ YANGI: Buni qo'shing (Duel o'yini uchun)
-Broadcast::channel('user.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
-});
-
-
-// Ulanishga ruxsat berish va onlayn foydalanuvchi ma'lumotlarini qaytarish
+// ⚠️ Eslatma: Laravel token orqali tekshiradi (Auth::check() muhim!)
 Broadcast::channel('presence-online', function ($user) {
     if ($user) {
-        // Frontedga yuboriladigan ma'lumotlar
+        // Bu ma'lumotlar frontendga qaytadi va onlineUsers state'iga yoziladi
         return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'first_name' => $user->first_name,
-            'avatar' => $user->avatar ?? null // Agar avatarlar bo'lsa
+            'id' => $user->id, 
+            'name' => $user->name, 
+            'first_name' => $user->first_name, // ✅ QO'SHILDI
+            'last_name' => $user->last_name,   // ✅ QO'SHILDI
+            'avatar' => $user->avatar ?? null 
         ];
     }
+});
+
+// Shuningdek, Duelga chaqiruv kanali ham ruxsat berilishi kerak
+Broadcast::channel('user.{userId}', function ($user, $userId) {
+    return (int) $user->id === (int) $userId;
 });
