@@ -6,26 +6,23 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-// ⚠️ ShouldBroadcastNow ga o'zgartiring
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class DuelChallenge implements ShouldBroadcastNow
+class DuelGameState implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $challenger;
     public $targetUserId;
-    public $quizId;
-    public $subjectId;
+    public $type; // 'answer', 'next', 'end' va h.k
+    public $data;
 
-    public function __construct($challenger, $targetUserId, $quizId, $subjectId)
+    public function __construct($targetUserId, $type, $data)
     {
-        $this->challenger = $challenger;
         $this->targetUserId = $targetUserId;
-        $this->quizId = $quizId;
-        $this->subjectId = $subjectId;
+        $this->type = $type;
+        $this->data = $data;
     }
 
     public function broadcastOn()
@@ -33,11 +30,8 @@ class DuelChallenge implements ShouldBroadcastNow
         return new PrivateChannel('user.' . $this->targetUserId);
     }
 
-    /**
-     * ✅ MUHIM: Event nomini aniq belgilaymiz
-     */
     public function broadcastAs()
     {
-        return 'DuelChallenge';
+        return 'DuelGameState';
     }
 }

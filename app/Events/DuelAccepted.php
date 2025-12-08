@@ -32,4 +32,12 @@ class DuelAccepted implements ShouldBroadcastNow // <-- Buni o'zgartiring
         // Xabar CHAQRUVCHI (Siz) ning kanaliga boradi
         return new PrivateChannel('user.' . $this->challengerId);
     }
+
+    /**
+     * ✅ MUHIM: Event nomini aniq belgilaymiz
+     */
+    public function broadcastAs()
+    {
+        return 'DuelAccepted';
+    }
 }

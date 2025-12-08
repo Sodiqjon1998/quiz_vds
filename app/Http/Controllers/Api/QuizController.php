@@ -525,4 +525,32 @@ class QuizController extends Controller
             'game_session_id' => $gameSessionId
         ]);
     }
+
+
+    // Ballni yangilash va raqibga yuborish
+    public function updateDuelScore(Request $request)
+    {
+        $user = $request->user();
+        $opponentId = $request->input('opponent_id');
+        $score = $request->input('score');
+
+        // Event orqali raqibga xabar yuboramiz
+        broadcast(new \App\Events\DuelScoreUpdated($user->id, $score, $opponentId));
+
+        return response()->json(['success' => true]);
+    }
+
+    // O'yin holatini sinxronlash (Javob berilganda chaqiriladi)
+    public function duelGameState(Request $request)
+    {
+        $user = $request->user();
+        $opponentId = $request->input('opponent_id');
+        $type = $request->input('type');
+        $data = $request->input('data');
+
+        // Xabarni raqibga yuboramiz
+        broadcast(new \App\Events\DuelGameState($opponentId, $type, $data));
+
+        return response()->json(['success' => true]);
+    }
 }

@@ -59,6 +59,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/duel/challenge', [QuizController::class, 'sendChallenge']);
         Route::post('/duel/accept', [QuizController::class, 'acceptChallenge']);
+
+        // ✅ YANGI: Ballni yangilash
+        Route::post('/duel/score', [QuizController::class, 'updateDuelScore']);
+
+        Route::post('/duel/state', [QuizController::class, 'duelGameState']);
     });
 
     // === Reading Management ===
