@@ -21,3 +21,17 @@ Broadcast::channel('App.Models.Teacher.{id}', function ($user, $id) {
 Broadcast::channel('user.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
+
+// Ulanishga ruxsat berish va onlayn foydalanuvchi ma'lumotlarini qaytarish
+Broadcast::channel('presence-online', function ($user) {
+    if ($user) {
+        // Frontedga yuboriladigan ma'lumotlar
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'first_name' => $user->first_name,
+            'avatar' => $user->avatar ?? null // Agar avatarlar bo'lsa
+        ];
+    }
+});
