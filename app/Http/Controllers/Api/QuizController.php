@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\DuelAccepted;
+use App\Events\DuelChallenge;
 use App\Http\Controllers\Controller;
 use App\Models\Subjects;
 use App\Models\Question;
@@ -332,7 +334,6 @@ class QuizController extends Controller
         $questions = \App\Models\Question::where('quiz_id', $quizId)
             ->with('options')
             ->orderBy('id', 'asc') // <--- MANA SHU NARSANI QO'SHING (Random emas!)
-            ->limit(10) // Masalan 10 ta savol
             ->get();
 
         return response()->json([
@@ -463,40 +464,58 @@ class QuizController extends Controller
     // 1. Chaqiruv yuborish
     public function sendChallenge(Request $request)
     {
-        $user = $request->user();
-        $targetUserId = $request->input('target_user_id');
-        $quizId = $request->input('quiz_id');
-        $subjectId = $request->input('subject_id');
+        $request->validate([
+            'target_user_id' => 'required|exists:users,id',
+            'quiz_id' => 'required|exists:quiz,id',
+            'subject_id' => 'required|exists:subjects,id'
+        ]);
 
-        // Eventni "otamiz"
-        broadcast(new \App\Events\DuelChallenge($user, $targetUserId, $quizId, $subjectId))->toOthers();
+        $challenger = auth()->user();
+        $target = Users::find($request->target_user_id);
 
-        return response()->json(['success' => true, 'message' => 'Chaqiruv yuborildi!']);
+        // ✅ Event yuborishda quiz_id va subject_id ni to'g'ri uzatish
+        broadcast(new DuelChallenge(
+            $challenger,
+            $target,
+            $request->quiz_id,
+            $request->subject_id
+        ))->toOthers();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Duelga chaqiruv yuborildi'
+        ]);
     }
 
     // 2. Chaqiruvni qabul qilish
     public function acceptChallenge(Request $request)
     {
-        $user = $request->user();
-        // Frontend "challenger_id" deb yuboryaptimi yoki "challengerId" mi? 
-        // Ikkalasini ham tekshirib ko'ramiz:
-        $challengerId = $request->input('challenger_id') ?? $request->input('challengerId');
+        $request->validate([
+            'challenger_id' => 'required|exists:users,id',
+            'quiz_id' => 'required|integer',  // ✅ QO'SHILDI
+            'subject_id' => 'required|integer'  // ✅ QO'SHILDI
+        ]);
 
-        // Agar ID kelmasa, xatolik qaytarish kerak
-        if (!$challengerId) {
-            return response()->json(['success' => false, 'message' => 'Chaqiruvchi IDsi topilmadi'], 400);
-        }
+        $accepter = auth()->user();
+        $challenger = Users::find($request->challenger_id);
 
-        $gameSessionId = uniqid('game_');
+        // ✅ Request dan to'g'ridan-to'g'ri olish
+        $quizId = $request->quiz_id;
+        $subjectId = $request->subject_id;
 
-        // Log yozib qo'yamiz (storage/logs/laravel.log da ko'rinadi)
-        \Log::info("Duel qabul qilindi. Kim: {$user->id}, Kimni: {$challengerId}");
-
-        broadcast(new \App\Events\DuelAccepted($user, $challengerId, $gameSessionId)); // toOthers() shart emas
+        // ✅ CHALLENGER ga event yuborish
+        broadcast(new DuelAccepted(
+            $accepter,
+            $challenger,
+            $quizId,
+            $subjectId
+        ))->toOthers();
 
         return response()->json([
             'success' => true,
-            'game_session_id' => $gameSessionId
+            'message' => 'Duel qabul qilindi',
+            'quiz_id' => $quizId,
+            'subject_id' => $subjectId
         ]);
     }
 

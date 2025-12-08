@@ -20,7 +20,7 @@ Broadcast::channel('presence-online', function ($user) {
     if ($user) {
         // Bu ma'lumotlar frontendga qaytadi va onlineUsers state'iga yoziladi
         return [
-            'id' => $user->id, 
+            'id' => (string) $user->id,
             'name' => $user->name, 
             'first_name' => $user->first_name, // ✅ QO'SHILDI
             'last_name' => $user->last_name,   // ✅ QO'SHILDI

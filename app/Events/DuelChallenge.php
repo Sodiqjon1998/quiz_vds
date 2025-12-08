@@ -2,42 +2,52 @@
 
 namespace App\Events;
 
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-// ⚠️ ShouldBroadcastNow ga o'zgartiring
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class DuelChallenge implements ShouldBroadcastNow
+class DuelChallenge implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $challenger;
-    public $targetUserId;
+    public $target;
     public $quizId;
     public $subjectId;
 
-    public function __construct($challenger, $targetUserId, $quizId, $subjectId)
+    public function __construct($challenger, $target, $quizId, $subjectId)
     {
         $this->challenger = $challenger;
-        $this->targetUserId = $targetUserId;
+        $this->target = $target;
         $this->quizId = $quizId;
         $this->subjectId = $subjectId;
     }
 
     public function broadcastOn()
     {
-        return new PrivateChannel('user.' . $this->targetUserId);
+        return new PrivateChannel('user.' . $this->target->id);
     }
 
-    /**
-     * ✅ MUHIM: Event nomini aniq belgilaymiz
-     */
     public function broadcastAs()
     {
         return 'DuelChallenge';
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'challenger' => [
+                'id' => $this->challenger->id,
+                'first_name' => $this->challenger->first_name,
+                'name' => $this->challenger->name,
+                'avatar' => $this->challenger->avatar
+            ],
+            'quizId' => $this->quizId,  // ✅ TO'G'RI YUBORILADI
+            'subjectId' => $this->subjectId  // ✅ TO'G'RI YUBORILADI
+        ];
     }
 }
