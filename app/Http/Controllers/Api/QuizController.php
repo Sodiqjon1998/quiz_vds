@@ -324,49 +324,23 @@ class QuizController extends Controller
      * Duel rejimi uchun maxsus metod.
      * Bu metodda to'g'ri javoblar (is_correct) OCHIQ holda yuboriladi.
      */
-    public function getDuelQuestions(Request $request, $subjectId, $quizId)
+    public function getDuelQuestions($subjectId, $quizId)
     {
-        try {
-            // Faqat savollar kerak, vaqt yoki urinishlar muhim emas (o'yin uchun)
-            $questions = \App\Models\Question::where('quiz_id', $quizId)
-                ->where('status', \App\Models\Question::STATUS_ACTIVE)
-                ->with('options')
-                ->get();
+        // ⚠️ DIQQAT: inRandomOrder() ni OLIB TASHLANG!
+        // Uning o'rniga orderBy('id') ishlating.
 
-            if ($questions->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Bu testda savollar yo'q."
-                ], 404);
-            }
+        $questions = \App\Models\Question::where('quiz_id', $quizId)
+            ->with('options')
+            ->orderBy('id', 'asc') // <--- MANA SHU NARSANI QO'SHING (Random emas!)
+            ->limit(10) // Masalan 10 ta savol
+            ->get();
 
-            // Formatlash (Javoblarni ko'rsatamiz!)
-            $formattedQuestions = $questions->shuffle()->map(function ($question) {
-                return [
-                    'id' => $question->id,
-                    'question_text' => $question->name, // Modelda savol matni 'name'
-                    'options' => $question->options->shuffle()->map(function ($option) {
-                        return [
-                            'id' => $option->id,
-                            'option_text' => $option->name, // Variant matni
-                            'is_correct' => (bool) $option->is_correct, // <-- MUHIM: Bu yerda javobni yuboryapmiz
-                        ];
-                    })
-                ];
-            });
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'questions' => $formattedQuestions
-                ]
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Server xatosi: ' . $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'questions' => $questions
+            ]
+        ]);
     }
 
 
@@ -540,7 +514,6 @@ class QuizController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // O'yin holatini sinxronlash (Javob berilganda chaqiriladi)
     public function duelGameState(Request $request)
     {
         $user = $request->user();
@@ -548,8 +521,26 @@ class QuizController extends Controller
         $type = $request->input('type');
         $data = $request->input('data');
 
-        // Xabarni raqibga yuboramiz
+        // ✅ YANGI QO'SHILGAN QATOR: Javob bergan odamni belgilab qo'yamiz
+        $data['actor_id'] = $user->id;
+
+        // 1. Agar bu javob berish holati bo'lsa, QULF qo'yamiz
+        if ($type === 'answer') {
+            $ids = [$user->id, $opponentId];
+            sort($ids);
+            $matchKey = implode('_', $ids);
+
+            $qIndex = $data['question_index'] ?? 0;
+            $lockKey = "duel_lock_{$matchKey}_q_{$qIndex}";
+
+            if (!\Illuminate\Support\Facades\Cache::add($lockKey, 1, 5)) {
+                return response()->json(['success' => false, 'message' => 'Too late']);
+            }
+        }
+
+        // Qolgan kod o'zgarishsiz...
         broadcast(new \App\Events\DuelGameState($opponentId, $type, $data));
+        broadcast(new \App\Events\DuelGameState($user->id, $type, $data));
 
         return response()->json(['success' => true]);
     }
