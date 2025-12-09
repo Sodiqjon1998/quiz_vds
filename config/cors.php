@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'backend/*'],
     'allowed_methods' => ['*'],
     'allowed_origins' => [
         'https://quizvds.up.railway.app',
