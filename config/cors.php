@@ -5,8 +5,9 @@ return [
     'allowed_methods' => ['*'],
     'allowed_origins' => [
         'https://quizvds.up.railway.app',
-        'http://localhost:3000', // development uchun
-    ], // <-- Eng muhimi shu! Hamma joydan ruxsat berish.
+        'https://andijonyuksalish.netlify.app', // ✅ Bu frontend domeningiz
+        'http://localhost:3000',
+    ],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
