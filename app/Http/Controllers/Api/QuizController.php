@@ -416,27 +416,15 @@ class QuizController extends Controller
                 }
             });
 
-            $classmates = $query->select('id', 'first_name', 'last_name', 'img')->get();
+            // ✅ FAQAT kerakli ustunlar (img o'chirildi)
+            $classmates = $query->select('id', 'first_name', 'last_name')->get();
 
             $data = $classmates->map(function ($student) {
-                // ✅ YANGI: Avatar URL'ni to'g'ri formatda qaytarish
-                $avatarUrl = null;
-                if ($student->img) {
-                    // Agar to'liq URL bo'lsa
-                    if (filter_var($student->img, FILTER_VALIDATE_URL)) {
-                        $avatarUrl = $student->img;
-                    }
-                    // Agar nisbiy yo'l bo'lsa
-                    else {
-                        $avatarUrl = url('storage/' . $student->img);
-                    }
-                }
-
                 return [
-                    'id' => (string) $student->id, // ✅ STRING qilish muhim!
+                    'id' => (string) $student->id,
                     'name' => trim($student->first_name . ' ' . $student->last_name),
-                    'avatar' => $avatarUrl, // ✅ To'liq URL
-                    'short_name' => $student->first_name
+                    'short_name' => $student->first_name,
+                    // ✅ Avatar olib tashlandi
                 ];
             });
 

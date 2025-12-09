@@ -15,21 +15,27 @@ use Illuminate\Support\Facades\Auth;
 */
 
 
-// ⚠️ Eslatma: Laravel token orqali tekshiradi (Auth::check() muhim!)
+
 Broadcast::channel('presence-online', function ($user) {
     if ($user) {
-        // Bu ma'lumotlar frontendga qaytadi va onlineUsers state'iga yoziladi
         return [
             'id' => (string) $user->id,
-            'name' => $user->name, 
-            'first_name' => $user->first_name, // ✅ QO'SHILDI
-            'last_name' => $user->last_name,   // ✅ QO'SHILDI
-            'avatar' => $user->avatar ?? null 
+            'info' => [
+                'name' => trim($user->first_name . ' ' . $user->last_name),
+                'first_name' => $user->first_name,
+                // ✅ Avatar olib tashlandi
+            ]
         ];
     }
+    return false;
 });
 
-// Shuningdek, Duelga chaqiruv kanali ham ruxsat berilishi kerak
 Broadcast::channel('user.{userId}', function ($user, $userId) {
+    \Log::info('Broadcasting Auth', [
+        'user_id' => $user->id,
+        'requested_userId' => $userId,
+        'match' => (int) $user->id === (int) $userId
+    ]);
+    
     return (int) $user->id === (int) $userId;
 });
