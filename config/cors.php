@@ -1,13 +1,8 @@
 <?php
-
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'backend/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => [
-        'https://quizvds.up.railway.app',
-        'https://andijonyuksalish.netlify.app', // ✅ Bu frontend domeningiz
-        'http://localhost:3000',
-    ],
+    'allowed_origins' => ['*'], // <-- Eng muhimi shu! Hamma joydan ruxsat berish.
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
