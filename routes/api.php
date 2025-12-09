@@ -21,7 +21,7 @@ Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    Broadcast::routes();
+    Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
     // === User Info ===
     Route::get('/user', function (Request $request) {
