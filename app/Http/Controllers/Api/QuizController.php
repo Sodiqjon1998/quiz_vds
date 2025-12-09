@@ -445,27 +445,51 @@ class QuizController extends Controller
     // 1. Chaqiruv yuborish
     public function sendChallenge(Request $request)
     {
-        $request->validate([
-            'target_user_id' => 'required|exists:users,id',
-            'quiz_id' => 'required|exists:quiz,id',
-            'subject_id' => 'required|exists:subjects,id'
+        $user = $request->user();
+        $targetUserId = $request->input('target_user_id');
+        $quizId = $request->input('quiz_id');
+        $subjectId = $request->input('subject_id');
+
+        // ✅ LOG: Debug uchun
+        \Log::info('📤 Duel Challenge yuborilmoqda', [
+            'from_user_id' => $user->id,
+            'from_user_name' => $user->first_name . ' ' . $user->last_name,
+            'to_user_id' => $targetUserId,
+            'quiz_id' => $quizId,
+            'subject_id' => $subjectId
         ]);
 
-        $challenger = auth()->user();
-        $target = Users::find($request->target_user_id);
+        // ✅ Chaqiruvchi ma'lumotlari (BATAFSIL!)
+        $challengerData = [
+            'id' => (string) $user->id,  // ✅ STRING qilish muhim
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'name' => trim($user->first_name . ' ' . $user->last_name),
+        ];
 
-        // ✅ Event yuborishda quiz_id va subject_id ni to'g'ri uzatish
-        broadcast(new DuelChallenge(
-            $challenger,
-            $target,
-            $request->quiz_id,
-            $request->subject_id
-        ))->toOthers();
+        // ✅ Event'ni yuborish
+        try {
+            broadcast(new \App\Events\DuelChallenge(
+                $challengerData,
+                $targetUserId,
+                $quizId,
+                $subjectId
+            ))->toOthers();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Duelga chaqiruv yuborildi'
-        ]);
+            \Log::info('✅ Event broadcast qilindi');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Chaqiruv yuborildi!'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('❌ Broadcast xatosi: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Xatolik yuz berdi: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // 2. Chaqiruvni qabul qilish

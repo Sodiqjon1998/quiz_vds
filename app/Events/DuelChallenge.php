@@ -2,9 +2,9 @@
 
 namespace App\Events;
 
-use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -15,39 +15,37 @@ class DuelChallenge implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $challenger;
-    public $target;
+    public $targetUserId;
     public $quizId;
     public $subjectId;
 
-    public function __construct($challenger, $target, $quizId, $subjectId)
+    public function __construct($challenger, $targetUserId, $quizId, $subjectId)
     {
         $this->challenger = $challenger;
-        $this->target = $target;
+        $this->targetUserId = $targetUserId;
         $this->quizId = $quizId;
         $this->subjectId = $subjectId;
     }
 
     public function broadcastOn()
     {
-        return new PrivateChannel('user.' . $this->target->id);
+        // ✅ MUHIM: Private channel'ga yuborish
+        return new PrivateChannel('user.' . $this->targetUserId);
     }
 
     public function broadcastAs()
     {
+        // ✅ Event nomi (frontend'da .DuelChallenge deb tinglaydi)
         return 'DuelChallenge';
     }
 
     public function broadcastWith()
     {
+        // ✅ Frontend'ga yuborilayotgan ma'lumotlar
         return [
-            'challenger' => [
-                'id' => $this->challenger->id,
-                'first_name' => $this->challenger->first_name,
-                'name' => $this->challenger->name,
-                'avatar' => $this->challenger->avatar
-            ],
-            'quizId' => $this->quizId,  // ✅ TO'G'RI YUBORILADI
-            'subjectId' => $this->subjectId  // ✅ TO'G'RI YUBORILADI
+            'challenger' => $this->challenger,
+            'quizId' => $this->quizId,
+            'subjectId' => $this->subjectId,
         ];
     }
 }
