@@ -9,5 +9,9 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'api/*',
         'broadcasting/auth',
+        'backend/*',
+        'teacher/*',
+        'koordinator/*',
+        'student/*',
     ];
 }
