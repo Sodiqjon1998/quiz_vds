@@ -387,15 +387,10 @@ class QuizController extends Controller
     /**
      * O'quvchining sinfdoshlarini ro'yxatini qaytaradi (O'zidan tashqari)
      */
-    /**
-     * O'quvchining sinfdoshlarini ro'yxatini qaytaradi (O'zidan tashqari)
-     */
     public function getClassmates(Request $request)
     {
         try {
             $user = $request->user();
-
-            // classes_id array ekanligini hisobga olamiz
             $classIds = $user->classes_id;
 
             if (empty($classIds)) {
@@ -405,42 +400,42 @@ class QuizController extends Controller
                 ], 404);
             }
 
-            // Queryni boshlaymiz
             $query = \App\Models\Users::query();
-
-            // 1. O'zini ro'yxatdan chiqarib tashlash
             $query->where('id', '!=', $user->id);
-
-            // 2. Faqat o'quvchilarni olish (user_type = 4 bu Student)
             $query->where('user_type', \App\Models\Users::TYPE_STUDENT);
 
-            // 3. Sinfdoshi ekanligini tekshirish (JSON qidiruv)
             $query->where(function ($q) use ($classIds) {
-                // Agar $classIds massiv bo'lsa
                 if (is_array($classIds)) {
                     foreach ($classIds as $id) {
-                        // JSON ichidan qidirish (MySQL/PostgreSQL)
                         $q->orWhereJsonContains('classes_id', $id);
-                        // Yoki oddiy string qidiruv (agar baza JSON support qilmasa)
                         $q->orWhere('classes_id', 'like', '%"' . $id . '"%');
                     }
                 } else {
-                    // Agar string yoki son bo'lsa
                     $q->where('classes_id', 'like', '%"' . $classIds . '"%')
                         ->orWhere('classes_id', $classIds);
                 }
             });
 
-            // Kerakli ustunlarni olish ('img' to'g'ri nom)
             $classmates = $query->select('id', 'first_name', 'last_name', 'img')->get();
 
-            // Ma'lumotlarni formatlash
             $data = $classmates->map(function ($student) {
+                // ✅ YANGI: Avatar URL'ni to'g'ri formatda qaytarish
+                $avatarUrl = null;
+                if ($student->img) {
+                    // Agar to'liq URL bo'lsa
+                    if (filter_var($student->img, FILTER_VALIDATE_URL)) {
+                        $avatarUrl = $student->img;
+                    }
+                    // Agar nisbiy yo'l bo'lsa
+                    else {
+                        $avatarUrl = url('storage/' . $student->img);
+                    }
+                }
+
                 return [
-                    'id' => $student->id,
-                    'name' => $student->first_name . ' ' . $student->last_name,
-                    // 'img' ustunini tekshiramiz
-                    'avatar' => $student->img ? asset('storage/' . $student->img) : null,
+                    'id' => (string) $student->id, // ✅ STRING qilish muhim!
+                    'name' => trim($student->first_name . ' ' . $student->last_name),
+                    'avatar' => $avatarUrl, // ✅ To'liq URL
                     'short_name' => $student->first_name
                 ];
             });
@@ -450,9 +445,7 @@ class QuizController extends Controller
                 'data' => $data
             ], 200);
         } catch (\Exception $e) {
-            // Xatolikni log faylga yozish (debug uchun foydali)
             \Log::error('GetClassmates Error: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
                 'message' => 'Server xatosi: ' . $e->getMessage()
