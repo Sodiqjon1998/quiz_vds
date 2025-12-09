@@ -36,25 +36,9 @@ return [
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
             'options' => [
-                'cluster' => env('PUSHER_APP_CLUSTER', 'ap1'),
-                'encrypted' => true,
+                'cluster' => env('PUSHER_APP_CLUSTER'),
                 'useTLS' => true,
-
-                // ✅ RAILWAY UCHUN
-                'host' => env('PUSHER_HOST') ?: 'api-' . env('PUSHER_APP_CLUSTER', 'ap1') . '.pusher.com',
-                'port' => env('PUSHER_PORT', 443),
-                'scheme' => env('PUSHER_SCHEME', 'https'),
-
-                'curl_options' => [
-                    CURLOPT_SSL_VERIFYHOST => 2,
-                    CURLOPT_SSL_VERIFYPEER => true,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_TIMEOUT => 60,
-                ],
-            ],
-            'client_options' => [
-                // ✅ Guzzle client options
-                'timeout' => 60,
+                'encrypted' => true,
             ],
         ],
 
