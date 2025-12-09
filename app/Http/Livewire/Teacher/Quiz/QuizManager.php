@@ -321,7 +321,10 @@ class QuizManager extends Component
             'date' => $this->attachmentDate,
             'time' => $this->attachmentTime,
             'number' => $this->attachmentNumber,
-            'created_at' => now()
+            'created_at' => now(),
+            'updated_at' => now(),
+            'created_by' => Auth::id(),
+            'updated_by' => Auth::id(),
         ]);
         $this->reset(['attachmentDate', 'attachmentTime', 'attachmentNumber']);
     }
