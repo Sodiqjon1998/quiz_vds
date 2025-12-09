@@ -12,9 +12,9 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        'api/*',  // ✅ API route'lari uchun CSRF o'chirilgan
-        'broadcasting/auth',  // ✅ MUHIM! Pusher auth uchun
-        'backend/login',
-        'teacher/login',
+        // 'api/*',  // ✅ API route'lari uchun CSRF o'chirilgan
+        // 'broadcasting/auth',  // ✅ MUHIM! Pusher auth uchun
+        // 'backend/login',
+        // 'teacher/login',
     ];
 }
