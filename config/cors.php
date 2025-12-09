@@ -1,38 +1,15 @@
 <?php
 return [
-    'paths' => [
-        'api/*',
-        'sanctum/csrf-cookie',
-        'broadcasting/auth',
-    ],
-
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'backend/*'],
     'allowed_methods' => ['*'],
-
     'allowed_origins' => [
+        'https://quizvds.up.railway.app',
         'https://andijonyuksalish.netlify.app',
-        'http://localhost:3000',
         'http://localhost:5173',
     ],
-
     'allowed_origins_patterns' => [],
-
-    'allowed_headers' => [
-        'Content-Type',
-        'X-Requested-With',
-        'Authorization',
-        'X-CSRF-TOKEN',
-        'X-Socket-Id',
-        'Accept',
-        'Origin',
-        'Access-Control-Request-Method',
-        'Access-Control-Request-Headers',
-    ],
-
-    'exposed_headers' => [
-        'X-Socket-Id',
-    ],
-
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
     'max_age' => 0,
-
-    'supports_credentials' => true,
+    'supports_credentials' => true, // Bu muhim!
 ];
