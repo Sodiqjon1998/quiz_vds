@@ -14,5 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'api/*',  // ✅ API route'lari uchun CSRF o'chirilgan
         'broadcasting/auth',  // ✅ MUHIM! Pusher auth uchun
+        'backend/login',
+        'teacher/login',
     ];
 }
