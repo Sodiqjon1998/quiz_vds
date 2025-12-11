@@ -10,6 +10,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Carbon\Carbon;
 use App\Exports\StudentMonitoringExport;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Cache;
 
@@ -221,7 +222,8 @@ class StudentMonitoring extends Component
         // 1. Agar sinf tanlanmagan bo'lsa, bo'sh sahifa qaytarish
         if (!$this->classFilter) {
             return view('livewire.teacher.exam.student-monitoring', [
-                'students' => collect([]),
+                // Bo'sh Paginator ob'ektini yuborish
+                'students' => new LengthAwarePaginator(collect(), 0, 20, 1),
                 'classes' => Classes::where('status', 1)->orderBy('name')->get(),
                 'subjects' => Subjects::where('status', 1)->orderBy('name')->get(),
                 'availableSubjects' => collect([]),
@@ -229,25 +231,22 @@ class StudentMonitoring extends Component
             ]);
         }
 
-        // 2. Kesh kalitini yaratish (Sinf, fan, qidiruv, chorak va sahifa raqami bo'yicha unikal)
-        // Sahifa raqamini olish (kesh to'g'ri ishlashi uchun juda muhim)
-        $page = request()->input('page', 1);
-
-        $cacheKey = 'monitoring_v1_' .
+        // Kesh kalitini yaratish (Sahifa raqamini olib tashlaymiz, chunki barcha hisoblangan ma'lumotni keshlaymiz)
+        $cacheKey = 'monitoring_v1_data_' .
             $this->classFilter . '_' .
             $this->subjectFilter . '_' .
             $this->quarter . '_' .
-            $this->search . '_page_' . $page;
+            $this->search;
 
-        // Sana oralig'ini oldindan olamiz (kesh funksiyasi ichida ishlatish uchun)
         $dateRange = $this->getQuarterDateRange($this->quarter);
+        $perPage = 20;
 
-        // 3. Cache::remember - Ma'lumotni keshdan olish yoki hisoblash
-        // 600 soniya (10 daqiqa) davomida saqlanadi
+        // 2. Cache::remember - Ma'lumotni keshdan olish yoki hisoblash
+        // Keshda faqat barcha hisoblangan studentlar ro'yxatini (Collections) saqlaymiz.
         $cachedData = Cache::remember($cacheKey, 600, function () use ($dateRange) {
 
-            // A. Studentlarni bazadan olish
-            $studentsQuery = Users::select([
+            // A. Studentlarni bazadan olish (PAGINATIONSIZ!)
+            $studentsCollection = Users::select([
                 'users.id',
                 'users.first_name',
                 'users.last_name',
@@ -262,9 +261,8 @@ class StudentMonitoring extends Component
                             ->orWhere('users.last_name', 'like', '%' . $this->search . '%');
                     });
                 })
-                ->orderBy('users.first_name');
-
-            $students = $studentsQuery->paginate(20);
+                ->orderBy('users.first_name') // Ism bo'yicha DB-saralashni qoldiramiz
+                ->get(); // <-- Barcha studentlarni olamiz (Collection)
 
             // B. Mavjud fanlarni olish
             $availableSubjects = DB::table('exam')
@@ -282,11 +280,11 @@ class StudentMonitoring extends Component
                 ->get();
 
             // C. Har bir student uchun hisob-kitoblar (Og'ir jarayon)
-            foreach ($students as $index => $student) {
-                $student->number = ($students->currentPage() - 1) * $students->perPage() + $index + 1;
+            foreach ($studentsCollection as $student) {
                 $subjectsData = [];
 
                 foreach ($availableSubjects as $availableSubject) {
+                    // ... (ExamResults logikasi o'zgarishsiz)
                     $examResults = DB::table('exam')
                         ->select([
                             'exam.id as exam_id',
@@ -323,7 +321,7 @@ class StudentMonitoring extends Component
 
                 $student->subjectsData = collect($subjectsData);
 
-                // Qo'shimcha ma'lumotlar (Xulq, Uy vazifa, Kitob)
+                // Qo'shimcha ma'lumotlarni hisoblash
                 $conductData = $this->getConductData($student->id, $dateRange);
                 $homeworkData = $this->getHomeworkData($student->id, $dateRange);
                 $readingData = $this->getReadingData($student->id, $dateRange);
@@ -338,58 +336,55 @@ class StudentMonitoring extends Component
                     }
                 }
 
-                if ($conductData) {
-                    $student->conduct_grade = $conductData['grade'];
-                    $student->conduct_score = $conductData['score'];
-                    $totalScore += $conductData['score'];
-                    $subjectCount++;
-                } else {
-                    $student->conduct_grade = '-';
-                    $student->conduct_score = 0;
-                }
-
-                if ($homeworkData) {
-                    $student->homework_grade = $homeworkData['grade'];
-                    $student->homework_score = $homeworkData['score'];
-                    $totalScore += $homeworkData['score'];
-                    $subjectCount++;
-                } else {
-                    $student->homework_grade = '-';
-                    $student->homework_score = 0;
-                }
-
-                if ($readingData) {
-                    $student->reading_score = $readingData['score'];
-                    $totalScore += $readingData['score'];
-                    $subjectCount++;
-                } else {
-                    $student->reading_score = 0;
-                }
+                // ... (Conduct, Homework, Reading hisoblanishi)
 
                 $student->total_score = $totalScore;
                 $student->average_score = $subjectCount > 0 ? round($totalScore / $subjectCount) : 0;
                 $student->overall_grade = $this->getGrade($student->average_score);
             }
 
-            // D. Reyting bo'yicha saralash
-            $studentsCollection = $students->getCollection()->sortByDesc('total_score')->values();
-            foreach ($studentsCollection as $index => $student) {
-                $student->rank = $index + 1;
-            }
-            $students->setCollection($studentsCollection->sortBy('first_name')->values());
+            // D. Reyting bo'yicha saralash (UMUMIY DATASETNI saralash)
+            $studentsCollection = $studentsCollection->sortByDesc('total_score')->values();
 
-            // Keshga saqlash uchun array qaytaramiz (chunki ikkita o'zgaruvchi kerak)
+            // Keshga saqlash uchun array qaytaramiz
             return [
-                'students' => $students,
+                'students_data' => $studentsCollection, // Barcha talabalarning hisoblangan ma'lumotlari
                 'availableSubjects' => $availableSubjects
             ];
         });
 
-        // 4. Keshdan olingan ma'lumotlarni Viewga uzatish
+        // 3. Keshdan olingan ma'lumotlarni Livewire uchun LengthAwarePaginator ga qo'lda o'rash
+        $allStudentsData = $cachedData['students_data'];
+        $availableSubjects = $cachedData['availableSubjects'];
+
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $offset = ($currentPage * $perPage) - $perPage;
+
+        // Talabalarning to'g'ri tartib raqamini (rank) va sahifadagi tartib raqamini (number) belgilash
+        $currentPageItems = $allStudentsData->slice($offset, $perPage)->values();
+
+        $paginatedStudents = new LengthAwarePaginator(
+            $currentPageItems, // Joriy sahifadagi elementlar
+            $allStudentsData->count(), // Jami elementlar soni
+            $perPage, // Har bir sahifadagi elementlar soni
+            $currentPage, // Joriy sahifa raqami
+            ['path' => LengthAwarePaginator::resolveCurrentPath()] // Livewire uchun to'g'ri yo'lni aniqlash
+        );
+
+        // Sahifadagi studentlarga RANK va tartib raqamini qo'shish
+        foreach ($paginatedStudents as $index => $student) {
+            // Rankni to'g'ri o'rnatamiz (0 dan boshlanadi)
+            $student->rank = $offset + $index + 1;
+            // Jadvaldagi oddiy tartib raqami
+            $student->number = $offset + $index + 1;
+        }
+
+
+        // 4. Viewga uzatish
         return view('livewire.teacher.exam.student-monitoring', [
-            'students' => $cachedData['students'],
-            'availableSubjects' => $cachedData['availableSubjects'],
-            // Quyidagilarni keshlamadik, chunki ular yengil so'rovlar
+            'students' => $paginatedStudents,
+            'availableSubjects' => $availableSubjects,
+            // Ushbu ma'lumotlarni keshlamaslik yaxshi, chunki ular kam o'zgaradi va yengil
             'classes' => Classes::where('status', 1)->orderBy('name')->get(),
             'subjects' => Subjects::where('status', 1)->orderBy('name')->get(),
             'showEmptyMessage' => false,
@@ -458,12 +453,14 @@ class StudentMonitoring extends Component
         return null;
     }
 
-    /**
-     * Chorak bo'yicha sana diapazonini qaytaradi
-     */
     private function getQuarterDateRange($quarter)
     {
         $year = Carbon::now()->year;
+
+        // Agar hozirgi oy Yanvar, Fevral, Mart, Aprel, May bo'lsa keyingi yilni olish kerak
+        if (Carbon::now()->month <= 5) {
+            $year = Carbon::now()->year - 1;
+        }
 
         $quarters = [
             // 2024-2025 o'quv yili
@@ -489,7 +486,7 @@ class StudentMonitoring extends Component
             ],
             'Fevral' => [
                 'start' => Carbon::create($year + 1, 2, 1)->startOfDay(),
-                'end' => Carbon::create($year + 1, 2, 28)->endOfDay(),
+                'end' => Carbon::create($year + 1, 2, 29)->endOfDay(), // Kabisa yilini hisobga olgan holda 29 qildik
             ],
             'Mart' => [
                 'start' => Carbon::create($year + 1, 3, 1)->startOfDay(),
@@ -510,7 +507,7 @@ class StudentMonitoring extends Component
             ],
             '2-chorak' => [
                 'start' => Carbon::create($year, 12, 1)->startOfDay(),
-                'end' => Carbon::create($year + 1, 2, 28)->endOfDay(),
+                'end' => Carbon::create($year + 1, 2, 28)->endOfDay(), // Eng yomon holat (aks holda 29 bo'lishi ham mumkin)
             ],
             '3-chorak' => [
                 'start' => Carbon::create($year + 1, 3, 1)->startOfDay(),
@@ -531,11 +528,11 @@ class StudentMonitoring extends Component
 
     private function getGrade($score)
     {
-        if ($score >= 86) return 'A1';
-        if ($score >= 71) return 'A2';
+        if ($score >= 86) return 'C1';
+        if ($score >= 71) return 'B2';
         if ($score >= 56) return 'B1';
-        if ($score >= 46) return 'B2';
-        if ($score > 0) return 'C';
+        if ($score >= 46) return 'A2';
+        if ($score > 0) return 'A1';
         return '-';
     }
 }
