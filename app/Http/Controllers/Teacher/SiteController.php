@@ -21,9 +21,6 @@ class SiteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $teacher = Auth::user();
@@ -34,7 +31,7 @@ class SiteController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
-        // Barcha sinflarni olish
+        // Barcha faol sinflarni olish
         $allClasses = Classes::where('status', 1)->get();
 
         // ===================================
@@ -58,7 +55,7 @@ class SiteController extends Controller
 
         // D. O'qituvchining fani bo'yicha umumiy o'rtacha muvaffaqiyat foizi (All-time)
         $globalCorrectAnswers = 0;
-        $globalAttemptedQuestions = 0; // ✅ O'zgaruvchi e'lon qilindi
+        $globalAttemptedQuestions = 0; // ✅ Xato to'g'irlandi: e'lon qilindi
 
         $allExamsInSubject = Exam::where('subject_id', $subjectId)->get();
 
@@ -66,58 +63,48 @@ class SiteController extends Controller
             $examAnswers = ExamAnswer::where('exam_id', $exam->id)->get();
 
             foreach ($examAnswers as $answer) {
-                $globalAttemptedQuestions++; // ✅ TO'G'RILANDI: $globalAttemptedQuestions ishlatildi (taxminiy 83-qator)
+                $globalAttemptedQuestions++; // ✅ Xato to'g'irlandi: to'g'ri nom ishlatildi
 
-                // Savol va to'g'ri variantni topish
                 $correctOption = Option::where('question_id', $answer->question_id)
                     ->where('is_correct', 1)
                     ->first();
 
-                // Agar javob to'g'ri bo'lsa
                 if ($correctOption && $answer->option_id == $correctOption->id) {
                     $globalCorrectAnswers++;
                 }
             }
         }
-        // ✅ TO'G'RILANDI: Hisoblashda ham to'g'ri o'zgaruvchi ishlatildi
-        $averageSuccessRate = ($globalAttemptedQuestions > 0) ? round(($globalCorrectAnswers / $globalAttemptedQuestions) * 100, 2) : 0;
+
+        $averageSuccessRate = ($globalAttemptedQuestions > 0) ? round(($globalCorrectAnswers / $globalAttemptedQuestions) * 100, 2) : 0; // ✅ Xato to'g'irlandi
 
         // =========================================================================
-        // === 2. Chart Ma'lumotlarini Yig'ish ===
+        // === 2. Chart va List Ma'lumotlarini Yig'ish (Yangi talab) ===
         // =========================================================================
 
-        // Har bir oy bo'yicha sinflardagi o'quvchilar sonini hisoblash (1-Grafik)
-        $studentsByClassAndMonth = [];
-        $minYear = Users::min('created_at') ? Carbon::parse(Users::min('created_at'))->year : Carbon::now()->year - 1;
-        $maxYear = Carbon::now()->year;
+        // A. Oylik Imtihonlar ma'lumotlari (Oxirgi 6 oy)
+        $monthlyExamsData = [];
+        $monthsLabels = [];
 
-        if ($maxYear < $minYear) {
-            $minYear = Carbon::now()->year - 1;
+        $date = Carbon::now();
+        for ($i = 5; $i >= 0; $i--) {
+            $month = $date->copy()->subMonths($i);
+
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+
+            $examCount = Exam::where('subject_id', $subjectId)
+                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->count();
+
+            $monthlyExamsData[] = $examCount;
+            // 'M' formatida qisqa oy nomlari (Yan, Fev, Mart...)
+            $monthsLabels[] = $month->translatedFormat('M');
         }
 
-        for ($year = $minYear; $year <= $maxYear; $year++) {
-            $endMonth = ($year == Carbon::now()->year) ? $currentMonth : 12;
-
-            for ($month = 1; $month <= $endMonth; $month++) {
-                $monthKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
-                $studentsByClassAndMonth[$monthKey] = [];
-
-                foreach ($allClasses as $class) {
-                    $studentCount = Users::where('classes_id', $class->id)
-                        ->whereYear('created_at', $year)
-                        ->whereMonth('created_at', $month)
-                        ->count();
-
-                    $studentsByClassAndMonth[$monthKey][$class->name] = $studentCount;
-                }
-            }
-        }
-
-        // Sinflar bo'yicha to'g'ri javob foizi (Joriy oy uchun) (2-Grafik)
+        // B. Sinflar bo'yicha to'g'ri javob foizi (Joriy oy uchun) (Donut Chart va Top List uchun asos)
         $classQuizPerformance = [];
 
         foreach ($allClasses as $class) {
-            // ✅ TO'G'RI: Bu yerda alohida o'zgaruvchilar ishlatilgan
             $totalCorrectAnswers = 0;
             $totalAttemptedQuestions = 0;
 
@@ -134,7 +121,7 @@ class SiteController extends Controller
                     $examAnswers = ExamAnswer::where('exam_id', $exam->id)->get();
 
                     foreach ($examAnswers as $answer) {
-                        $totalAttemptedQuestions++; // ✅ To'g'ri
+                        $totalAttemptedQuestions++;
 
                         $correctOption = Option::where('question_id', $answer->question_id)
                             ->where('is_correct', 1)
@@ -151,30 +138,56 @@ class SiteController extends Controller
 
             $classQuizPerformance[] = [
                 'name' => $class->name,
-                'y' => (float) $percentage
+                'y' => (float) $percentage,
+                'percentage' => (float) $percentage // Ro'yxat uchun foizni alohida saqlash
             ];
         }
 
-        usort($classQuizPerformance, function ($a, $b) {
-            return $b['y'] <=> $a['y'];
-        });
+        // C. Top 5 sinflar (Top List uchun: foiz bo'yicha saralash)
+        $topClassesByPerformance = collect($classQuizPerformance)
+            ->sortByDesc('percentage')
+            ->take(5)
+            ->toArray();
+
+        // D. Top 5 faol o'quvchilar (Eng ko'p test topshirganlar)
+        $topActiveStudents = Users::selectRaw('users.id, users.first_name, users.last_name, users.classes_id, count(exam.id) as exam_count')
+            ->join('exam', 'users.id', '=', 'exam.user_id')
+            ->where('exam.subject_id', $subjectId)
+            ->where('users.user_type', Users::TYPE_STUDENT)
+            ->where('users.status', 1)
+            ->groupBy('users.id', 'users.first_name', 'users.last_name', 'users.classes_id')
+            ->orderByDesc('exam_count')
+            ->take(5)
+            ->with('classRelation')
+            ->get()
+            ->map(function ($student) {
+                return [
+                    'name' => $student->first_name . ' ' . $student->last_name,
+                    'class_name' => $student->classRelation->name ?? 'N/A',
+                    'exam_count' => $student->exam_count,
+                ];
+            })->toArray();
+
 
         // =========================================================================
-        // === Viewga ma'lumotlarni uzatish ===
+        // === 3. Viewga ma'lumotlarni uzatish ===
         // =========================================================================
 
         return view('teacher.site.index', [
-            'allClasses' => $allClasses->pluck('name')->toArray(),
-            'studentsByClassAndMonth' => $studentsByClassAndMonth,
-            'minYear' => $minYear,
-            'maxYear' => $maxYear,
-            'classQuizPerformance' => $classQuizPerformance,
-
-            // NEW KPIs
+            // KPI Data
             'totalStudentsInSystem' => $totalStudentsInSystem,
             'totalQuizzesCreated' => $totalQuizzesCreated,
             'totalExamsTakenThisMonth' => $totalExamsTakenThisMonth,
             'averageSuccessRate' => $averageSuccessRate,
+
+            // Chart Data for ApexCharts
+            'monthlyExamsData' => $monthlyExamsData,
+            'monthsLabels' => $monthsLabels,
+            'classQuizPerformance' => $classQuizPerformance,
+
+            // List Data
+            'topClassesByPerformance' => $topClassesByPerformance,
+            'topActiveStudents' => $topActiveStudents,
         ]);
     }
 
