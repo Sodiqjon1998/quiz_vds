@@ -1,1264 +1,784 @@
+@extends('teacher.layouts.main')
 
-@extends('teacher.layouts.main') {{-- Sizning asosiy admin layoutingiz --}}
-
+@section('content')
 <style>
     /* Umumiy sozlamalar */
-    body {
-        font-family: 'Inter', sans-serif;
-        /* Zamonaviyroq shrift */
-        background-color: #f5f7fa;
-        /* Yumshoqroq fon rangi */
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-        margin: 0;
-        /* Umumiy marginni olib tashlaymiz, konteynerga padding beramiz */
+    .container-fluid {
         padding: 20px;
-        /* Umumiy padding */
-        box-sizing: border-box;
-        /* Padding va border hisobga olinadi */
     }
 
-    .quiz-container {
-        display: flex;
-        width: 100%;
-        /* Kenglikni to'liq olsin */
-        max-width: 1300px;
-        /* Katta ekranlar uchun maksimal kenglikni oshirish */
-        background-color: #ffffff;
-        border-radius: 12px;
-        /* Yumshoqroq burchaklar */
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        /* Yumshoqroq soya */
-        padding: 30px;
-        /* Ichki bo'shliqni oshirish */
-        flex-direction: row;
-        gap: 30px;
-        /* Asosiy kontent va navigatsiya orasidagi bo'sh joy */
-    }
-
-    /* --- Test Asosiy Kontent Stili --- */
-    .quiz-main-content {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        /* Kontentni yuqori va pastga tarqatish */
-    }
-
-    .question-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        /* Bo'sh joyni oshirish */
-        padding-bottom: 20px;
-        border-bottom: 1px solid #e0e0e0;
-        /* To'qroq chegara */
-    }
-
-    .question-number-display {
-        font-size: 1.4em;
-        /* Kichikroq ekranlarda mos keladigan katta shrift */
-        font-weight: 700;
-        /* Qalinroq */
-        color: #333;
-    }
-
-    .mark-flag {
-        display: flex;
-        align-items: center;
-        font-size: 1em;
-        color: #555;
-        cursor: pointer;
-        /* Label ustiga bosish mumkinligini bildiradi */
-    }
-
-    .mark-flag input[type="checkbox"] {
-        margin-right: 8px;
-        /* Bo'sh joyni kamaytirish */
-        width: 18px;
-        /* Kichikroq checkbox */
-        height: 18px;
-        accent-color: #007bff;
-        /* Checkbox rangini o'zgartirish */
-        cursor: pointer;
-    }
-
-    .question-body {
-        background-color: #fdfdfd;
-        /* Engilroq fon */
-        border: 1px solid #e9ecef;
-        /* Yumshoqroq chegara */
-        border-radius: 8px;
-        /* Yumshoqroq burchaklar */
-        padding: 25px;
-        margin-bottom: 30px;
-        flex-grow: 1;
-        text-align: left !important;
-        display: flex;
-        /* Kontentni markazlashtirish uchun */
-        flex-direction: column;
-    }
-
-    .question-body p {
-        font-size: 1.15em;
-        /* Savol matnini kattaroq qilish */
+    h1 {
+        font-size: 1.75rem;
         font-weight: 600;
-        margin-top: 0;
-        margin-bottom: 25px;
-        color: #343a40;
-        /* To'qroq matn rangi */
-        line-height: 1.6;
-        /* Matn qatorlari orasidagi bo'shliq */
-        text-align: left !important;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
     }
 
-    #options-form {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        flex-grow: 1;
-        /* Variantlar bo'sh joyni egallashi uchun */
-    }
-
-    .option-item {
-        margin-bottom: 15px;
-        /* Variantlar orasidagi bo'shliqni oshirish */
-        display: flex;
-        align-items: flex-start;
-        /* Matn ko'p bo'lsa yuqoriga tekislash */
-        cursor: pointer;
-        padding: 12px 15px;
-        /* Kattaroq padding */
-        border-radius: 8px;
-        transition: background-color 0.2s ease, border-color 0.2s ease;
-        border: 1px solid #dee2e6;
-        /* Variant chegarasi */
-        width: 100%;
-        /* To'liq kenglik */
-        box-sizing: border-box;
-    }
-
-    .option-item:hover {
-        background-color: #e9f5ff;
-        /* Engilroq ko'k fon */
-        border-color: #007bff;
-        /* Ko'k chegara */
-    }
-
-    .option-item input[type="radio"] {
-        margin-right: 15px;
-        /* Ko'proq bo'sh joy */
-        width: 20px;
-        /* Kattaroq radio tugma */
-        height: 20px;
-        cursor: pointer;
-        flex-shrink: 0;
-        /* Hajmini kichraytirmasin */
-        accent-color: #007bff;
-        /* Radio tugma rangini o'zgartirish */
-        margin-top: 2px;
-        /* Matn bilan tekislash */
-    }
-
-    .option-item label {
-        font-size: 1.05em;
-        /* Kattaroq matn */
-        color: #333;
-        cursor: pointer;
-        flex-grow: 1;
-        line-height: 1.5;
-    }
-
-    .navigation-buttons {
-        display: flex;
-        justify-content: space-between;
-        padding-top: 20px;
-        border-top: 1px solid #e0e0e0;
-        margin-top: auto;
-        /* Pastki qismga yopishtirish */
-    }
-
-    .nav-btn {
-        padding: 12px 25px;
-        /* Kattaroq padding */
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1em;
-        font-weight: 600;
-        transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    #previous-page-btn {
-        background-color: #6c757d;
-        color: #fff;
-    }
-
-    #previous-page-btn:hover {
-        background-color: #5a6268;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    #next-page-btn {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    #next-page-btn:hover {
-        background-color: #0056b3;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    /* --- Test Navigatsiya Stili --- */
-    .quiz-navigation {
-        width: 300px;
-        /* Navigatsiya bo'limi uchun kenglikni oshirish */
-        flex-shrink: 0;
-        /* Kichraymasligi uchun */
-        padding: 25px;
-        background-color: #f8f9fa;
-        /* Engilroq fon rangi */
+    /* KPI Cards - Yuksalish Maktabi ranglari */
+    .card {
+        background: white;
         border-radius: 12px;
-        border: 1px solid #e9ecef;
-        /* Yumshoqroq chegara */
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+        overflow: hidden;
+        height: 100%;
     }
 
-    .quiz-navigation h3 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-size: 1.2em;
-        color: #333;
-        text-align: center;
-        border-bottom: 1px solid #dee2e6;
-        padding-bottom: 15px;
-        width: 100%;
-    }
-
-    .question-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        /* Ko'proq ustunlar, tugmalar kichikroq */
-        gap: 10px;
-        margin-bottom: 25px;
-        width: 100%;
-    }
-
-    .question-button {
-        width: 50px;
-        /* Tugma uchun qat'iy kenglik */
-        height: 50px;
-        /* Tugma uchun qat'iy balandlik */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border: 1px solid #ced4da;
-        /* Yumshoqroq chegara */
-        border-radius: 8px;
-        /* Yumshoqroq burchaklar */
-        background-color: #f1f3f5;
-        /* Engilroq fon */
-        color: #495057;
-        /* To'qroq matn */
-        font-size: 0.95em;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        text-decoration: none;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .question-button:hover {
-        background-color: #e2e6ea;
-        border-color: #aebfd0;
+    .card:hover {
         transform: translateY(-2px);
-        /* Engil animatsiya */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
 
-    /* Savol tugmasi holatlari */
-    .question-button.not-answered {
-        background-color: #f1f3f5;
-        border-color: #ced4da;
-        color: #495057;
+    .card-body {
+        padding: 1.5rem;
     }
 
-    .question-button.answered {
-        background-color: #d4edda;
-        border-color: #28a745;
-        color: #28a745;
-        font-weight: bold;
+    /* Yuksalish Maktabi ranglari - gradient YO'Q */
+    .border-left-orange {
+        border-left: 4px solid #E67E22;
     }
 
-    .question-button.current-question {
-        background-color: #fff3cd;
-        border-color: #ffc107;
-        color: #333;
-        font-weight: bold;
-        box-shadow: 0 0 0 3px #ffc107;
-        /* Highlight border kattaroq */
-        transform: scale(1.05);
-        /* Kichik o'sish effekti */
+    .text-orange {
+        color: #E67E22;
     }
 
-    .question-button.marked-for-review {
-        position: relative;
-        border-color: #dc3545;
-        box-shadow: 0 0 0 3px #dc3545;
+    .border-left-brown {
+        border-left: 4px solid #8B4513;
     }
 
-    .question-button.marked-for-review::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 0;
-        height: 0;
-        border-top: 15px solid #dc3545;
-        /* Kattaroq bayroq */
-        border-left: 15px solid transparent;
-        transform: rotate(45deg);
-        /* To'g'ri bayroq shakli uchun */
-        transform-origin: top left;
-        border-top-right-radius: 8px;
-        /* Burchakni yumaloq qilish */
+    .text-brown {
+        color: #8B4513;
     }
 
+    .border-left-gold {
+        border-left: 4px solid #D4A574;
+    }
 
-    .finish-attempt-btn {
-        width: 100%;
-        padding: 12px;
-        background-color: #17a2b8;
-        /* Ko'k-yashil rang */
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1.05em;
+    .text-gold {
+        color: #D4A574;
+    }
+
+    .border-left-teal {
+        border-left: 4px solid #16A085;
+    }
+
+    .text-teal {
+        color: #16A085;
+    }
+
+    /* KPI Card Layout */
+    .kpi-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .kpi-content h6 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
         font-weight: 600;
-        margin-top: auto;
-        /* Yuqoriga yopishtirish */
-        margin-bottom: 20px;
-        /* Vaqt bilan bo'shliq */
-        transition: background-color 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
     }
 
-    .finish-attempt-btn:hover {
-        background-color: #138496;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    .kpi-content .value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2c3e50;
     }
 
-    .time-left {
-        font-size: 1em;
-        color: #555;
+    .kpi-icon {
+        font-size: 2.5rem;
+        opacity: 0.2;
+    }
+
+    /* Chart sozlamalari */
+    .chart-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+    }
+
+    .chart-header {
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .chart-header h6 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .chart-month-display {
         text-align: center;
-        width: 100%;
-        padding-top: 15px;
-        border-top: 1px solid #eee;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #E67E22;
+        font-weight: 500;
     }
 
-    .time-left #time-display {
-        font-weight: bold;
-        color: #007bff;
-        font-size: 1.2em;
-        display: block;
-        /* Vaqtni alohida qatorga o'tkazish */
-        margin-top: 5px;
-    }
-
-    /* ===================================== */
-    /* ==== MOBIL ADAPTIV STILILARI ==== */
-    /* ===================================== */
-
-    /* Kichik qurilmalar (telefonlar, 767px va undan kichik) */
-    @media (max-width: 767px) {
-        body {
-            padding: 10px;
-            /* Kichikroq padding */
-        }
-
-        .quiz-container {
-            flex-direction: column;
-            /* Vertikal joylashtirish */
-            padding: 15px;
-            /* Paddingni kamaytirish */
-            gap: 20px;
-            /* Bo'sh joyni kamaytirish */
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .quiz-main-content {
-            padding-right: 0;
-            margin-bottom: 0;
-            /* Marginni olib tashlash */
-        }
-
-        .quiz-navigation {
-            width: auto;
-            /* Navigatsiyaga to'liq kenglikni egallashga ruxsat berish */
-            margin-left: 0;
-            margin-top: 0;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: none;
-            /* Mobil ekranda soyani olib tashlash */
-            border-top: 1px solid #eee;
-            /* Yuqoriga chegara qo'shish */
-        }
-
-        .question-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-        }
-
-        .question-number-display {
-            font-size: 1.2em;
-        }
-
-        .mark-flag {
-            width: 100%;
-        }
-
-        .question-body {
-            padding: 18px;
-            margin-bottom: 20px;
-        }
-
-        .question-body p {
-            font-size: 1em;
-            margin-bottom: 15px;
-        }
-
-        .option-item {
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            font-size: 0.95em;
-        }
-
-        .option-item input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
-        }
-
-        .question-grid {
-            grid-template-columns: repeat(4, 1fr);
-            /* Mobil uchun 4 ustun */
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .question-button {
-            width: 45px;
-            height: 45px;
-            font-size: 0.85em;
-            border-radius: 6px;
-        }
-
-        .question-button.marked-for-review::before {
-            border-top: 12px solid #dc3545;
-            border-left: 12px solid transparent;
-            border-top-right-radius: 6px;
-        }
-
-        .nav-btn {
-            padding: 10px 20px;
-            font-size: 0.9em;
-            border-radius: 6px;
-        }
-
-        .finish-attempt-btn {
-            padding: 10px;
-            font-size: 0.95em;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
-
-        .time-left {
-            font-size: 0.9em;
-        }
-
-        .time-left #time-display {
-            font-size: 1.1em;
-        }
-    }
-
-    /* O'rta qurilmalar (planshetlar, 768px dan 1024px gacha) */
-    @media (min-width: 768px) and (max-width: 1024px) {
-        .quiz-container {
-            padding: 25px;
-            max-width: 900px;
-            gap: 25px;
-        }
-
-        .quiz-navigation {
-            width: 280px;
-            padding: 20px;
-        }
-
-        .question-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        .question-button {
-            width: 48px;
-            height: 48px;
-            font-size: 0.9em;
-        }
-    }
-
-    /* MathJax uchun stil */
-    mjx-container[jax="CHTML"][display="true"] {
-        display: inline-block;
-        /* Inline-block qilib to'g'ri joylashuv */
-        text-align: left !important;
-        margin: 1em 0;
-        overflow-x: auto;
-        /* Matematik formulalar katta bo'lsa scroll qo'shish */
-        max-width: 100%;
-        /* Konteyner kengligini cheklash */
-    }
-
-    mjx-merror {
-        display: inline-block;
-        color: black;
-        background-color: white;
-    }
-
-    /* YANGI QO'SHILGAN STIL */
+    /* Chart Controls */
     .chart-controls {
         display: flex;
         align-items: center;
-        width: 100%;
+        gap: 15px;
         margin-top: 20px;
-        /* Grafikdan biroz pastga */
-        padding: 0 10px;
-        box-sizing: border-box;
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        flex-wrap: wrap;
     }
 
     #play-pause-button {
-        width: 50px;
-        /* Kattaroq doira */
-        height: 50px;
-        border-radius: 50%;
-        /* Doira shakli */
-        background-color: #007bff;
-        /* Ko'k rang */
+        background: #E67E22;
         color: white;
         border: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 24px;
-        /* Ikona kattaligi */
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
         cursor: pointer;
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-        /* Yumshoqroq soya */
-        transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-        flex-shrink: 0;
-        /* Kichraymasligi uchun */
-        margin-right: 15px;
-        /* Slayderdan uzoqroq turish uchun */
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     #play-pause-button:hover {
-        background-color: #0056b3;
-        box-shadow: 0 6px 12px rgba(0, 123, 255, 0.4);
-        transform: translateY(-2px);
-        /* Engil animatsiya */
-    }
-
-    #play-pause-button .fa {
-        /* Ikonka uslubi */
-        line-height: 1;
-        /* Vertikal hizalanish uchun */
+        background: #D35400;
     }
 
     #play-range {
-        flex-grow: 1;
-        /* Qolgan bo'sh joyni egallaydi */
-        -webkit-appearance: none;
-        /* Standart stilni olib tashlash */
-        appearance: none;
-        height: 8px;
-        /* Kalinroq chiziq */
-        background: #ddd;
+        flex: 1;
+        min-width: 150px;
+        height: 6px;
+        border-radius: 3px;
+        background: #e0e0e0;
         outline: none;
-        border-radius: 5px;
-        margin: 0 15px;
-        /* Tugma va oy nomidan bo'sh joy */
-        cursor: pointer;
+        -webkit-appearance: none;
     }
 
-    /* Range input tugmachasi (thumb) stili */
     #play-range::-webkit-slider-thumb {
         -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        /* Kattaroq tugmacha */
-        height: 20px;
+        width: 18px;
+        height: 18px;
         border-radius: 50%;
-        background: #007bff;
-        /* Ko'k rang */
+        background: #E67E22;
         cursor: pointer;
-        margin-top: -6px;
-        /* Chiziq ustida joylashishi uchun */
-        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.4);
     }
 
     #play-range::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         border-radius: 50%;
-        background: #007bff;
+        background: #E67E22;
         cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0, 123, 255, 0.4);
+        border: none;
     }
 
     #current-month-display {
-        font-size: 1.1em;
-        /* Oy nomini kattaroq qilish */
-        font-weight: bold;
-        color: #555;
-        min-width: 120px;
-        /* Matn o'zgarganda joy siljimasligi uchun */
-        text-align: right;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.9rem;
+        white-space: nowrap;
     }
 
-    /* Mobil moslashuv uchun (agar kerak bo'lsa) */
-    @media (max-width: 767px) {
-        .chart-controls {
-            flex-direction: column;
-            /* Mobil ekranda vertikal joylashtirish */
-            align-items: center;
-            padding: 0;
-            margin-top: 30px;
-        }
-
-        #play-pause-button {
-            width: 60px;
-            /* Mobil uchun kattaroq tugma */
-            height: 60px;
-            font-size: 30px;
-            margin-bottom: 15px;
-            /* Slayderdan bo'sh joy */
-            margin-right: 0;
-        }
-
-        #play-range {
-            width: 90%;
-            /* Mobil uchun kenglik */
-            margin: 0;
-            margin-bottom: 10px;
-        }
-
-        #current-month-display {
-            font-size: 1em;
-            text-align: center;
-        }
-    }
-
-    /* YANGI QO'SHILGAN STIL */
-    .chart-container-3d {
-        margin-top: 40px;
-        /* Grafiklar orasidagi bo'shliq */
-        background-color: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        padding: 30px;
-        position: relative;
-        /* Title uchun */
-    }
-
-    .chart-container-3d h2 {
-        text-align: center;
-        margin-bottom: 25px;
-        color: #333;
-        font-size: 1.5em;
-        font-weight: 700;
-    }
-
-    /* Ikkinchi grafikning subtitle uslubi (qo'shimcha) */
-    .chart-container-3d .chart-month-display {
-        text-align: center;
-        margin-top: -15px; /* Sarlavhaga yaqinroq olib kelish */
-        margin-bottom: 15px;
-        font-size: 1.1em;
-        color: #666;
-        font-weight: 500;
-        display: block;
-    }
-
-    /* Sliders stilini o'zgartirish (agar mavjud bo'lsa) */
+    /* 3D Chart Sliders */
     #sliders {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
         margin-top: 20px;
-        flex-wrap: wrap;
-        /* Mobil uchun moslashuv */
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
     }
 
-    #sliders div {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+    #sliders>div {
+        margin-bottom: 15px;
+        font-size: 0.85rem;
+        color: #666;
     }
 
     #sliders input[type="range"] {
-        width: 150px;
-        /* Kichikroq slaydchalar */
-        -webkit-appearance: none;
-        appearance: none;
-        height: 6px;
-        background: #ddd;
+        width: 100%;
+        height: 4px;
+        border-radius: 2px;
+        background: #e0e0e0;
         outline: none;
-        border-radius: 3px;
+        -webkit-appearance: none;
+        margin-top: 5px;
     }
 
     #sliders input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        appearance: none;
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         border-radius: 50%;
-        background: #007bff;
+        background: #8B4513;
         cursor: pointer;
-        margin-top: -5px;
-        box-shadow: 0 1px 3px rgba(0, 123, 255, 0.4);
     }
 
     #sliders input[type="range"]::-moz-range-thumb {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         border-radius: 50%;
-        background: #007bff;
+        background: #8B4513;
         cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0, 123, 255, 0.4);
+        border: none;
     }
 
     #sliders span {
-        font-weight: bold;
-        color: #555;
-        margin-top: 5px;
+        font-weight: 600;
+        color: #8B4513;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .charts-row {
+            grid-template-columns: 1fr;
+        }
     }
 
     @media (max-width: 767px) {
-        #sliders {
-            flex-direction: column;
-            gap: 15px;
+        .container-fluid {
+            padding: 15px;
         }
 
-        #sliders input[type="range"] {
-            width: 80%;
+        h1 {
+            font-size: 1.5rem;
+        }
+
+        .chart-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        #current-month-display {
+            text-align: center;
+        }
+
+        .kpi-content .value {
+            font-size: 1.5rem;
+        }
+
+        .kpi-icon {
+            font-size: 2rem;
         }
     }
 </style>
-@section('content')
-    <div class="container-fluid">
-        <h1 class="h3 mb-4 text-gray-800">Admin Bosh Sahifasi</h1>
 
-        <div class="row">
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Boshqaruv Paneli ({{ Auth::user()->subject->name ?? 'Fan' }} O'qituvchisi)</h1>
 
-            {{-- Birinchi grafik: Oy bo'yicha o'quvchilar soni --}}
-            <div class="card w-100"> {{-- Kenglikni to'liq olsin --}}
-                <div class="card-body">
-                    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    {{-- KPI Cards --}}
+    <div class="row mb-4">
+        {{-- KPI 1: Imtihonlar (Joriy Oy) --}}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-orange">
+                <div class="card-body kpi-card">
+                    <div class="kpi-content">
+                        <h6 class="text-orange">
+                            Imtihonlar ({{ \Carbon\Carbon::now()->translatedFormat('F') }})
+                        </h6>
+                        <div class="value">{{ $totalExamsTakenThisMonth }} ta</div>
+                    </div>
+                    <div class="kpi-icon text-orange">
+                        <i class="fa fa-pencil-square-o"></i>
+                    </div>
                 </div>
+            </div>
+        </div>
 
+        {{-- KPI 2: Fan O'rtacha Natijasi --}}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-brown">
+                <div class="card-body kpi-card">
+                    <div class="kpi-content">
+                        <h6 class="text-brown">Fan O'rtacha Natijasi</h6>
+                        <div class="value">{{ $averageSuccessRate }}%</div>
+                    </div>
+                    <div class="kpi-icon text-brown">
+                        <i class="fa fa-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        {{-- KPI 3: Mening Testlarim --}}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-gold">
+                <div class="card-body kpi-card">
+                    <div class="kpi-content">
+                        <h6 class="text-gold">Mening Yaratgan Testlarim</h6>
+                        <div class="value">{{ $totalQuizzesCreated }} ta</div>
+                    </div>
+                    <div class="kpi-icon text-gold">
+                        <i class="fa fa-book"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- KPI 4: Jami O'quvchilar --}}
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-teal">
+                <div class="card-body kpi-card">
+                    <div class="kpi-content">
+                        <h6 class="text-teal">Tizimdagi Jami O'quvchilar</h6>
+                        <div class="value">{{ $totalStudentsInSystem }} ta</div>
+                    </div>
+                    <div class="kpi-icon text-teal">
+                        <i class="fa fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Charts Row --}}
+    <div class="row">
+        {{-- 1-Grafik: Bar Chart --}}
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6>O'quvchi Faolligi (Ro'yxatga Olish)</h6>
+                </div>
+                <div id="container" style="min-width: 250px; height: 400px;"></div>
                 <div class="chart-controls">
                     <button id="play-pause-button" title="play">
-                        {{-- Font Awesome ikonkasini to'g'ridan-to'g'ri joylashtiramiz --}}
                         <i class="fa fa-play"></i>
                     </button>
                     <input type="range" id="play-range" value="" step="1">
                     <span id="current-month-display"></span>
                 </div>
             </div>
+        </div>
 
-            {{-- YANGI O'ZGARTIRILGAN KOD BOSHLANISHI: Sinflar bo'yicha test yechish foizi grafigi --}}
-            <div class="card w-100 chart-container-3d mt-5"> {{-- Yuqoridan biroz bo'sh joy va yangi stil --}}
-                <div class="card-body">
-                    <h2>Sinflarning test yechishdagi samaradorligi (%)</h2>
-                    {{-- Joriy oyni ko'rsatish uchun yangi span elementi --}}
+        {{-- 2-Grafik: 3D Column Chart --}}
+        <div class="col-lg-6 mb-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h6>Sinflarning {{ Auth::user()->subject->name ?? 'Fan' }} bo'yicha Natijasi (%)</h6>
                     <span id="current-month-3d-display" class="chart-month-display"></span>
-                    <div id="container-3d" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-                    <div id="sliders">
-                        <div>
-                            Alpha: <span id="alpha-value"></span>
-                            <input id="alpha" type="range" min="0" max="45" value="15" />
-                        </div>
-                        <div>
-                            Beta: <span id="beta-value"></span>
-                            <input id="beta" type="range" min="0" max="45" value="15" />
-                        </div>
-                        <div>
-                            Depth: <span id="depth-value"></span>
-                            <input id="depth" type="range" min="20" max="100" value="50" />
-                        </div>
+                </div>
+                <div id="container-3d" style="min-width: 250px; height: 400px;"></div>
+
+                <div id="sliders">
+                    <div>
+                        Alpha: <span id="alpha-value"></span>
+                        <input id="alpha" type="range" min="0" max="45" value="15" />
+                    </div>
+                    <div>
+                        Beta: <span id="beta-value"></span>
+                        <input id="beta" type="range" min="0" max="45" value="15" />
+                    </div>
+                    <div>
+                        Depth: <span id="depth-value"></span>
+                        <input id="depth" type="range" min="20" max="100" value="50" />
                     </div>
                 </div>
             </div>
-            {{-- YANGI O'ZGARTIRILGAN KOD TUGASHI: Sinflar bo'yicha test yechish foizi grafigi --}}
-
-            {{-- Boshqa statistikalar va kontent --}}
         </div>
     </div>
+</div>
 
-    {{-- YANGI QO'SHILGAN KOD BOSHLANISHI: Highcharts 3D moduli --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/data.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="https://code.highcharts.com/highcharts-3d.js"></script> {{-- Highcharts 3D modulini qo'shish --}}
-    {{-- YANGI QO'SHILGAN KOD TUGASHI: Highcharts 3D moduli --}}
+{{-- Highcharts Scripts --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/highcharts-3d.js"></script>
 
-    {{-- Birinchi grafik uchun JavaScript (mavjud kod) --}}
-    <script>
-        // Backenddan kelgan ma'lumotlarni JavaScriptga o'tkazish
-        const classesData = @json($allClasses);
-        const studentsData = @json($studentsByClassAndMonth);
+<script>
+    // Backenddan ma'lumotlar
+    const classesData = @json($allClasses);
+    const studentsData = @json($studentsByClassAndMonth);
+    const classQuizPerformanceData = @json($classQuizPerformance);
 
-        const btn = document.getElementById('play-pause-button');
-        const input = document.getElementById('play-range');
-        const currentMonthDisplay = document.getElementById('current-month-display');
-        const nbr = classesData.length > 0 ? classesData.length : 10;
+    const btn = document.getElementById('play-pause-button');
+    const input = document.getElementById('play-range');
+    const currentMonthDisplay = document.getElementById('current-month-display');
+    const nbr = classesData.length > 0 ? classesData.length : 10;
 
-        let dataset, chart;
-        let sortedMonthKeys = Object.keys(studentsData).sort(); // "YYYY-MM" formatdagi oylarni tartiblash
+    let dataset, chart, chart3d;
+    let sortedMonthKeys = Object.keys(studentsData).sort();
 
-        // Range input min/max/value ni sozlash
-        if (input) {
-            input.min = 0;
-            input.max = sortedMonthKeys.length - 1;
-            input.value = sortedMonthKeys.length - 1; // Default holatda joriy oyga sozlash
-        }
+    // Range sozlamalari
+    if (input) {
+        input.min = 0;
+        input.max = sortedMonthKeys.length - 1;
+        input.value = sortedMonthKeys.length - 1;
+    }
 
-        /*
-         * Animate dataLabels functionality (o'zgartirilmagan)
-         */
-        (function(H) {
-            const FLOAT = /^-?\d+\.?\d*$/;
-            H.Fx.prototype.textSetter = function() {
-                const chart = H.charts[this.elem.renderer.chartIndex];
-                let thousandsSep = chart.numberFormatter('1000.0')[1];
-                if (/[0-9]/.test(thousandsSep)) {
-                    thousandsSep = ' ';
-                }
-                const replaceRegEx = new RegExp(thousandsSep, 'g');
-                let startValue = this.start.replace(replaceRegEx, ''),
-                    endValue = this.end.replace(replaceRegEx, ''),
-                    currentValue = this.end.replace(replaceRegEx, '');
-                if ((startValue || '').match(FLOAT)) {
-                    startValue = parseInt(startValue, 10);
-                    endValue = parseInt(endValue, 10);
-                    currentValue = chart.numberFormatter(
-                        Math.round(startValue + (endValue - startValue) * this.pos),
-                        0
-                    );
-                }
-                this.elem.endText = this.end;
-                this.elem.attr(this.prop, currentValue, null, true);
-            };
-            H.SVGElement.prototype.textGetter = function() {
-                const ct = this.text.element.textContent || '';
-                return this.endText ? this.endText : ct.substring(0, ct.length / 2);
-            };
-            H.wrap(H.Series.prototype, 'drawDataLabels', function(proceed) {
-                const attr = H.SVGElement.prototype.attr,
-                    chart = this.chart;
-                if (chart.sequenceTimer) {
-                    this.points.forEach(point =>
-                        (point.dataLabels || []).forEach(
-                            label =>
-                            (label.attr = function(hash) {
-                                if (
-                                    hash &&
-                                    hash.text !== undefined &&
-                                    chart.isResizing === 0
-                                ) {
-                                    const text = hash.text;
-                                    delete hash.text;
-                                    return this
-                                        .attr(hash)
-                                        .animate({
-                                            text
-                                        });
-                                }
-                                return attr.apply(this, arguments);
-                            })
-                        )
-                    );
-                }
-                const ret = proceed.apply(
-                    this,
-                    Array.prototype.slice.call(arguments, 1)
-                );
-                this.points.forEach(p =>
-                    (p.dataLabels || []).forEach(d => (d.attr = attr))
-                );
-                return ret;
-            });
-        }(Highcharts));
+    // Yuksalish Maktabi ranglar palitasi
+    const colorPalette = [
+        '#E67E22', '#8B4513', '#D4A574', '#16A085',
+        '#E74C3C', '#3498DB', '#9B59B6', '#F39C12',
+        '#1ABC9C', '#34495E'
+    ];
 
-
-        // Ma'lumotlarni tanlangan oy bo'yicha filtrlash va tartiblash
-        function getDataForMonth(monthKey) {
-            const monthData = studentsData[monthKey] || {};
-            const output = Object.entries(monthData)
-                .map(entry => {
-                    const [className, studentCount] = entry;
-                    return [className, studentCount || 0];
-                })
-                .sort((a, b) => b[1] - a[1]);
-
-            return [output[0], output.slice(0, nbr)];
-        }
-
-        // Subtitle ni yangilash funksiyasi (grafik ichidagi katta sana uchun)
-        function getSubtitle() {
-            const currentMonthIndex = parseInt(input.value);
-            const currentMonthKey = sortedMonthKeys[currentMonthIndex];
-            if (!currentMonthKey) return '';
-
-            const date = new Date(currentMonthKey + '-01'); // Kunni qo'shamiz
-            const monthName = date.toLocaleString('uz-UZ', {
-                month: 'long',
-                year: 'numeric'
-            }); // O'zbek tilida oy nomi va yili
-
-            const currentMonthData = studentsData[currentMonthKey];
-            let totalStudentsInMonth = 0;
-            if (currentMonthData) {
-                Object.values(currentMonthData).forEach(count => {
-                    totalStudentsInMonth += (count || 0);
-                });
+    /* Animate dataLabels */
+    (function(H) {
+        const FLOAT = /^-?\d+\.?\d*$/;
+        H.Fx.prototype.textSetter = function() {
+            const chart = H.charts[this.elem.renderer.chartIndex];
+            let thousandsSep = chart.numberFormatter('1000.0')[1];
+            if (/[0-9]/.test(thousandsSep)) {
+                thousandsSep = ' ';
             }
-
-            // Endi ikki qismni alohida uslub bilan qaytaramiz
-            return `<span style="font-size: 80px; font-weight: bold; color: #333; display: block; text-align: right;">${monthName.toUpperCase()}</span>
-                    <span style="font-size: 22px; color: #555; display: block; text-align: right; margin-top: 5px;">
-                        Jami o'quvchilar: <b>${totalStudentsInMonth}</b>
-                    </span>`;
-        }
-
-
-        (async () => {
-            dataset = studentsData;
-
-            // Dastlabki yuklashda joriy oyning ma'lumotlarini olish
-            const initialMonthIndex = sortedMonthKeys.length - 1;
-            const initialMonthKey = sortedMonthKeys[initialMonthIndex];
-
-            chart = Highcharts.chart('container', {
-                chart: {
-                    animation: {
-                        duration: 500
-                    },
-                    marginRight: 50
-                },
-                title: {
-                    text: 'Har oy sinflardagi o\'quvchilar soni',
-                    align: 'left'
-                },
-                subtitle: {
-                    text: getSubtitle(),
-                    floating: true,
-                    align: 'right', // O'ng tomonga hizalash
-                    verticalAlign: 'bottom', // Yuqoriga hizalash
-                    y: -20, // Grafikka yaqinroq, yuqoriga
-                    x: -10, // O'ng chekkadan biroz chapga siljitish
-                    useHTML: true,
-                    style: { // Yangi stil qo'shish
-                        fontSize: '20px', // Asosiy yil/oy matnini biroz kichraytiramiz
-                        color: '#888', // Rangini biroz xiralashtiramiz
-                        opacity: 0.7 // Shaffofligini kamaytiramiz
-                    }
-                },
-
-                legend: {
-                    enabled: false
-                },
-                xAxis: {
-                    type: 'category',
-                    title: {
-                        text: 'Sinflar'
-                    }
-                },
-                yAxis: {
-                    opposite: true,
-                    tickPixelInterval: 150,
-                    title: {
-                        text: 'O\'quvchilar soni'
-                    }
-                },
-                plotOptions: {
-                    series: {
-                        animation: true,
-                        groupPadding: 0,
-                        pointPadding: 0.1,
-                        borderWidth: 0,
-                        colorByPoint: true,
-                        dataSorting: {
-                            enabled: true,
-                            matchByName: true
-                        },
-                        type: 'bar',
-                        dataLabels: {
-                            enabled: true,
-                            format: '{y}', // Faqat qiymatni ko'rsatish
-                            style: {
-                                fontSize: '14px', // Raqamlar shriftini kichraytirish
-                                fontWeight: 'bold', // Qalin qilish
-                                color: '#333', // Rangini aniqroq qilish
-                                textOutline: 'none' // Matn atrofidagi chiziqni olb tashlash
-                            },
-                            align: 'right', // Raqamlarni o'ng tomonga hizalash (ustun ichida)
-                            x: 20 // Raqamlarni ustun ichida biroz o'ngga siljitish
-                        }
-                    }
-                },
-                series: [{
-                    type: 'bar',
-                    name: 'O\'quvchilar soni',
-                    data: getDataForMonth(initialMonthKey)[1] // Dastlabki oy ma'lumotlari bilan yuklash
-                }],
-                responsive: {
-                    rules: [{
-                        condition: {
-                            maxWidth: 550
-                        },
-                        chartOptions: {
-                            xAxis: {
-                                visible: false
-                            },
-                            subtitle: {
-                                x: 0
-                            },
-                            plotOptions: {
-                                series: {
-                                    dataLabels: [{
-                                        enabled: true,
-                                        y: 8
-                                    }, {
-                                        enabled: true,
-                                        y: -8,
-                                        style: {
-                                            fontWeight: 'normal',
-                                            opacity: 0.7
-                                        }
-                                    }]
-                                }
+            const replaceRegEx = new RegExp(thousandsSep, 'g');
+            let startValue = this.start.replace(replaceRegEx, ''),
+                endValue = this.end.replace(replaceRegEx, ''),
+                currentValue = this.end.replace(replaceRegEx, '');
+            if ((startValue || '').match(FLOAT)) {
+                startValue = parseInt(startValue, 10);
+                endValue = parseInt(endValue, 10);
+                currentValue = chart.numberFormatter(
+                    Math.round(startValue + (endValue - startValue) * this.pos), 0
+                );
+            }
+            this.elem.endText = this.end;
+            this.elem.attr(this.prop, currentValue, null, true);
+        };
+        H.SVGElement.prototype.textGetter = function() {
+            const ct = this.text.element.textContent || '';
+            return this.endText ? this.endText : ct.substring(0, ct.length / 2);
+        };
+        H.wrap(H.Series.prototype, 'drawDataLabels', function(proceed) {
+            const attr = H.SVGElement.prototype.attr,
+                chart = this.chart;
+            if (chart.sequenceTimer) {
+                this.points.forEach(point =>
+                    (point.dataLabels || []).forEach(
+                        label =>
+                        (label.attr = function(hash) {
+                            if (hash && hash.text !== undefined && chart.isResizing === 0) {
+                                const text = hash.text;
+                                delete hash.text;
+                                return this.attr(hash).animate({
+                                    text
+                                });
                             }
-                        }
-                    }]
-                }
-            });
-
-            updateMonthDisplay(); // Joriy oyni ko'rsatish
-            update(0); // Dastlabki grafikni yuklash (joriy oy uchun)
-        })();
-
-        /*
-         * Play/Pause funksiyalari (yillar o'rniga oylar bo'yida ishlaydi)
-         */
-        function pause(button) {
-            button.title = 'play';
-            button.className = 'fa fa-play';
-            clearTimeout(chart.sequenceTimer);
-            chart.sequenceTimer = undefined;
-        }
-
-        // Slayder yonidagi oyni yangilash funksiyasi
-        function updateMonthDisplay() {
-            const currentMonthIndex = parseInt(input.value);
-            const currentMonthKey = sortedMonthKeys[currentMonthIndex];
-            if (currentMonthDisplay && currentMonthKey) {
-                const date = new Date(currentMonthKey + '-01'); // Kunni qo'shamiz
-                currentMonthDisplay.textContent = date.toLocaleString('uz-UZ', {
-                    month: 'long',
-                    year: 'numeric'
-                }).toUpperCase(); // Katta harflarga o'tkazish
+                            return attr.apply(this, arguments);
+                        })
+                    )
+                );
             }
-        }
+            const ret = proceed.apply(this, Array.prototype.slice.call(arguments, 1));
+            this.points.forEach(p => (p.dataLabels || []).forEach(d => (d.attr = attr)));
+            return ret;
+        });
+    }(Highcharts));
 
-        function update(increment) {
-            if (increment) {
-                input.value = parseInt(input.value, 10) + increment;
-            }
-            if (parseInt(input.value) >= sortedMonthKeys.length - 1) { // Oxirgi oyga yetib kelsa
-                pause(btn);
-            }
-            updateMonthDisplay(); // Oy nomini yangilash
+    function getDataForMonth(monthKey) {
+        const monthData = studentsData[monthKey] || {};
+        const output = Object.entries(monthData)
+            .map(entry => {
+                const [className, studentCount] = entry;
+                return [className, studentCount || 0];
+            })
+            .sort((a, b) => b[1] - a[1]);
 
-            const currentMonthKey = sortedMonthKeys[parseInt(input.value)];
+        return [output[0], output.slice(0, nbr)];
+    }
 
-            // Chartni yangilash
-            chart.update({
-                    subtitle: {
-                        text: getSubtitle()
-                    },
-                    series: [{
-                        name: 'O\'quvchilar soni (' + currentMonthKey + ')',
-                        data: getDataForMonth(currentMonthKey)[1]
-                    }]
-                },
-                true, // Redraw true
-                false // Animation false (chunki biz o'zimiz animatsiya ishlatamiz)
-            );
-        }
+    function getSubtitle() {
+        const currentMonthIndex = parseInt(input.value);
+        const currentMonthKey = sortedMonthKeys[currentMonthIndex];
+        if (!currentMonthKey) return '';
 
-        function play(button) {
-            button.title = 'pause';
-            button.className = 'fa fa-pause';
-            chart.sequenceTimer = setInterval(function() {
-                update(1);
-            }, 1000); // Har soniyada yangilash
-        }
-
-        if (btn) {
-            btn.addEventListener('click', function() {
-                if (chart.sequenceTimer) {
-                    pause(this);
-                } else {
-                    if (parseInt(input.value) >= sortedMonthKeys.length - 1) {
-                        // Agar oxirgi oyda bo'lsa, boshiga qaytaramiz
-                        input.value = 0;
-                        update(0); // Grafikni birinchi oyga o'tkazamiz
-                    }
-                    play(this);
-                }
-            });
-        }
-
-        if (input) {
-            input.addEventListener('input', function() {
-                update(0); // Slayder surilganda grafikni yangilash
-                pause(btn); // Slayder surilganda avtomatik o'yinni to'xtatish
-            });
-        }
-
-        const classQuizPerformanceData = @json($classQuizPerformance); // Bu ma'lumot 2025 yilning joriy oyi uchun filtrlangan deb faraz qilamiz
-
-        // Joriy oyni aniqlash (frontendda, agar backenddan kelmasa)
-        // Agar backendda filtrlangan bo'lsa, bu shunchaki joriy oyni olish uchun ishlatiladi.
-        const today = new Date();
-        // Uzbekistan uchun 'uz-UZ' lokalini ishlatamiz.
-        // `month: 'long'` -> oyning to'liq nomi (yanvar, fevral, ...)
-        // `year: 'numeric'` -> yil (2025)
-        const currentMonthNameFor3D = today.toLocaleString('uz-UZ', {
+        const date = new Date(currentMonthKey + '-01');
+        const monthName = date.toLocaleString('uz-UZ', {
             month: 'long',
             year: 'numeric'
         });
 
-        // HTML elementini topish va unga matnni o'rnatish
-        const currentMonth3dDisplay = document.getElementById('current-month-3d-display');
-        if (currentMonth3dDisplay) {
-            currentMonth3dDisplay.textContent = currentMonthNameFor3D;
+        const currentMonthData = studentsData[currentMonthKey];
+        let totalStudentsInMonth = 0;
+        if (currentMonthData) {
+            Object.values(currentMonthData).forEach(count => {
+                totalStudentsInMonth += (count || 0);
+            });
         }
 
-        // Set up the chart for 3D column
-        const chart3d = new Highcharts.Chart({
+        return `<span style="font-size: 60px; font-weight: bold; color: #E67E22; display: block; text-align: right;">${monthName.toUpperCase()}</span>
+                <span style="font-size: 18px; color: #666; display: block; text-align: right; margin-top: 5px;">
+                    Jami o'quvchilar: <b>${totalStudentsInMonth}</b>
+                </span>`;
+    }
+
+    // Bar Chart
+    (async () => {
+        dataset = studentsData;
+        const initialMonthIndex = sortedMonthKeys.length - 1;
+        const initialMonthKey = sortedMonthKeys[initialMonthIndex];
+
+        chart = Highcharts.chart('container', {
             chart: {
-                renderTo: 'container-3d', // Yangi konteyner IDsi
-                type: 'column',
-                options3d: {
-                    enabled: true,
-                    alpha: 15,
-                    beta: 15,
-                    depth: 50,
-                    viewDistance: 25
-                }
+                animation: {
+                    duration: 500
+                },
+                marginRight: 50
             },
             title: {
-                text: null // Yuqoridagi h2 dan foydalanamiz
+                text: null
             },
             subtitle: {
-                text: 'Manba: Test natijalari' // Ixtiyoriy manba matni
-            },
-            xAxis: {
-                type: 'category',
-                title: {
-                    text: 'Sinf nomi'
-                }
-            },
-            yAxis: {
-                title: {
-                    text: 'To\'g\'ri javob foizi (%)'
-                },
-                labels: {
-                    format: '{value}%' // Y o'qida foiz belgisini ko'rsatish
-                },
-                max: 100, // Maksimal qiymat 100%
-                min: 0    // Minimal qiymat 0%
-            },
-            tooltip: {
-                headerFormat: '<b>{point.key}</b><br>',
-                pointFormat: 'To\'g\'ri javoblar: {point.y}%'
+                text: getSubtitle(),
+                floating: true,
+                align: 'right',
+                verticalAlign: 'bottom',
+                y: -20,
+                x: -10,
+                useHTML: true
             },
             legend: {
                 enabled: false
             },
+            xAxis: {
+                type: 'category',
+                title: {
+                    text: 'Sinflar'
+                }
+            },
+            yAxis: {
+                opposite: true,
+                tickPixelInterval: 150,
+                title: {
+                    text: 'O\'quvchilar soni'
+                }
+            },
             plotOptions: {
-                column: {
-                    depth: 25,
+                series: {
+                    animation: true,
+                    groupPadding: 0,
+                    pointPadding: 0.1,
+                    borderWidth: 0,
+                    colorByPoint: true,
+                    colors: colorPalette,
+                    dataSorting: {
+                        enabled: true,
+                        matchByName: true
+                    },
+                    type: 'bar',
                     dataLabels: {
                         enabled: true,
-                        format: '{y}%', // Ustunlar ustida foizni ko'rsatish
+                        format: '{y}',
                         style: {
-                            fontSize: '13px',
+                            fontSize: '14px',
                             fontWeight: 'bold',
                             color: '#333',
                             textOutline: 'none'
-                        }
+                        },
+                        align: 'right',
+                        x: 20
                     }
                 }
             },
             series: [{
-                name: 'To\'g\'ri javob foizi',
-                data: classQuizPerformanceData, // Controllerdan kelgan ma'lumot
-                colorByPoint: true // Har bir ustunga alohida rang berish
-            }]
+                type: 'bar',
+                name: 'O\'quvchilar soni',
+                data: getDataForMonth(initialMonthKey)[1]
+            }],
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 550
+                    },
+                    chartOptions: {
+                        xAxis: {
+                            visible: false
+                        },
+                        subtitle: {
+                            x: 0
+                        },
+                        plotOptions: {
+                            series: {
+                                dataLabels: [{
+                                    enabled: true,
+                                    y: 8
+                                }, {
+                                    enabled: true,
+                                    y: -8,
+                                    style: {
+                                        fontWeight: 'normal',
+                                        opacity: 0.7
+                                    }
+                                }]
+                            }
+                        }
+                    }
+                }]
+            }
         });
 
-        function showValues3d() {
-            document.getElementById(
-                'alpha-value'
-            ).innerHTML = chart3d.options.chart.options3d.alpha;
-            document.getElementById(
-                'beta-value'
-            ).innerHTML = chart3d.options.chart.options3d.beta;
-            document.getElementById(
-                'depth-value'
-            ).innerHTML = chart3d.options.chart.options3d.depth;
-        }
+        updateMonthDisplay();
+        update(0);
+    })();
 
-        // Activate the sliders for 3D chart
-        document.querySelectorAll(
-            '#sliders input'
-        ).forEach(input => input.addEventListener('input', e => {
+    function pause(button) {
+        button.title = 'play';
+        button.innerHTML = '<i class="fa fa-play"></i>';
+        clearTimeout(chart.sequenceTimer);
+        chart.sequenceTimer = undefined;
+    }
+
+    function updateMonthDisplay() {
+        const currentMonthIndex = parseInt(input.value);
+        const currentMonthKey = sortedMonthKeys[currentMonthIndex];
+        if (currentMonthDisplay && currentMonthKey) {
+            const date = new Date(currentMonthKey + '-01');
+            currentMonthDisplay.textContent = date.toLocaleString('uz-UZ', {
+                month: 'long',
+                year: 'numeric'
+            }).toUpperCase();
+        }
+    }
+
+    function update(increment) {
+        if (increment) {
+            input.value = parseInt(input.value, 10) + increment;
+        }
+        if (parseInt(input.value) >= sortedMonthKeys.length - 1) {
+            pause(btn);
+        }
+        updateMonthDisplay();
+
+        const currentMonthKey = sortedMonthKeys[parseInt(input.value)];
+
+        chart.update({
+                subtitle: {
+                    text: getSubtitle()
+                },
+                series: [{
+                    name: 'O\'quvchilar soni (' + currentMonthKey + ')',
+                    data: getDataForMonth(currentMonthKey)[1]
+                }]
+            },
+            true,
+            false
+        );
+    }
+
+    function play(button) {
+        button.title = 'pause';
+        button.innerHTML = '<i class="fa fa-pause"></i>';
+        chart.sequenceTimer = setInterval(function() {
+            update(1);
+        }, 1000);
+    }
+
+    if (btn) {
+        btn.addEventListener('click', function() {
+            if (chart.sequenceTimer) {
+                pause(this);
+            } else {
+                if (parseInt(input.value) >= sortedMonthKeys.length - 1) {
+                    input.value = 0;
+                    update(0);
+                }
+                play(this);
+            }
+        });
+    }
+
+    if (input) {
+        input.addEventListener('input', function() {
+            update(0);
+            pause(btn);
+        });
+    }
+
+    // 3D Chart
+    const today = new Date();
+    const currentMonthNameFor3D = today.toLocaleString('uz-UZ', {
+        month: 'long',
+        year: 'numeric'
+    });
+
+    const currentMonth3dDisplay = document.getElementById('current-month-3d-display');
+    if (currentMonth3dDisplay) {
+        currentMonth3dDisplay.textContent = currentMonthNameFor3D;
+    }
+
+    chart3d = new Highcharts.Chart({
+        chart: {
+            renderTo: 'container-3d',
+            type: 'column',
+            options3d: {
+                enabled: true,
+                alpha: 15,
+                beta: 15,
+                depth: 50,
+                viewDistance: 25
+            }
+        },
+        title: {
+            text: null
+        },
+        subtitle: {
+            text: 'Manba: Test natijalari'
+        },
+        xAxis: {
+            type: 'category',
+            title: {
+                text: 'Sinf nomi'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'To\'g\'ri javob foizi (%)'
+            },
+            labels: {
+                format: '{value}%'
+            },
+            max: 100,
+            min: 0
+        },
+        tooltip: {
+            headerFormat: '<b>{point.key}</b><br>',
+            pointFormat: 'To\'g\'ri javoblar: {point.y}%'
+        },
+        legend: {
+            enabled: false
+        },
+        plotOptions: {
+            column: {
+                depth: 25,
+                colorByPoint: true,
+                colors: colorPalette,
+                dataLabels: {
+                    enabled: true,
+                    format: '{y}%',
+                    style: {
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        color: '#333',
+                        textOutline: 'none'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: 'To\'g\'ri javob foizi',
+            data: classQuizPerformanceData
+        }]
+    });
+
+    function showValues3d() {
+        document.getElementById('alpha-value').innerHTML = chart3d.options.chart.options3d.alpha;
+        document.getElementById('beta-value').innerHTML = chart3d.options.chart.options3d.beta;
+        document.getElementById('depth-value').innerHTML = chart3d.options.chart.options3d.depth;
+    }
+
+    document.querySelectorAll('#sliders input').forEach(input =>
+        input.addEventListener('input', e => {
             chart3d.options.chart.options3d[e.target.id] = parseFloat(e.target.value);
             showValues3d();
             chart3d.redraw(false);
-        }));
+        })
+    );
 
-        showValues3d();
-    </script>
+    showValues3d();
+</script>
 @endsection
-

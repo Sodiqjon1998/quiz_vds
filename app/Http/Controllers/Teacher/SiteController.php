@@ -8,6 +8,7 @@ use App\Models\Exam;
 use App\Models\ExamAnswer;
 use App\Models\Option;
 use App\Models\Question;
+use App\Models\Teacher\Quiz;
 use App\Models\Users;
 use Auth;
 use Carbon\Carbon;
@@ -20,37 +21,85 @@ class SiteController extends Controller
     /**
      * Display a listing of the resource.
      */
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        // $diskSpace = $this->getDiskSpace(); // Agar bu metod mavjud bo'lsa, sharhni olib tashlashingiz mumkin
+        $teacher = Auth::user();
+        $subjectId = $teacher->subject_id;
+
+        $currentYear = Carbon::now()->year;
+        $currentMonth = Carbon::now()->month;
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
 
         // Barcha sinflarni olish
-        $allClasses = Classes::all();
+        $allClasses = Classes::where('status', 1)->get();
 
-        $subjectId = Auth::user()->subject_id;
+        // ===================================
+        // === 1. KPI Metrikalarini Hisoblash ===
+        // ===================================
 
-        // Har bir oy bo'yicha sinflardagi o'quvchilar sonini hisoblash
+        // A. Tizimdagi barcha faol o'quvchilar soni
+        $totalStudentsInSystem = Users::where('user_type', Users::TYPE_STUDENT)
+            ->where('status', 1)
+            ->count();
+
+        // B. O'qituvchi tomonidan yaratilgan testlar soni
+        $totalQuizzesCreated = Quiz::where('created_by', $teacher->id)
+            ->where('subject_id', $subjectId)
+            ->count();
+
+        // C. Joriy oyda o'qituvchining fanidan olingan jami imtihonlar soni
+        $totalExamsTakenThisMonth = Exam::where('subject_id', $subjectId)
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->count();
+
+        // D. O'qituvchining fani bo'yicha umumiy o'rtacha muvaffaqiyat foizi (All-time)
+        $globalCorrectAnswers = 0;
+        $globalAttemptedQuestions = 0; // ✅ O'zgaruvchi e'lon qilindi
+
+        $allExamsInSubject = Exam::where('subject_id', $subjectId)->get();
+
+        foreach ($allExamsInSubject as $exam) {
+            $examAnswers = ExamAnswer::where('exam_id', $exam->id)->get();
+
+            foreach ($examAnswers as $answer) {
+                $globalAttemptedQuestions++; // ✅ TO'G'RILANDI: $globalAttemptedQuestions ishlatildi (taxminiy 83-qator)
+
+                // Savol va to'g'ri variantni topish
+                $correctOption = Option::where('question_id', $answer->question_id)
+                    ->where('is_correct', 1)
+                    ->first();
+
+                // Agar javob to'g'ri bo'lsa
+                if ($correctOption && $answer->option_id == $correctOption->id) {
+                    $globalCorrectAnswers++;
+                }
+            }
+        }
+        // ✅ TO'G'RILANDI: Hisoblashda ham to'g'ri o'zgaruvchi ishlatildi
+        $averageSuccessRate = ($globalAttemptedQuestions > 0) ? round(($globalCorrectAnswers / $globalAttemptedQuestions) * 100, 2) : 0;
+
+        // =========================================================================
+        // === 2. Chart Ma'lumotlarini Yig'ish ===
+        // =========================================================================
+
+        // Har bir oy bo'yicha sinflardagi o'quvchilar sonini hisoblash (1-Grafik)
         $studentsByClassAndMonth = [];
+        $minYear = Users::min('created_at') ? Carbon::parse(Users::min('created_at'))->year : Carbon::now()->year - 1;
+        $maxYear = Carbon::now()->year;
 
-        // Eng kichik va eng katta yillarni aniqlash (grafik diapazoni uchun)
-        $minYear = Users::min('created_at') ? Carbon::parse(Users::min('created_at'))->year : Carbon::now()->year - 5;
-        $maxYear = Carbon::now()->year; // Faqat joriy yilgacha olamiz
-
-        // Agar ma'lumotlar juda kam bo'lsa, defolt oralig'i
         if ($maxYear < $minYear) {
-            $minYear = Carbon::now()->year - 5;
-            $maxYear = Carbon::now()->year;
+            $minYear = Carbon::now()->year - 1;
         }
 
-        $currentMonth = Carbon::now()->month; // Joriy oy raqami
-
-        // Ma'lumotlarni o'quvchilarning "created_at" sanasiga qarab yig'ish
         for ($year = $minYear; $year <= $maxYear; $year++) {
-            // Agar joriy yil bo'lsa, faqat joriy oygacha hisoblaymiz
             $endMonth = ($year == Carbon::now()->year) ? $currentMonth : 12;
 
             for ($month = 1; $month <= $endMonth; $month++) {
-                $monthKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT); // "YYYY-MM" format
+                $monthKey = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT);
                 $studentsByClassAndMonth[$monthKey] = [];
 
                 foreach ($allClasses as $class) {
@@ -64,44 +113,33 @@ class SiteController extends Controller
             }
         }
 
-
-        // =========================================================================
-        // YANGI TO'G'RILANGAN KOD: Sinflar bo'yicha to'g'ri javob foizi (JORIY OY UCHUN)
-        // =========================================================================
+        // Sinflar bo'yicha to'g'ri javob foizi (Joriy oy uchun) (2-Grafik)
         $classQuizPerformance = [];
 
-        $currentYearForQuiz = Carbon::now()->year;
-        $currentMonthForQuiz = Carbon::now()->month;
-
         foreach ($allClasses as $class) {
+            // ✅ TO'G'RI: Bu yerda alohida o'zgaruvchilar ishlatilgan
             $totalCorrectAnswers = 0;
             $totalAttemptedQuestions = 0;
 
-            // Sinfdagi barcha foydalanuvchilar (o'quvchilar) uchun
             $usersInClass = Users::where('classes_id', $class->id)->get();
 
             foreach ($usersInClass as $user) {
-                // Har bir foydalanuvchining joriy oyda ishtirok etgan imtihonlari
                 $exams = Exam::where('user_id', $user->id)
                     ->where('subject_id', '=', $subjectId)
-                    ->whereYear('created_at', $currentYearForQuiz)
-                    ->whereMonth('created_at', $currentMonthForQuiz)
+                    ->whereYear('created_at', $currentYear)
+                    ->whereMonth('created_at', $currentMonth)
                     ->get();
 
                 foreach ($exams as $exam) {
-                    // Ushbu imtihonga tegishli barcha javoblar
                     $examAnswers = ExamAnswer::where('exam_id', $exam->id)->get();
 
                     foreach ($examAnswers as $answer) {
-                        $totalAttemptedQuestions++;
+                        $totalAttemptedQuestions++; // ✅ To'g'ri
 
-                        // Savol va to'g'ri variantni topish
-                        // ExamAnswer modelida to'g'ridan-to'g'ri question_id va option_id mavjud deb faraz qilinadi
                         $correctOption = Option::where('question_id', $answer->question_id)
                             ->where('is_correct', 1)
                             ->first();
 
-                        // Agar javob to'g'ri bo'lsa
                         if ($correctOption && $answer->option_id == $correctOption->id) {
                             $totalCorrectAnswers++;
                         }
@@ -113,24 +151,30 @@ class SiteController extends Controller
 
             $classQuizPerformance[] = [
                 'name' => $class->name,
-                'y' => (float) $percentage // Highcharts uchun float turida bo'lishi kerak
+                'y' => (float) $percentage
             ];
         }
 
-        // Ma'lumotlarni foizi bo'yicha kamayish tartibida saralash
         usort($classQuizPerformance, function ($a, $b) {
             return $b['y'] <=> $a['y'];
         });
+
+        // =========================================================================
+        // === Viewga ma'lumotlarni uzatish ===
         // =========================================================================
 
-
-        return view('teacher.site.index', [ // 'teacher.site.index' yo'lini sizning blade faylingiz joylashuviga moslang
-            'allClasses' => $allClasses->pluck('name')->toArray(), // Frontenda faqat nomlar kerak bo'lsa
+        return view('teacher.site.index', [
+            'allClasses' => $allClasses->pluck('name')->toArray(),
             'studentsByClassAndMonth' => $studentsByClassAndMonth,
             'minYear' => $minYear,
             'maxYear' => $maxYear,
-            'classQuizPerformance' => $classQuizPerformance, // Yangi ma'lumotni uzatish
-            // 'diskSpace' => $diskSpace
+            'classQuizPerformance' => $classQuizPerformance,
+
+            // NEW KPIs
+            'totalStudentsInSystem' => $totalStudentsInSystem,
+            'totalQuizzesCreated' => $totalQuizzesCreated,
+            'totalExamsTakenThisMonth' => $totalExamsTakenThisMonth,
+            'averageSuccessRate' => $averageSuccessRate,
         ]);
     }
 
