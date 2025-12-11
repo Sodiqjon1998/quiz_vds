@@ -212,14 +212,14 @@
     </a>
 
     <!-- Student -->
-    <a href="{{ route('student') }}" class="role-card">
+    <!-- <a href="{{ route('student') }}" class="role-card">
       <div class="icon-container">
         <i class="ri-graduation-cap-line"></i>
       </div>
       <h3 class="role-title">O'quvchi</h3>
       <p class="role-desc">Shaxsiy kabinet, baholar, uy vazifalari va reytingni kuzatish.</p>
       <span class="enter-btn">Kirish <i class="ri-arrow-right-line"></i></span>
-    </a>
+    </a> -->
 
   </div>
 
