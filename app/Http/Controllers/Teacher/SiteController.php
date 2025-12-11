@@ -183,11 +183,11 @@ class SiteController extends Controller
             // Chart Data for ApexCharts
             'monthlyExamsData' => $monthlyExamsData,
             'monthsLabels' => $monthsLabels,
-            'classQuizPerformance' => $classQuizPerformance,
+            'classQuizPerformance' => $classQuizPerformance, // Donut Chart uchun
 
             // List Data
-            'topClassesByPerformance' => $topClassesByPerformance,
-            'topActiveStudents' => $topActiveStudents,
+            'topClassesByPerformance' => $topClassesByPerformance, // Top Sinflar Listi uchun
+            'topActiveStudents' => $topActiveStudents, // Top Faol O'quvchilar Listi uchun
         ]);
     }
 

@@ -307,6 +307,7 @@
                     <small class="text-muted">{{ Auth::user()->subject->name ?? 'Fan' }} bo'yicha</small>
                 </div>
                 <div class="chart-body">
+                    {{-- REAL MA'LUMOTLAR BILAN ALMASHTIRILDI --}}
                     @forelse($topClassesByPerformance ?? [] as $index => $class)
                     <div class="list-item">
                         <div class="rank-circle rank-{{ min($index + 1, 3) }}">{{ $index + 1 }}</div>
@@ -350,6 +351,7 @@
                     <small class="text-muted">Eng ko'p test topshirganlar</small>
                 </div>
                 <div class="chart-body">
+                    {{-- REAL MA'LUMOTLAR BILAN ALMASHTIRILDI --}}
                     @forelse($topActiveStudents ?? [] as $index => $student)
                     <div class="list-item">
                         <div class="rank-circle rank-{{ min($index + 1, 3) }}">{{ $index + 1 }}</div>
@@ -403,7 +405,7 @@
             var monthsLabels = JSON.parse(dataEl.getAttribute('data-months') || '[]');
             var classPerformance = JSON.parse(dataEl.getAttribute('data-class-performance') || '[]');
 
-            // ApexCharts Donut Chartda faqat bir o'lchamli massiv (score) ishlatilgani uchun uni to'g'irlaymiz
+            // ApexCharts Donut Chart uchun ma'lumotlarni tayyorlash
             var classNames = classPerformance.map(c => c.name);
             var classScores = classPerformance.map(c => c.y);
 
@@ -475,11 +477,14 @@
 
                 window.teacherCharts.monthly = new ApexCharts(chart1El, options1);
                 window.teacherCharts.monthly.render();
+            } else if (chart1El) {
+                chart1El.innerHTML = '<div class="text-center text-muted py-5"><i class="ri-bar-chart-box-line" style="font-size: 3rem; opacity: 0.3;"></i><p class="mt-2">Oxirgi 6 oyda imtihon ma\'lumotlari yetarli emas.</p></div>';
             }
+
 
             // 2. SINFLAR PERFORMANSI (Donut Chart)
             var chart2El = document.querySelector("#classPerformanceChart");
-            if (chart2El && classScores.length > 0) {
+            if (chart2El && classScores.length > 0 && classScores.some(score => score > 0)) { // Faqat ma'lumot bo'lsagina chizish
                 if (window.teacherCharts.performance) {
                     window.teacherCharts.performance.destroy();
                 }
@@ -506,8 +511,10 @@
                                         fontSize: '18px',
                                         color: '#6c757d',
                                         formatter: function(w) {
-                                            // Ma'lumotdagi foizlarning o'rtachasini chiqarish
-                                            var avg = w.globals.seriesTotals.reduce((a, b) => a + b, 0) / w.globals.seriesTotals.length;
+                                            // 0 bo'lmagan qiymatlarning o'rtachasini chiqarish
+                                            var validScores = w.globals.seriesTotals.filter(val => val > 0);
+                                            var sum = validScores.reduce((a, b) => a + b, 0);
+                                            var avg = validScores.length > 0 ? sum / validScores.length : 0;
                                             return avg.toFixed(1) + '%';
                                         }
                                     }
@@ -524,7 +531,6 @@
                     dataLabels: {
                         enabled: true,
                         formatter: function(val, opts) {
-                            // Faqat 5% dan yuqori bo'lsa ko'rsatish
                             return val.toFixed(1) + '%'
                         }
                     },
@@ -539,10 +545,16 @@
 
                 window.teacherCharts.performance = new ApexCharts(chart2El, options2);
                 window.teacherCharts.performance.render();
+            } else if (chart2El) {
+                chart2El.innerHTML = '<div class="text-center text-muted py-5"><i class="ri-pie-chart-2-line" style="font-size: 3rem; opacity: 0.3;"></i><p class="mt-2">Joriy oyda sinf natijalari yetarli emas.</p></div>';
             }
+
 
         } catch (e) {
             console.error('Grafik chizishda xatolik:', e);
+            // Jiddiy xatoda ham bo'sh xabar ko'rsatish
+            document.querySelector("#monthlyExamsChart").innerHTML = '<div class="text-center text-danger py-5"><i class="ri-error-warning-line" style="font-size: 3rem; opacity: 0.5;"></i><p class="mt-2">Ma\'lumotni yuklashda kritik xato.</p></div>';
+            document.querySelector("#classPerformanceChart").innerHTML = '<div class="text-center text-danger py-5"><i class="ri-error-warning-line" style="font-size: 3rem; opacity: 0.5;"></i><p class="mt-2">Ma\'lumotni yuklashda kritik xato.</p></div>';
         }
     }
 
