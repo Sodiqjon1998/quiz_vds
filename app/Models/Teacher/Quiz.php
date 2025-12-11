@@ -3,6 +3,7 @@
 namespace App\Models\Teacher;
 
 use App\Models\Classes;
+use App\Models\Exam;
 use App\Models\Option;
 use App\Models\Subjects;
 use App\Models\Users;
@@ -209,5 +210,12 @@ class Quiz extends Model
     public function scopeForSubject($query, $subjectId)
     {
         return $query->where('subject_id', $subjectId);
+    }
+
+
+    // Quiz.php modelga
+    public function exams()
+    {
+        return $this->hasMany(Exam::class, 'quiz_id');
     }
 }

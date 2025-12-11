@@ -3,289 +3,431 @@
 @section('content')
 <style>
     :root {
-        --yuksalish-orange: #F58025;
-        --yuksalish-brown: #8B4513;
-        --yuksalish-gold: #D4A574;
-        --yuksalish-teal: #16A085;
-        --yuksalish-dark: #212529;
-        --yuksalish-gray: #f8f9fa;
+        --primary: #F58025;
+        --secondary: #8B4513;
+        --success: #16A085;
+        --danger: #E74C3C;
+        --warning: #F39C12;
+        --info: #3498DB;
+        --dark: #212529;
+        --light: #f8f9fa;
     }
 
-    .stat-card {
-        border: none;
-        border-radius: 12px;
+    /* Global Styles */
+    body {
+        background: #f5f7fa;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Stats Cards */
+    .stats-card {
         background: white;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        transition: transform 0.2s, box-shadow 0.3s;
-        overflow: hidden;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid #e8ecef;
+        transition: all 0.3s ease;
         height: 100%;
     }
 
-    .stat-card:hover {
+    .stats-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
-    .icon-box {
-        width: 60px;
-        height: 60px;
+    .stats-icon {
+        width: 56px;
+        height: 56px;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        margin-bottom: 16px;
     }
 
-    .bg-orange-soft {
-        background-color: #fff0e6;
-        color: var(--yuksalish-orange);
-    }
-
-    .bg-brown-soft {
-        background-color: #f5ebe0;
-        color: var(--yuksalish-brown);
-    }
-
-    .bg-gold-soft {
-        background-color: #faf6f1;
-        color: var(--yuksalish-gold);
-    }
-
-    .bg-teal-soft {
-        background-color: #e0f7f4;
-        color: var(--yuksalish-teal);
-    }
-
-    .stat-value {
-        font-size: 2rem;
+    .stats-value {
+        font-size: 2.25rem;
         font-weight: 800;
-        color: var(--yuksalish-dark);
-        line-height: 1.2;
+        color: var(--dark);
+        line-height: 1;
+        margin-bottom: 8px;
     }
 
-    .stat-label {
+    .stats-label {
         color: #6c757d;
-        font-size: 0.9rem;
-        font-weight: 500;
+        font-size: 0.875rem;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
+    .stats-trend {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 8px;
+        padding: 4px 12px;
+        border-radius: 8px;
+    }
+
+    .trend-up {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .trend-down {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Chart Card */
     .chart-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid #e8ecef;
         overflow: hidden;
         height: 100%;
     }
 
     .chart-header {
-        padding: 1.5rem;
-        border-bottom: 2px solid #f0f0f0;
-        background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+        padding: 20px 24px;
+        border-bottom: 1px solid #e8ecef;
+        background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%);
     }
 
-    .chart-header h5 {
+    .chart-title {
+        font-size: 1.125rem;
         font-weight: 700;
-        color: var(--yuksalish-dark);
+        color: var(--dark);
         margin: 0;
-        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chart-subtitle {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 4px;
     }
 
     .chart-body {
-        padding: 1.5rem;
+        padding: 24px;
     }
 
-    .list-item {
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid #e8ecef;
+        margin-bottom: 24px;
+    }
+
+    .filter-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 16px;
         display: flex;
         align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #f0f0f0;
-        transition: background 0.2s;
+        gap: 8px;
     }
 
-    .list-item:hover {
-        background: #fafafa;
-        padding-left: 10px;
-        border-radius: 8px;
+    .form-control,
+    .form-select {
+        border: 2px solid #e8ecef;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
     }
 
-    .list-item:last-child {
-        border-bottom: none;
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(245, 128, 37, 0.1);
     }
 
-    .rank-circle {
-        width: 35px;
-        height: 35px;
+    .btn-filter {
+        background: linear-gradient(135deg, var(--primary) 0%, #ff9a56 100%);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(245, 128, 37, 0.3);
+    }
+
+    .btn-reset {
+        background: #e8ecef;
+        color: var(--dark);
+        border: none;
+        padding: 10px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-reset:hover {
+        background: #d1d5d9;
+    }
+
+    /* Table Styles */
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-table thead th {
         background: #f8f9fa;
-        border-radius: 50%;
-        display: flex;
+        color: var(--dark);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 16px;
+        border-bottom: 2px solid #e8ecef;
+    }
+
+    .data-table tbody td {
+        padding: 16px;
+        border-bottom: 1px solid #f0f2f5;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .rank-badge {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        color: #999;
-        margin-right: 15px;
-        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-weight: 800;
+        font-size: 0.875rem;
     }
 
     .rank-1 {
         background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
         color: #856404;
-        box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
     }
 
     .rank-2 {
         background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
         color: #495057;
-        box-shadow: 0 4px 10px rgba(192, 192, 192, 0.3);
+        box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3);
     }
 
     .rank-3 {
         background: linear-gradient(135deg, #cd7f32 0%, #e09b5f 100%);
         color: #fff;
-        box-shadow: 0 4px 10px rgba(205, 127, 50, 0.3);
+        box-shadow: 0 4px 12px rgba(205, 127, 50, 0.3);
+    }
+
+    .rank-default {
+        background: #e8ecef;
+        color: #6c757d;
     }
 
     .progress-bar-custom {
         height: 8px;
-        border-radius: 10px;
         background: #e9ecef;
+        border-radius: 10px;
         overflow: hidden;
         margin-top: 8px;
     }
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--yuksalish-orange) 0%, var(--yuksalish-gold) 100%);
+        background: linear-gradient(90deg, var(--primary) 0%, #ff9a56 100%);
         border-radius: 10px;
-        transition: width 0.5s ease;
+        transition: width 0.8s ease;
     }
 
-    @media (max-width: 767px) {
-        .stat-value {
-            font-size: 1.5rem;
+    .badge-custom {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        opacity: 0.2;
+        margin-bottom: 16px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .stats-value {
+            font-size: 1.75rem;
         }
 
-        .icon-box {
-            width: 50px;
-            height: 50px;
-            font-size: 1.5rem;
+        .stats-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+        }
+
+        .chart-body {
+            padding: 16px;
         }
     }
 </style>
 
-{{-- MA'LUMOTLARNI SAQLASH --}}
-<div id="teacher-chart-data"
-    data-monthly-exams="{{ json_encode($monthlyExamsData ?? []) }}"
-    data-months="{{ json_encode($monthsLabels ?? []) }}"
-    data-class-performance="{{ json_encode($classQuizPerformance ?? []) }}"
-    style="display: none;">
-</div>
-
-<div class="container-fluid">
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 fw-bold text-dark mb-0">
-            <i class="ri-dashboard-line me-2" style="color: var(--yuksalish-orange);"></i>
-            Boshqaruv Paneli
-        </h1>
-        <span class="badge bg-light text-dark border px-3 py-2">
-            {{ Auth::user()->subject->name ?? 'Fan' }} O'qituvchisi
-        </span>
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">
+                <i class="ri-bar-chart-box-line me-2" style="color: var(--primary);"></i>
+                Statistika va Tahlil
+            </h1>
+            <p class="text-muted mb-0">{{ Auth::user()->subject->name ?? 'Fan' }} bo'yicha to'liq hisobot</p>
+        </div>
+        <button class="btn btn-filter" onclick="window.print()">
+            <i class="ri-printer-line me-2"></i>Chop etish
+        </button>
     </div>
 
-    {{-- 1-QATOR: KPI KARTALAR --}}
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-title">
+            <i class="ri-filter-3-line"></i>
+            Filterlash
+        </div>
+        <form method="GET" action="{{ route('teacher') }}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Boshlanish sanasi</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ $startDate }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Tugash sanasi</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ $endDate }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Sinf</label>
+                    <select name="class_id" class="form-select">
+                        <option value="">Barcha sinflar</option>
+                        @foreach($filterClasses as $class)
+                        <option value="{{ $class->id }}" {{ $classId == $class->id ? 'selected' : '' }}>
+                            {{ $class->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-filter flex-grow-1">
+                        <i class="ri-search-line me-2"></i>Qidirish
+                    </button>
+                    <a href="{{route('teacher')}}" class="btn btn-reset">
+                        <i class="ri-refresh-line"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- KPI Cards -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="stat-card p-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label mb-1">Imtihonlar ({{ \Carbon\Carbon::now()->translatedFormat('F') }})</div>
-                        <div class="stat-value">{{ number_format($totalExamsTakenThisMonth) }}</div>
-                        <small class="text-muted">ta test topshirildi</small>
-                    </div>
-                    <div class="icon-box bg-orange-soft">
-                        <i class="ri-file-list-3-line"></i>
-                    </div>
+            <div class="stats-card">
+                <div class="stats-icon" style="background: rgba(245, 128, 37, 0.1); color: var(--primary);">
+                    <i class="ri-file-list-3-line"></i>
+                </div>
+                <div class="stats-value">{{ number_format($totalExams) }}</div>
+                <div class="stats-label">Jami Imtihonlar</div>
+                <small class="text-muted d-block mt-2">Tanlangan davr ichida</small>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: rgba(22, 160, 133, 0.1); color: var(--success);">
+                    <i class="ri-percent-line"></i>
+                </div>
+                <div class="stats-value">{{ $averageScore }}%</div>
+                <div class="stats-label">O'rtacha Natija</div>
+                <div class="progress-bar-custom">
+                    <div class="progress-fill" style="width: {{ $averageScore }}%"></div>
                 </div>
             </div>
         </div>
 
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="stat-card p-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label mb-1">Fan O'rtacha Natijasi</div>
-                        <div class="stat-value">{{ $averageSuccessRate }}%</div>
-                        <div class="progress-bar-custom">
-                            <div class="progress-fill" style="width: {{ $averageSuccessRate }}%"></div>
-                        </div>
-                    </div>
-                    <div class="icon-box bg-brown-soft">
-                        <i class="ri-medal-line"></i>
-                    </div>
+            <div class="stats-card">
+                <div class="stats-icon" style="background: rgba(139, 69, 19, 0.1); color: var(--secondary);">
+                    <i class="ri-user-smile-line"></i>
                 </div>
+                <div class="stats-value">{{ number_format($uniqueStudents) }}</div>
+                <div class="stats-label">Faol O'quvchilar</div>
+                <small class="text-muted d-block mt-2">Unikal ishtirokchilar</small>
             </div>
         </div>
 
         <div class="col-12 col-md-6 col-xl-3">
-            <div class="stat-card p-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label mb-1">Mening Testlarim</div>
-                        <div class="stat-value">{{ number_format($totalQuizzesCreated) }}</div>
-                        <small class="text-muted">ta test yaratilgan</small>
-                    </div>
-                    <div class="icon-box bg-gold-soft">
-                        <i class="ri-book-open-line"></i>
-                    </div>
+            <div class="stats-card">
+                <div class="stats-icon" style="background: rgba(243, 156, 18, 0.1); color: var(--warning);">
+                    <i class="ri-question-line"></i>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-            <div class="stat-card p-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label mb-1">Jami O'quvchilar</div>
-                        <div class="stat-value">{{ number_format($totalStudentsInSystem) }}</div>
-                        <small class="text-muted">faol o'quvchi</small>
-                    </div>
-                    <div class="icon-box bg-teal-soft">
-                        <i class="ri-user-smile-line"></i>
-                    </div>
-                </div>
+                <div class="stats-value">{{ number_format($totalQuestions) }}</div>
+                <div class="stats-label">Jami Savollar</div>
+                <small class="text-muted d-block mt-2">{{ number_format($totalQuizzes) }} ta testda</small>
             </div>
         </div>
     </div>
 
-    {{-- 2-QATOR: GRAFIKLAR --}}
+    <!-- Charts Row -->
     <div class="row g-4 mb-4">
-        {{-- OYLIK IMTIHONLAR GRAFIGI --}}
-        <div class="col-12 col-lg-7">
+        <!-- Monthly Trend -->
+        <div class="col-12 col-lg-8">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5>
-                        <i class="ri-line-chart-line me-2" style="color: var(--yuksalish-orange);"></i>
-                        Oylik Imtihonlar Statistikasi
+                    <h5 class="chart-title">
+                        <i class="ri-line-chart-line" style="color: var(--primary);"></i>
+                        Oylik Trend Tahlili
                     </h5>
-                    <small class="text-muted">{{ Auth::user()->subject->name ?? 'Fan' }} bo'yicha</small>
+                    <p class="chart-subtitle mb-0">Oxirgi 6 oy ichida imtihonlar statistikasi</p>
                 </div>
                 <div class="chart-body">
-                    <div id="monthlyExamsChart" style="min-height: 350px;"></div>
+                    <div id="monthlyTrendChart" style="min-height: 350px;"></div>
                 </div>
             </div>
         </div>
 
-        {{-- SINFLAR PERFORMANSI (DONUT) --}}
-        <div class="col-12 col-lg-5">
+        <!-- Class Performance -->
+        <div class="col-12 col-lg-4">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5>
-                        <i class="ri-pie-chart-2-line me-2" style="color: var(--yuksalish-teal);"></i>
-                        Sinflar Bo'yicha Natija
+                    <h5 class="chart-title">
+                        <i class="ri-pie-chart-2-line" style="color: var(--success);"></i>
+                        Sinflar Performansi
                     </h5>
-                    <small class="text-muted">To'g'ri javoblar foizi</small>
+                    <p class="chart-subtitle mb-0">To'g'ri javoblar foizi</p>
                 </div>
                 <div class="chart-body">
                     <div id="classPerformanceChart" style="min-height: 350px;"></div>
@@ -294,270 +436,336 @@
         </div>
     </div>
 
-    {{-- 3-QATOR: TOP RO'YXATLAR --}}
-    <div class="row g-4">
-        {{-- TOP SINFLAR --}}
+    <!-- Weekly Activity & Quiz Stats -->
+    <div class="row g-4 mb-4">
         <div class="col-12 col-lg-6">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5>
-                        <i class="ri-trophy-line me-2" style="color: #ffc107;"></i>
-                        Top 5 Eng Yaxshi Sinflar
+                    <h5 class="chart-title">
+                        <i class="ri-calendar-check-line" style="color: var(--info);"></i>
+                        Haftalik Aktivlik
                     </h5>
-                    <small class="text-muted">{{ Auth::user()->subject->name ?? 'Fan' }} bo'yicha</small>
+                    <p class="chart-subtitle mb-0">Kun bo'yicha imtihonlar taqsimoti</p>
                 </div>
                 <div class="chart-body">
-                    {{-- REAL MA'LUMOTLAR BILAN ALMASHTIRILDI --}}
-                    @forelse($topClassesByPerformance ?? [] as $index => $class)
-                    <div class="list-item">
-                        <div class="rank-circle rank-{{ min($index + 1, 3) }}">{{ $index + 1 }}</div>
-                        <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-0 text-dark">{{ $class['name'] }}</h6>
-                            <small class="text-muted">{{ number_format($class['percentage'], 1) }}% o'rtacha natija</small>
-                            <div class="progress-bar-custom">
-                                <div class="progress-fill" style="width: {{ $class['percentage'] }}%"></div>
-                            </div>
-                        </div>
-                        <div class="text-end ms-3">
-                            @if($index === 0)
-                            <span class="badge" style="background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #856404;">🏆 1-o'rin</span>
-                            @elseif($index === 1)
-                            <span class="badge bg-secondary">🥈 2-o'rin</span>
-                            @elseif($index === 2)
-                            <span class="badge" style="background: #cd7f32; color: white;">🥉 3-o'rin</span>
-                            @else
-                            <span class="badge bg-light text-dark border">{{ $index + 1 }}-o'rin</span>
-                            @endif
-                        </div>
-                    </div>
-                    @empty
-                    <div class="text-center text-muted py-5">
-                        <i class="ri-inbox-line" style="font-size: 3rem; opacity: 0.3;"></i>
-                        <p class="mt-2">Hozircha ma'lumot yo'q</p>
-                    </div>
-                    @endforelse
+                    <div id="weeklyActivityChart" style="min-height: 300px;"></div>
                 </div>
             </div>
         </div>
 
-        {{-- FAOL O'QUVCHILAR --}}
         <div class="col-12 col-lg-6">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h5>
-                        <i class="ri-star-line me-2" style="color: var(--yuksalish-orange);"></i>
-                        Top 5 Faol O'quvchilar
+                    <h5 class="chart-title">
+                        <i class="ri-bar-chart-grouped-line" style="color: var(--warning);"></i>
+                        Top 10 Testlar
                     </h5>
-                    <small class="text-muted">Eng ko'p test topshirganlar</small>
+                    <p class="chart-subtitle mb-0">Eng ko'p topshirilgan testlar</p>
                 </div>
                 <div class="chart-body">
-                    {{-- REAL MA'LUMOTLAR BILAN ALMASHTIRILDI --}}
-                    @forelse($topActiveStudents ?? [] as $index => $student)
-                    <div class="list-item">
-                        <div class="rank-circle rank-{{ min($index + 1, 3) }}">{{ $index + 1 }}</div>
-                        <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-0 text-dark">{{ $student['name'] }}</h6>
-                            <small class="text-muted">{{ $student['class_name'] }} - {{ $student['exam_count'] }} ta test</small>
-                        </div>
-                        <div class="text-end ms-3">
-                            @if($student['exam_count'] >= 50)
-                            <span class="badge bg-success">⭐ Eng faol</span>
-                            @elseif($student['exam_count'] >= 30)
-                            <span class="badge bg-primary">Faol</span>
-                            @else
-                            <span class="badge bg-info">Yaxshi</span>
-                            @endif
-                        </div>
+                    @if($quizStats->count() > 0)
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Test nomi</th>
+                                    <th class="text-end">Topshirish</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($quizStats as $index => $quiz)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $quiz->name }}</div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge badge-custom" style="background: rgba(245, 128, 37, 0.1); color: var(--primary);">
+                                            {{ $quiz->attempt_count }} marta
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    @empty
-                    <div class="text-center text-muted py-5">
-                        <i class="ri-user-search-line" style="font-size: 3rem; opacity: 0.3;"></i>
-                        <p class="mt-2">Hozircha ma'lumot yo'q</p>
+                    @else
+                    <div class="empty-state">
+                        <i class="ri-inbox-line"></i>
+                        <p>Ma'lumot topilmadi</p>
                     </div>
-                    @endforelse
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div class="row g-4">
+        <!-- Top Students -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="ri-star-line" style="color: var(--warning);"></i>
+                        Top 10 Faol O'quvchilar
+                    </h5>
+                    <p class="chart-subtitle mb-0">Eng ko'p test topshirganlar</p>
+                </div>
+                <div class="chart-body">
+                    @if($topStudents->count() > 0)
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">O'rin</th>
+                                    <th>O'quvchi</th>
+                                    <th>Sinf</th>
+                                    <th class="text-end">Testlar</th>
+                                    <th class="text-end">Aniqlik</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($topStudents as $index => $student)
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge rank-{{ min($index + 1, 3) <= 3 ? $index + 1 : 'default' }}">
+                                            {{ $index + 1 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $student['name'] }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-custom" style="background: #e8ecef; color: var(--dark);">
+                                            {{ $student['class'] }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-primary">{{ $student['exam_count'] }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge badge-custom" style="background: rgba(22, 160, 133, 0.1); color: var(--success);">
+                                            {{ $student['accuracy'] }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="empty-state">
+                        <i class="ri-user-search-line"></i>
+                        <p>Ma'lumot topilmadi</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Difficult Questions -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="ri-error-warning-line" style="color: var(--danger);"></i>
+                        Top 10 Eng Qiyin Savollar
+                    </h5>
+                    <p class="chart-subtitle mb-0">Eng ko'p xato qilingan savollar</p>
+                </div>
+                <div class="chart-body">
+                    @if($difficultQuestions->count() > 0)
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">O'rin</th>
+                                    <th>Savol</th>
+                                    <th class="text-end">Xato %</th>
+                                    <th class="text-end">Topshirish</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($difficultQuestions as $index => $question)
+                                <tr>
+                                    <td>
+                                        <div class="rank-badge rank-default">
+                                            {{ $index + 1 }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ Str::limit($question->name, 40) }}</div>
+                                        <small class="text-muted">{{ $question->quiz_name }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="badge badge-custom" style="background: rgba(231, 76, 60, 0.1); color: var(--danger);">
+                                            {{ $question->error_rate }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-muted">{{ $question->total_attempts }} marta</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="empty-state">
+                        <i class="ri-question-line"></i>
+                        <p>Ma'lumot topilmadi</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- APEXCHARTS --}}
+<!-- ApexCharts -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
-    window.teacherCharts = {
-        monthly: null,
-        performance: null
-    };
-
-    function initTeacherCharts() {
-        if (typeof ApexCharts === 'undefined') {
-            setTimeout(initTeacherCharts, 100);
-            return;
-        }
-
-        var dataEl = document.getElementById('teacher-chart-data');
-        if (!dataEl) return;
-
-        try {
-            var monthlyData = JSON.parse(dataEl.getAttribute('data-monthly-exams') || '[]');
-            var monthsLabels = JSON.parse(dataEl.getAttribute('data-months') || '[]');
-            var classPerformance = JSON.parse(dataEl.getAttribute('data-class-performance') || '[]');
-
-            // ApexCharts Donut Chart uchun ma'lumotlarni tayyorlash
-            var classNames = classPerformance.map(c => c.name);
-            var classScores = classPerformance.map(c => c.y);
-
-            // 1. OYLIK IMTIHONLAR GRAFIGI (Area Chart)
-            var chart1El = document.querySelector("#monthlyExamsChart");
-            if (chart1El && monthlyData.length > 0) {
-                if (window.teacherCharts.monthly) {
-                    window.teacherCharts.monthly.destroy();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Monthly Trend Chart
+        var monthlyOptions = {
+            series: [{
+                name: 'Imtihonlar',
+                data: @json($monthlyTrend)
+            }],
+            chart: {
+                type: 'area',
+                height: 350,
+                toolbar: {
+                    show: false
+                },
+                fontFamily: 'Inter, sans-serif'
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            colors: ['#F58025'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.2
                 }
-                chart1El.innerHTML = "";
-
-                var options1 = {
-                    series: [{
-                        name: 'Imtihonlar soni',
-                        data: monthlyData
-                    }],
-                    chart: {
-                        height: 350,
-                        type: 'area',
-                        toolbar: {
-                            show: false
-                        },
-                        fontFamily: 'Inter, sans-serif'
-                    },
-                    dataLabels: {
-                        enabled: false
-                    },
-                    stroke: {
-                        curve: 'smooth',
-                        width: 3
-                    },
-                    colors: ['#F58025'],
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.7,
-                            opacityTo: 0.2,
-                            stops: [0, 90, 100]
-                        }
-                    },
-                    xaxis: {
-                        categories: monthsLabels,
-                        axisBorder: {
-                            show: false
-                        },
-                        axisTicks: {
-                            show: false
-                        }
-                    },
-                    yaxis: {
-                        title: {
-                            text: 'Testlar soni'
-                        }
-                    },
-                    grid: {
-                        borderColor: '#f1f1f1',
-                        strokeDashArray: 4
-                    },
-                    tooltip: {
-                        theme: 'light',
-                        y: {
-                            formatter: function(val) {
-                                return val + " ta test";
-                            }
-                        }
+            },
+            xaxis: {
+                categories: @json($monthLabels)
+            },
+            yaxis: {
+                title: {
+                    text: 'Imtihonlar soni'
+                }
+            },
+            grid: {
+                borderColor: '#f1f1f1',
+                strokeDashArray: 4
+            },
+            tooltip: {
+                y: {
+                    formatter: function(val) {
+                        return val + " ta imtihon";
                     }
-                };
-
-                window.teacherCharts.monthly = new ApexCharts(chart1El, options1);
-                window.teacherCharts.monthly.render();
-            } else if (chart1El) {
-                chart1El.innerHTML = '<div class="text-center text-muted py-5"><i class="ri-bar-chart-box-line" style="font-size: 3rem; opacity: 0.3;"></i><p class="mt-2">Oxirgi 6 oyda imtihon ma\'lumotlari yetarli emas.</p></div>';
-            }
-
-
-            // 2. SINFLAR PERFORMANSI (Donut Chart)
-            var chart2El = document.querySelector("#classPerformanceChart");
-            if (chart2El && classScores.length > 0 && classScores.some(score => score > 0)) { // Faqat ma'lumot bo'lsagina chizish
-                if (window.teacherCharts.performance) {
-                    window.teacherCharts.performance.destroy();
                 }
-                chart2El.innerHTML = "";
+            }
+        };
 
-                var options2 = {
-                    series: classScores,
-                    labels: classNames,
-                    chart: {
-                        type: 'donut',
-                        height: 350,
-                        fontFamily: 'Inter, sans-serif'
-                    },
-                    colors: ['#F58025', '#8B4513', '#D4A574', '#16A085', '#E74C3C', '#3498DB', '#9B59B6', '#F39C12'],
-                    plotOptions: {
-                        pie: {
-                            donut: {
-                                size: '70%',
-                                labels: {
-                                    show: true,
-                                    total: {
-                                        show: true,
-                                        label: 'O\'rtacha',
-                                        fontSize: '18px',
-                                        color: '#6c757d',
-                                        formatter: function(w) {
-                                            // 0 bo'lmagan qiymatlarning o'rtachasini chiqarish
-                                            var validScores = w.globals.seriesTotals.filter(val => val > 0);
-                                            var sum = validScores.reduce((a, b) => a + b, 0);
-                                            var avg = validScores.length > 0 ? sum / validScores.length : 0;
-                                            return avg.toFixed(1) + '%';
-                                        }
-                                    }
+        var monthlyChart = new ApexCharts(document.querySelector("#monthlyTrendChart"), monthlyOptions);
+        monthlyChart.render();
+
+        // Class Performance Chart
+        @if(count($classPerformance) > 0)
+        var classOptions = {
+            series: @json(array_column($classPerformance, 'percentage')),
+            labels: @json(array_column($classPerformance, 'name')),
+            chart: {
+                type: 'donut',
+                height: 350,
+                fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#F58025', '#8B4513', '#16A085', '#3498DB', '#E74C3C', '#F39C12'],
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '70%',
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: 'O\'rtacha',
+                                formatter: function(w) {
+                                    var sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                    var avg = w.globals.seriesTotals.length > 0 ? sum / w.globals.seriesTotals.length : 0;
+                                    return avg.toFixed(1) + '%';
                                 }
                             }
                         }
-                    },
-                    legend: {
-                        position: 'bottom',
-                        markers: {
-                            radius: 12
-                        }
-                    },
-                    dataLabels: {
-                        enabled: true,
-                        formatter: function(val, opts) {
-                            return val.toFixed(1) + '%'
-                        }
-                    },
-                    tooltip: {
-                        y: {
-                            formatter: function(val) {
-                                return val.toFixed(1) + '%';
-                            }
-                        }
                     }
-                };
-
-                window.teacherCharts.performance = new ApexCharts(chart2El, options2);
-                window.teacherCharts.performance.render();
-            } else if (chart2El) {
-                chart2El.innerHTML = '<div class="text-center text-muted py-5"><i class="ri-pie-chart-2-line" style="font-size: 3rem; opacity: 0.3;"></i><p class="mt-2">Joriy oyda sinf natijalari yetarli emas.</p></div>';
+                }
+            },
+            legend: {
+                position: 'bottom'
+            },
+            dataLabels: {
+                formatter: function(val) {
+                    return val.toFixed(1) + '%';
+                }
             }
+        };
 
+        var classChart = new ApexCharts(document.querySelector("#classPerformanceChart"), classOptions);
+        classChart.render();
+        @endif
 
-        } catch (e) {
-            console.error('Grafik chizishda xatolik:', e);
-            // Jiddiy xatoda ham bo'sh xabar ko'rsatish
-            document.querySelector("#monthlyExamsChart").innerHTML = '<div class="text-center text-danger py-5"><i class="ri-error-warning-line" style="font-size: 3rem; opacity: 0.5;"></i><p class="mt-2">Ma\'lumotni yuklashda kritik xato.</p></div>';
-            document.querySelector("#classPerformanceChart").innerHTML = '<div class="text-center text-danger py-5"><i class="ri-error-warning-line" style="font-size: 3rem; opacity: 0.5;"></i><p class="mt-2">Ma\'lumotni yuklashda kritik xato.</p></div>';
-        }
-    }
+        // Weekly Activity Chart
+        var weeklyOptions = {
+            series: [{
+                name: 'Imtihonlar',
+                data: @json(array_column($weeklyActivity, 'count'))
+            }],
+            chart: {
+                type: 'bar',
+                height: 300,
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 8,
+                    distributed: true
+                }
+            },
+            colors: ['#3498DB', '#16A085', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#E67E22'],
+            xaxis: {
+                categories: @json(array_column($weeklyActivity, 'day'))
+            },
+            yaxis: {
+                title: {
+                    text: 'Imtihonlar soni'
+                }
+            },
+            legend: {
+                show: false
+            },
+            dataLabels: {
+                enabled: false
+            }
+        };
 
-    document.addEventListener('DOMContentLoaded', initTeacherCharts);
+        var weeklyChart = new ApexCharts(document.querySelector("#weeklyActivityChart"), weeklyOptions);
+        weeklyChart.render();
+    });
 </script>
 @endsection

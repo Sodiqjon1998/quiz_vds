@@ -2,6 +2,7 @@
 
 namespace App\Models\Teacher;
 
+use App\Models\ExamAnswer;
 use App\Models\Option;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -112,5 +113,10 @@ class Question extends \App\Models\Question
             // Delete all related options
             $question->options()->delete();
         });
+    }
+
+    public function examAnswers()
+    {
+        return $this->hasMany(ExamAnswer::class, 'question_id');
     }
 }

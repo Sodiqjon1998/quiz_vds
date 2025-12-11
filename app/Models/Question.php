@@ -96,4 +96,9 @@ class Question extends Model
         $model = Question::where('id', $id)->first();
         return $model;
     }
+
+    public function examAnswers()
+    {
+        return $this->hasMany(ExamAnswer::class, 'question_id');
+    }
 }
