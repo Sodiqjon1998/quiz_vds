@@ -127,33 +127,48 @@ class SiteController extends Controller
 
         $classPerformance = [];
         foreach ($allClasses as $class) {
-            $classExamIds = Exam::where('subject_id', $subjectId)
-                ->whereBetween('created_at', [$startDateTime, $endDateTime])
-                ->whereHas('user', function ($query) use ($class) {
-                    $query->where('classes_id', $class->id);
-                })
+            // O'sha sinfdagi o'quvchilarni topish
+            $studentIds = Users::where('classes_id', $class->id)
+                ->where('user_type', Users::TYPE_STUDENT)
+                ->where('status', 1)
                 ->pluck('id');
 
+            if ($studentIds->isEmpty()) {
+                continue; // O'quvchi bo'lmasa o'tkazib yuboramiz
+            }
+
+            // O'sha sinf o'quvchilarining imtihonlari
+            $classExamIds = Exam::where('subject_id', $subjectId)
+                ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                ->whereIn('user_id', $studentIds)
+                ->pluck('id');
+
+            if ($classExamIds->isEmpty()) {
+                continue; // Imtihon bo'lmasa o'tkazib yuboramiz
+            }
+
+            // Umumiy javoblar va to'g'ri javoblar
             $classTotal = ExamAnswer::whereIn('exam_id', $classExamIds)->count();
+
             $classCorrect = ExamAnswer::whereIn('exam_id', $classExamIds)
-                ->whereExists(function ($query) {
-                    $query->select(DB::raw(1))
+                ->whereIn('option_id', function ($query) {
+                    $query->select('id')
                         ->from('option')
-                        ->whereColumn('option.id', 'exam_answer.option_id')
-                        ->where('option.is_correct', 1);
+                        ->where('is_correct', 1);
                 })
                 ->count();
 
             $percentage = $classTotal > 0 ? round(($classCorrect / $classTotal) * 100, 1) : 0;
 
+            // Faqat ma'lumot bor bo'lsagina qo'shamiz
             if ($classTotal > 0) {
                 $classPerformance[] = [
                     'name' => $class->name,
                     'percentage' => $percentage,
                     'total_exams' => $classExamIds->count(),
-                    'students' => Users::where('classes_id', $class->id)
-                        ->where('user_type', Users::TYPE_STUDENT)
-                        ->count()
+                    'total_answers' => $classTotal,
+                    'correct_answers' => $classCorrect,
+                    'students' => $studentIds->count()
                 ];
             }
         }

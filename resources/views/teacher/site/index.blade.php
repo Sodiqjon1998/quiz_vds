@@ -344,7 +344,7 @@
                     <button type="submit" class="btn btn-filter flex-grow-1">
                         <i class="ri-search-line me-2"></i>Qidirish
                     </button>
-                    <a href="{{route('teacher')}}" class="btn btn-reset">
+                    <a href="{{ route('teacher') }}" class="btn btn-reset">
                         <i class="ri-refresh-line"></i>
                     </a>
                 </div>
@@ -685,48 +685,75 @@
         monthlyChart.render();
 
         // Class Performance Chart
-        @if(count($classPerformance) > 0)
-        var classOptions = {
-            series: @json(array_column($classPerformance, 'percentage')),
-            labels: @json(array_column($classPerformance, 'name')),
-            chart: {
-                type: 'donut',
-                height: 350,
-                fontFamily: 'Inter, sans-serif'
-            },
-            colors: ['#F58025', '#8B4513', '#16A085', '#3498DB', '#E74C3C', '#F39C12'],
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '70%',
-                        labels: {
-                            show: true,
-                            total: {
+        var classPerformanceData = @json($classPerformance);
+
+        if (classPerformanceData && classPerformanceData.length > 0) {
+            var classOptions = {
+                series: classPerformanceData.map(item => parseFloat(item.percentage)),
+                labels: classPerformanceData.map(item => item.name),
+                chart: {
+                    type: 'donut',
+                    height: 350,
+                    fontFamily: 'Inter, sans-serif'
+                },
+                colors: ['#F58025', '#8B4513', '#16A085', '#3498DB', '#E74C3C', '#F39C12', '#9B59B6', '#1ABC9C'],
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '70%',
+                            labels: {
                                 show: true,
-                                label: 'O\'rtacha',
-                                formatter: function(w) {
-                                    var sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                                    var avg = w.globals.seriesTotals.length > 0 ? sum / w.globals.seriesTotals.length : 0;
-                                    return avg.toFixed(1) + '%';
+                                total: {
+                                    show: true,
+                                    label: 'O\'rtacha',
+                                    fontSize: '16px',
+                                    fontWeight: 700,
+                                    formatter: function(w) {
+                                        var sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                        var avg = w.globals.seriesTotals.length > 0 ? sum / w.globals.seriesTotals.length : 0;
+                                        return avg.toFixed(1) + '%';
+                                    }
                                 }
                             }
                         }
                     }
+                },
+                legend: {
+                    position: 'bottom',
+                    fontSize: '13px'
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val) {
+                        return val.toFixed(1) + '%';
+                    },
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val, opts) {
+                            var classData = classPerformanceData[opts.seriesIndex];
+                            return val.toFixed(1) + '% (' + classData.correct_answers + '/' + classData.total_answers + ')';
+                        }
+                    }
                 }
-            },
-            legend: {
-                position: 'bottom'
-            },
-            dataLabels: {
-                formatter: function(val) {
-                    return val.toFixed(1) + '%';
-                }
-            }
-        };
+            };
 
-        var classChart = new ApexCharts(document.querySelector("#classPerformanceChart"), classOptions);
-        classChart.render();
-        @endif
+            var classChart = new ApexCharts(document.querySelector("#classPerformanceChart"), classOptions);
+            classChart.render();
+        } else {
+            // Bo'sh holat
+            document.querySelector("#classPerformanceChart").innerHTML = `
+            <div class="empty-state">
+                <i class="ri-pie-chart-2-line"></i>
+                <p>Tanlangan davrda sinflar bo'yicha ma'lumot topilmadi</p>
+                <small class="text-muted">Iltimos, boshqa filtr tanlab ko'ring</small>
+            </div>
+        `;
+        }
 
         // Weekly Activity Chart
         var weeklyOptions = {
