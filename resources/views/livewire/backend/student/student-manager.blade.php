@@ -116,7 +116,6 @@
                                 </div>
                             </div>
 
-                            {{-- YANGI QO'SHILGAN QISM: Sinf filtri --}}
                             <div class="col-12 col-md-auto">
                                 <select wire:model.live="classFilter" class="form-select" style="height: 45px; border-radius: 10px; border: 1px solid #e0e0e0; min-width: 150px;">
                                     <option value="">Barcha Sinflar</option>
@@ -126,8 +125,13 @@
                                 </select>
                             </div>
 
-                            <div class="col-12 col-md-auto">
-                                <button wire:click="createStudent" class="btn btn-yuksalish w-100">
+                            <div class="col-12 col-md-auto d-flex gap-2">
+                                {{-- YANGI QO'SHILDI: Export tugmasi --}}
+                                <button wire:click="exportCredentialsToExcel" class="btn btn-sm btn-light border flex-fill text-success fw-bold" title="Username va parollarni export qilish" style="height: 45px;">
+                                    <i class="ri-file-excel-2-line me-1"></i> Export
+                                </button>
+
+                                <button wire:click="createStudent" class="btn btn-yuksalish flex-fill w-100">
                                     <i class="ri-add-line me-2"></i> Yangi O'quvchi
                                 </button>
                             </div>
@@ -139,6 +143,16 @@
                         <div class="p-3">
                             <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
                                 <i class="ri-checkbox-circle-line me-2"></i> {{ session('message') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+                        @endif
+
+                        {{-- QO'SHILDI: Eksportdagi xato xabari --}}
+                        @if (session()->has('error'))
+                        <div class="p-3">
+                            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert" style="background-color: #f8d7da; color: #721c24;">
+                                <i class="ri-close-circle-line me-2"></i> {{ session('error') }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         </div>

@@ -2,10 +2,12 @@
 
 namespace App\Http\Livewire\Backend\Student;
 
-use App\Models\Classes;
 use App\Models\Users;
+use App\Models\Classes;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StudentsExport;
 
 class StudentManager extends Component
 {
@@ -64,7 +66,7 @@ class StudentManager extends Component
         $this->resetPage();
     }
 
-    // YANGI METOD: Sinf filtri o'zgarganda sahifani reset qilish
+    // Sinf filtri o'zgarganda sahifani reset qilish
     public function updatingClassFilter()
     {
         $this->resetPage();
@@ -259,6 +261,7 @@ class StudentManager extends Component
                 'name' => $this->name,
                 'first_name' => $this->first_name,
                 'last_name' => $this->last_name,
+                // classes_id is saved as integer ID
                 'classes_id' => $this->classes_id,
                 'email' => $this->email,
                 'phone' => $this->phone,
@@ -283,6 +286,8 @@ class StudentManager extends Component
         $this->resetInputFields();
         $this->showModal = false;
     }
+
+    // ... (editStudent, deleteStudent, createStudent, closeModal, viewStudent, closeViewModal, resetInputFields metodlari)
 
     public function editStudent($id)
     {
@@ -340,6 +345,47 @@ class StudentManager extends Component
         $this->isEdit = false;
     }
 
+    /**
+     * Joriy filtrlar bo'yicha o'quvchilar ro'yxatini username va parol bilan export qilish.
+     */
+    public function exportCredentialsToExcel()
+    {
+        $term = '%' . $this->search . '%';
+
+        // Barcha filtrlangan o'quvchilarni olish uchun so'rovni yaratish
+        $studentsQuery = Users::with('classRelation')
+            ->where('user_type', Users::TYPE_STUDENT)
+            ->where(function ($query) use ($term) {
+                // Qidiruv shartlari
+                $query->where('name', 'like', $term)
+                    ->orWhere('first_name', 'like', $term)
+                    ->orWhere('last_name', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    ->orWhereHas('classRelation', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    });
+            });
+
+        // Sinf bo'yicha filtrlash
+        if ($this->classFilter) {
+            $studentsQuery->where('classes_id', $this->classFilter);
+        }
+
+        // Barcha mos keluvchi studentlarni olish (paginationsiz)
+        $studentsToExport = $studentsQuery->orderBy('first_name', 'asc')->get();
+
+        if ($studentsToExport->isEmpty()) {
+            session()->flash('error', 'Eksport qilish uchun hech qanday o\'quvchi topilmadi.');
+            return;
+        }
+
+        $fileName = 'Student_Credentials_' . date('Ymd_His') . '.xlsx';
+
+        // Excel faylini yuklab olish
+        return Excel::download(new StudentsExport($studentsToExport), $fileName);
+    }
+
     public function render()
     {
         $term = '%' . $this->search . '%';
@@ -353,25 +399,23 @@ class StudentManager extends Component
                     ->orWhere('last_name', 'like', $term)
                     ->orWhere('email', 'like', $term)
                     ->orWhere('phone', 'like', $term)
-                    // QO'SHILDI: Sinf nomi bo'yicha qidiruv (Relation orqali)
+                    // Sinf nomi bo'yicha qidiruv (Relation orqali)
                     ->orWhereHas('classRelation', function ($q) use ($term) {
                         $q->where('name', 'like', $term);
                     });
             });
 
-        // YANGI QO'SHILGAN FILTR: classFilter bo'yicha filtrlash
         if ($this->classFilter) {
             $studentsQuery->where('classes_id', $this->classFilter);
         }
 
         $students = $studentsQuery->orderBy('created_at', 'desc')->paginate(10);
 
-        // Sinf ro'yxatini viewga uzatish
         $classes = Classes::where('status', 1)->orderBy('name')->get();
 
         return view('livewire.backend.student.student-manager', [
             'students' => $students,
-            'classes' => $classes, // <-- Viewga uzatilmoqda
+            'classes' => $classes,
         ]);
     }
 }
