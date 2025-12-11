@@ -14,6 +14,8 @@ use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Str; // Str::limit funksiyasi uchun
 
 class SiteController extends Controller
 {
@@ -22,9 +24,12 @@ class SiteController extends Controller
         $teacher = Auth::user();
         $subjectId = $teacher->subject_id;
 
-        // Filter parametrlari
-        $startDate = $request->input('start_date', Carbon::now()->subMonths(6)->format('Y-m-d'));
-        $endDate = $request->input('end_date', Carbon::now()->format('Y-m-d'));
+        // Filter parametrlari. Default: Oxirgi 6 oy
+        $defaultStartDate = Carbon::now()->subMonths(6)->format('Y-m-d');
+        $defaultEndDate = Carbon::now()->format('Y-m-d');
+
+        $startDate = $request->input('start_date', $defaultStartDate);
+        $endDate = $request->input('end_date', $defaultEndDate);
         $classId = $request->input('class_id', null);
 
         $startDateTime = Carbon::parse($startDate)->startOfDay();
@@ -47,37 +52,25 @@ class SiteController extends Controller
                 ->where('created_by', $teacher->id);
         })->count();
 
-        // Tanlangan davrdagi imtihonlar
-        $totalExams = Exam::where('subject_id', $subjectId)
-            ->whereBetween('created_at', [$startDateTime, $endDateTime])
-            ->when($classId, function ($q) use ($classId) {
-                return $q->whereHas('user', function ($query) use ($classId) {
-                    $query->where('classes_id', $classId);
-                });
-            })
-            ->count();
-
-        // Unikal o'quvchilar soni
-        $uniqueStudents = Exam::where('subject_id', $subjectId)
-            ->whereBetween('created_at', [$startDateTime, $endDateTime])
-            ->when($classId, function ($q) use ($classId) {
-                return $q->whereHas('user', function ($query) use ($classId) {
-                    $query->where('classes_id', $classId);
-                });
-            })
-            ->distinct('user_id')
-            ->count('user_id');
-
-        // O'rtacha muvaffaqiyat foizi
+        // Tanlangan davrdagi imtihonlar (totalExams uchun Exam ID'lari to'plami)
         $examIds = Exam::where('subject_id', $subjectId)
             ->whereBetween('created_at', [$startDateTime, $endDateTime])
             ->when($classId, function ($q) use ($classId) {
+                // Sinf filtri qo'llanilganda
                 return $q->whereHas('user', function ($query) use ($classId) {
                     $query->where('classes_id', $classId);
                 });
             })
             ->pluck('id');
 
+        $totalExams = $examIds->count();
+
+        // Unikal o'quvchilar soni
+        $uniqueStudents = Exam::whereIn('id', $examIds)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        // O'rtacha muvaffaqiyat foizi
         $totalAnswers = ExamAnswer::whereIn('exam_id', $examIds)->count();
         $correctAnswers = ExamAnswer::whereIn('exam_id', $examIds)
             ->whereExists(function ($query) {
@@ -116,62 +109,66 @@ class SiteController extends Controller
         }
 
         // ==========================================
-        // 3. SINFLAR BO'YICHA PERFORMANS
+        // 3. SINFLAR BO'YICHA PERFORMANS (Donut Chart va Top List uchun)
         // ==========================================
 
         $classesQuery = Classes::where('status', 1);
         if ($classId) {
             $classesQuery->where('id', $classId);
         }
-        $allClasses = $classesQuery->get();
+        $allClasses = $classesQuery->orderBy('name')->get();
 
         $classPerformance = [];
         foreach ($allClasses as $class) {
-            // O'sha sinfdagi o'quvchilarni topish
+
             $studentIds = Users::where('classes_id', $class->id)
                 ->where('user_type', Users::TYPE_STUDENT)
-                ->where('status', 1)
+                ->where('status', Users::STATUS_ACTIVE)
                 ->pluck('id');
 
             if ($studentIds->isEmpty()) {
-                continue; // O'quvchi bo'lmasa o'tkazib yuboramiz
+                continue;
             }
 
-            // O'sha sinf o'quvchilarining imtihonlari
             $classExamIds = Exam::where('subject_id', $subjectId)
                 ->whereBetween('created_at', [$startDateTime, $endDateTime])
                 ->whereIn('user_id', $studentIds)
                 ->pluck('id');
 
             if ($classExamIds->isEmpty()) {
-                continue; // Imtihon bo'lmasa o'tkazib yuboramiz
+                continue;
             }
 
-            // Umumiy javoblar va to'g'ri javoblar
             $classTotal = ExamAnswer::whereIn('exam_id', $classExamIds)->count();
 
             $classCorrect = ExamAnswer::whereIn('exam_id', $classExamIds)
-                ->whereIn('option_id', function ($query) {
-                    $query->select('id')
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
                         ->from('option')
-                        ->where('is_correct', 1);
+                        ->whereColumn('option.id', 'exam_answer.option_id')
+                        ->where('option.is_correct', 1);
                 })
                 ->count();
 
             $percentage = $classTotal > 0 ? round(($classCorrect / $classTotal) * 100, 1) : 0;
 
-            // Faqat ma'lumot bor bo'lsagina qo'shamiz
             if ($classTotal > 0) {
                 $classPerformance[] = [
                     'name' => $class->name,
                     'percentage' => $percentage,
-                    'total_exams' => $classExamIds->count(),
+                    'y' => (float) $percentage, // ApexCharts uchun y-o'qi qiymati
                     'total_answers' => $classTotal,
                     'correct_answers' => $classCorrect,
-                    'students' => $studentIds->count()
                 ];
             }
         }
+
+        // Top 10 Sinflarni tayyorlash
+        $topClassesByPerformance = collect($classPerformance)
+            ->sortByDesc('percentage')
+            ->take(10)
+            ->toArray();
+
 
         // ==========================================
         // 4. TOP 10 ENG QIYIN SAVOLLAR
@@ -254,14 +251,21 @@ class SiteController extends Controller
         // 6. HAFTALIK AKTIVLIK HEATMAP
         // ==========================================
 
+        // ... (weekly activity logic)
+
         $weeklyActivity = [];
         $days = ['Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba', 'Yakshanba'];
 
+        // MySQL/MariaDB uchun WEEKDAY() dan foydalanamiz (0=Dushanba)
+        // Agar sizning bazangizda boshqacha bo'lsa, 'DAYOFWEEK(created_at)' ga moslab oling.
+        $dayMap = [1 => 'Yakshanba', 2 => 'Dushanba', 3 => 'Seshanba', 4 => 'Chorshanba', 5 => 'Payshanba', 6 => 'Juma', 7 => 'Shanba']; // DAYOFWEEK - default
+
         foreach ($days as $index => $day) {
-            $dayNumber = $index + 1;
+            $dbDayNumber = $index; // 0=Dushanba (WEEKDAY() ga mos)
+
             $count = Exam::where('subject_id', $subjectId)
                 ->whereBetween('created_at', [$startDateTime, $endDateTime])
-                ->whereRaw('DAYOFWEEK(created_at) = ?', [$dayNumber])
+                ->whereRaw('WEEKDAY(created_at) = ?', [$dbDayNumber]) // WEEKDAY: 0=Dushanba, 6=Yakshanba
                 ->when($classId, function ($q) use ($classId) {
                     return $q->whereHas('user', function ($query) use ($classId) {
                         $query->where('classes_id', $classId);
@@ -275,6 +279,7 @@ class SiteController extends Controller
             ];
         }
 
+
         // ==========================================
         // 7. TESTLAR BO'YICHA STATISTIKA
         // ==========================================
@@ -283,6 +288,7 @@ class SiteController extends Controller
             ->where('quiz.subject_id', $subjectId)
             ->where('quiz.created_by', $teacher->id)
             ->withCount([
+                'questions', // Savollar sonini ham olamiz
                 'exams as attempt_count' => function ($query) use ($startDateTime, $endDateTime, $classId) {
                     $query->whereBetween('created_at', [$startDateTime, $endDateTime])
                         ->when($classId, function ($q) use ($classId) {
@@ -296,6 +302,7 @@ class SiteController extends Controller
             ->orderByDesc('attempt_count')
             ->take(10)
             ->get();
+
 
         // Filter uchun sinflar ro'yxati
         $filterClasses = Classes::where('status', 1)->orderBy('name')->get();
