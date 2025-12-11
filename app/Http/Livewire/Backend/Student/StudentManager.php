@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Backend\Student;
 
+use App\Models\Classes;
 use App\Models\Users;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,11 +13,12 @@ class StudentManager extends Component
 
     // Properties
     public $search = '';
+    public $classFilter = '';
     public $studentId;
     public $name, $email, $phone, $first_name, $last_name, $classes_id, $status;
     public $isEdit = false;
     public $showModal = false;
-    
+
     // View Modal
     public $showViewModal = false;
     public $viewingStudent = null;
@@ -62,6 +64,12 @@ class StudentManager extends Component
         $this->resetPage();
     }
 
+    // YANGI METOD: Sinf filtri o'zgarganda sahifani reset qilish
+    public function updatingClassFilter()
+    {
+        $this->resetPage();
+    }
+
     public function generateUsername()
     {
         if (!empty($this->first_name) && !empty($this->last_name)) {
@@ -85,19 +93,157 @@ class StudentManager extends Component
     private function transliterate($text)
     {
         $cyrillic = [
-            'а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п',
-            'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я',
-            'ў', 'қ', 'ғ', 'ҳ', 'А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л',
-            'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь',
-            'Э', 'Ю', 'Я', 'Ў', 'Қ', 'Ғ', 'Ҳ'
+            'а',
+            'б',
+            'в',
+            'г',
+            'д',
+            'е',
+            'ё',
+            'ж',
+            'з',
+            'и',
+            'й',
+            'к',
+            'л',
+            'м',
+            'н',
+            'о',
+            'п',
+            'р',
+            'с',
+            'т',
+            'у',
+            'ф',
+            'х',
+            'ц',
+            'ч',
+            'ш',
+            'щ',
+            'ъ',
+            'ы',
+            'ь',
+            'э',
+            'ю',
+            'я',
+            'ў',
+            'қ',
+            'ғ',
+            'ҳ',
+            'А',
+            'Б',
+            'В',
+            'Г',
+            'Д',
+            'Е',
+            'Ё',
+            'Ж',
+            'З',
+            'И',
+            'Й',
+            'К',
+            'Л',
+            'М',
+            'Н',
+            'О',
+            'П',
+            'Р',
+            'С',
+            'Т',
+            'У',
+            'Ф',
+            'Х',
+            'Ц',
+            'Ч',
+            'Ш',
+            'Щ',
+            'Ъ',
+            'Ы',
+            'Ь',
+            'Э',
+            'Ю',
+            'Я',
+            'Ў',
+            'Қ',
+            'Ғ',
+            'Ҳ'
         ];
 
         $latin = [
-            'a', 'b', 'v', 'g', 'd', 'e', 'yo', 'zh', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p',
-            'r', 's', 't', 'u', 'f', 'x', 'ts', 'ch', 'sh', 'sh', '', 'i', '', 'e', 'yu', 'ya',
-            'o', 'q', 'g', 'h', 'a', 'b', 'v', 'g', 'd', 'e', 'yo', 'zh', 'z', 'i', 'y', 'k', 'l',
-            'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'x', 'ts', 'ch', 'sh', 'sh', '', 'i', '',
-            'e', 'yu', 'ya', 'o', 'q', 'g', 'h'
+            'a',
+            'b',
+            'v',
+            'g',
+            'd',
+            'e',
+            'yo',
+            'zh',
+            'z',
+            'i',
+            'y',
+            'k',
+            'l',
+            'm',
+            'n',
+            'o',
+            'p',
+            'r',
+            's',
+            't',
+            'u',
+            'f',
+            'x',
+            'ts',
+            'ch',
+            'sh',
+            'sh',
+            '',
+            'i',
+            '',
+            'e',
+            'yu',
+            'ya',
+            'o',
+            'q',
+            'g',
+            'h',
+            'a',
+            'b',
+            'v',
+            'g',
+            'd',
+            'e',
+            'yo',
+            'zh',
+            'z',
+            'i',
+            'y',
+            'k',
+            'l',
+            'm',
+            'n',
+            'o',
+            'p',
+            'r',
+            's',
+            't',
+            'u',
+            'f',
+            'x',
+            'ts',
+            'ch',
+            'sh',
+            'sh',
+            '',
+            'i',
+            '',
+            'e',
+            'yu',
+            'ya',
+            'o',
+            'q',
+            'g',
+            'h'
         ];
 
         return str_replace($cyrillic, $latin, $text);
@@ -198,25 +344,34 @@ class StudentManager extends Component
     {
         $term = '%' . $this->search . '%';
 
-        $students = Users::with('classRelation')
+        $studentsQuery = Users::with('classRelation')
             ->where('user_type', Users::TYPE_STUDENT)
-            ->where(function($query) use ($term) {
+            ->where(function ($query) use ($term) {
                 // Ism, Familiya, Username, Email, Telefon bo'yicha
                 $query->where('name', 'like', $term)
-                      ->orWhere('first_name', 'like', $term)
-                      ->orWhere('last_name', 'like', $term)
-                      ->orWhere('email', 'like', $term)
-                      ->orWhere('phone', 'like', $term)
-                // QO'SHILDI: Sinf nomi bo'yicha qidiruv (Relation orqali)
-                      ->orWhereHas('classRelation', function($q) use ($term) {
-                          $q->where('name', 'like', $term);
-                      });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+                    ->orWhere('first_name', 'like', $term)
+                    ->orWhere('last_name', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    // QO'SHILDI: Sinf nomi bo'yicha qidiruv (Relation orqali)
+                    ->orWhereHas('classRelation', function ($q) use ($term) {
+                        $q->where('name', 'like', $term);
+                    });
+            });
+
+        // YANGI QO'SHILGAN FILTR: classFilter bo'yicha filtrlash
+        if ($this->classFilter) {
+            $studentsQuery->where('classes_id', $this->classFilter);
+        }
+
+        $students = $studentsQuery->orderBy('created_at', 'desc')->paginate(10);
+
+        // Sinf ro'yxatini viewga uzatish
+        $classes = Classes::where('status', 1)->orderBy('name')->get();
 
         return view('livewire.backend.student.student-manager', [
-            'students' => $students
+            'students' => $students,
+            'classes' => $classes, // <-- Viewga uzatilmoqda
         ]);
     }
 }
